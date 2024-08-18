@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import axios from "axios";
 import fs from "fs";
+import { titleToFriendlyName } from "./utils.js";
 
 const token = process.env.SPOTIFY_TOKEN;
 
@@ -15,7 +16,20 @@ function extractPlaylistId(url) {
   }
 }
 
-// Function to get playlist tracks
+async function getPlaylistDetails(playlistId) {
+  let url = `https://api.spotify.com/v1/playlists/${playlistId}`;
+
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return {
+    name: response.data.name
+  };
+}
+
 async function getPlaylistTracks(playlistId) {
   let tracks = [];
   let url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
@@ -41,7 +55,6 @@ async function getPlaylistTracks(playlistId) {
   return tracks;
 }
 
-// Function to save data to a text file
 function saveToTextFile(data, filename) {
   fs.writeFileSync(filename, data.join("\n"));
   console.log(`Playlist tracks saved to ${filename}`);
@@ -57,16 +70,21 @@ export async function importToFile() {
       );
       return;
     }
-    const outputFile = "playlist_tracks.txt"; // Output file name
 
     const playlistId = extractPlaylistId(playlistUrl);
+
+    const playlistDetails = await getPlaylistDetails(playlistId);
+
+    const outputFile = `playlist_${titleToFriendlyName(playlistDetails.name)}.txt`;
 
     const tracks = await getPlaylistTracks(playlistId);
 
     saveToTextFile(tracks, outputFile);
+
+    return outputFile;
   } catch (error) {
     console.error("Error:", JSON.stringify(error));
   }
 }
 
-importToFile();
+await importToFile();
