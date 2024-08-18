@@ -32,13 +32,16 @@ node spotify_to_mp3.js <playlist>.txt
 
 ## Notes
 
-Beware of quotas and limits, especially from Youtube Search API, as it allows only 10_000 requests per day.
+> [!WARNING]
+> Beware of quotas and limits, especially from Youtube API, as it allows only 10_000 requests per day. Youtube search API has an increased quota impact: A call to this method has a quota cost of 100 units!
+> So, essentially, you can only download 100 songs per day.
+
 
 ## Pending
 
-- [ ] How are quotas handled by Youtube Search API? It registers much more requests than expected.
 - [x] dotenv for API keys.
 - [x] Handle quotas error.
-- [ ] Move files under src folder.
 - [x] Dynamic file names based on the playlist name.
+- [x] How are quotas handled by Youtube Search API? It registers much more requests than expected.
+- [ ] Move files under src folder.
 - [ ] Smooth API, run each function independently or all at once.
