@@ -37,7 +37,7 @@ Beware of quotas and limits, especially from Youtube Search API, as it allows on
 ## Pending
 
 - [ ] How are quotas handled by Youtube Search API? It registers much more requests than expected.
-- [ ] dotenv for API keys.
+- [x] dotenv for API keys.
 - [x] Handle quotas error.
 - [ ] Move files under src folder.
 - [ ] Dynamic file names based on the playlist name.

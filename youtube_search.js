@@ -1,10 +1,10 @@
+import 'dotenv/config';
 import axios from "axios";
 import { QuotaExceededError } from "./errors.js";
 
-// Load YouTube API key from environment variables
-const API_KEY = "AIzaSyCh-LnxsXf5J-_mgQXan2Y2U1icqLq9ux8";
-
 const url = "https://www.googleapis.com/youtube/v3/search";
+
+const API_KEY = process.env.YOUTUBE_API_KEY;
 
 // Function to search for a video on YouTube
 export async function searchYouTube(query) {

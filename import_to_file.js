@@ -1,8 +1,8 @@
+import 'dotenv/config';
 import axios from "axios";
 import fs from "fs";
 
-// Authorization token that must have been created previously. See : https://developer.spotify.com/documentation/web-api/concepts/authorization
-const token = 'BQCBXAjAdAI2-1I8kzOXVAUOZKTaR4WTjB3WFSE7dwHhI6XfSUpfOz1zEtB7HrhuNO5Z3-TiUG--R187qt6ZoXk4R3YogObYeEn6rDmLtg00zGepwvOJDp1eIevrjggGsOE_Glr6x4aYg2cAXs17hQSdXSA9Edmwo3k8hEkoGn2I0W2HQnzPV9hhz7TRoxtWJECiDALGuOcrnD9AkyUn0lQygXk-ANf8lMY4LHqxi7dQ5V73iijbWaKygRmebODVXL4ENKhq8UZL4A';
+const token = process.env.SPOTIFY_TOKEN;
 
 // Function to extract playlist ID from URL
 function extractPlaylistId(url) {
@@ -48,7 +48,7 @@ function saveToTextFile(data, filename) {
 }
 
 // Main function
-export async function process() {
+export async function importToFile() {
   try {
     const playlistUrl = process.argv[2];
     if (!playlistUrl) {
@@ -69,5 +69,4 @@ export async function process() {
   }
 }
 
-// Run the main function
-process();
+importToFile();
