@@ -46,3 +46,4 @@ node spotify_to_mp3.js playlist_<playlist_name>.txt
 - [x] How are quotas handled by Youtube Search API? It registers much more requests than expected.
 - [ ] Move files under src folder.
 - [ ] Smooth API, run each function independently or all at once.
+- [ ] Resume from last track downloaded.
