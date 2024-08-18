@@ -23,17 +23,18 @@ npm install
 ## Usage
 
 ```bash
-# Get the song names and artists from a Spotify playlist in to a <playlist>.txt
+# Get the song names and artists from a Spotify playlist in to a playlist_<playlist_name>.txt
 node import_to_file.js <spotify_url>
 
 # Download the songs from the file.txt
-node spotify_to_mp3.js <playlist>.txt
+node spotify_to_mp3.js playlist_<playlist_name>.txt
 ```
 
 ## Notes
 
 > [!WARNING]
 > Beware of quotas and limits, especially from Youtube API, as it allows only 10_000 requests per day. Youtube search API has an increased quota impact: A call to this method has a quota cost of 100 units!
+>
 > So, essentially, you can only download 100 songs per day.
 
 
