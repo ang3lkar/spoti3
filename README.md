@@ -44,6 +44,6 @@ node spotify_to_mp3.js playlist_<playlist_name>.txt
 - [x] Handle quotas error.
 - [x] Dynamic file names based on the playlist name.
 - [x] How are quotas handled by Youtube Search API? It registers much more requests than expected.
+- [x] Resume from last track downloaded.
 - [ ] Move files under src folder.
 - [ ] Smooth API, run each function independently or all at once.
-- [ ] Resume from last track downloaded.
