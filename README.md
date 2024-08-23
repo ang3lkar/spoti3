@@ -24,10 +24,10 @@ npm install
 
 ```bash
 # Get the song names and artists from a Spotify playlist in to a playlist_<playlist_name>.txt
-node import_to_file.js <spotify_url>
+node src/import.js <spotify_url>
 
 # Download the songs from the file.txt
-node spotify_to_mp3.js playlist_<playlist_name>.txt
+node src/download.js playlist_<playlist_name>.txt
 ```
 
 ## Notes
@@ -45,5 +45,9 @@ node spotify_to_mp3.js playlist_<playlist_name>.txt
 - [x] Dynamic file names based on the playlist name.
 - [x] How are quotas handled by Youtube Search API? It registers much more requests than expected.
 - [x] Resume from last track downloaded.
-- [ ] Move files under src folder.
+- [x] Move files under src folder.
+- [ ] Avoid streaming
+- [ ] Import script should use username/password to retrieve token
 - [ ] Smooth API, run each function independently or all at once.
+- [ ] Add a way to download the songs in parallel.
+- [ ] Add a progress bar and colors.

@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { searchYouTube } from "./youtube_search.js";
+import { searchYouTube } from "./search.js";
 import { QuotaExceededError } from "./errors.js";
 
 const __filename = fileURLToPath(import.meta.url);
