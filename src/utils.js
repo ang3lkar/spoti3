@@ -21,3 +21,13 @@ export function titleToFriendlyName(title) {
 
   return result;
 }
+
+/**
+ * A function to delay the execution of a promise
+ *
+ * @param {*} ms The number of milliseconds to wait
+ * @returns
+ */
+export function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
