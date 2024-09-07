@@ -1,162 +1,120 @@
-import { execSync } from "child_process";
-import fs from "fs";
 import path from "path";
+import fs from "fs";
+import { getArrayFromFile, File } from "./utils/file.js";
 import { fileURLToPath } from "url";
-import { searchYouTube } from "./search.js";
-import { QuotaExceededError } from "./errors.js";
+import { dirname } from "path";
 
+// Get the filename of the current module
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
-// Function to download a track using yt-dlp
-function mp3(videoId) {
-	try {
-		const command = `yt-dlp --prefer-ffmpeg --ffmpeg-location /opt/homebrew/bin/ffmpeg --extract-audio --audio-format mp3 --audio-quality 0 --embed-thumbnail --no-check-certificate https://www.youtube.com/watch?v=${videoId}`;
-		execSync(command, { stdio: "inherit" });
-	} catch (error) {
-		console.error("Error downloading track:", error.message);
+// Get the directory name of the current module
+const __dirname = dirname(__filename);
+
+// Get the parent directory
+const parentDir = dirname(__dirname);
+
+const playlistsDir = path.join(parentDir, "playlists");
+const tmpFileName = path.join(parentDir, "playlists", "tmp.txt");
+
+function checkmark(track) {
+	return track.includes("✔️") ? "" : "✔️";
+}
+
+function lineWithCheckmark(track) {
+	return `${track} ${checkmark(track)}` + "\n";
+}
+
+function lineWithX(track) {
+	return `${track} X` + "\n";
+}
+
+class Progress {
+	constructor({ playlist }) {
+		this.playlist = playlist;
+    this.playlistPath = path.join(parentDir, "playlists", playlist);
+		this.tmpFile = new File(tmpFileName);
+	}
+
+	start() {
+		this.tmpFile.clear();
+	}
+
+	submit(line) {
+    console.log(line);
+		this.tmpFile.append(line);
+	}
+
+	complete() {
+		fs.renameSync(this.tmpFile.fileName, this.playlistPath);
 	}
 }
 
-// Function to search for a track and download it
-async function downloadTrack(track) {
-	if (!track) {
-		console.error("Missing track name");
-		return false;
-	}
+async function mockDownloadTrackList({ playlist, options }) {
+	const progress = new Progress({playlist});
+	progress.start();
 
-	if (track.includes("✔")) {
-		console.log("Track already downloaded");
-		return "SUCCESS";
-	}
-
-	try {
-		const searchResult = await searchYouTube(track);
-
-		if (!searchResult) {
-			return "NO_VIDEO_FOUND";
-		}
-
-		const videoId = searchResult.videoId;
-
-		console.log(`\nVideo ID: ${videoId}`);
-
-		const downloadsDir = path.join(__dirname, "downloads");
-
-		if (!fs.existsSync(downloadsDir)) {
-			fs.mkdirSync(downloadsDir);
-		}
-
-		process.chdir(downloadsDir);
-
-		// Call the mp3 function with the video ID
-		mp3(videoId);
-
-		return "SUCCESS";
-	} catch (error) {
-		if (error instanceof QuotaExceededError) {
-			throw error;
-		}
-
-		console.error("Error during track download:", error.message);
-		return "DOWNLOAD_ERROR";
-	}
-}
-
-// Function to download all tracks from a list in a file
-async function downloadTrackList(filePath) {
-	const tmpFilePath = path.join(__dirname, `tmp_${filePath}`);
-	const tmpFile = fs.createWriteStream(tmpFilePath);
-
-	// Read the file line by line
-	const lines = fs.readFileSync(filePath, "utf-8").split("\n").filter(Boolean);
+	// Read the file track by track
+	const fileTracks = getArrayFromFile(path.join(playlistsDir, playlist));
+  const tracks = fileTracks.filter(track => !track.includes("✔️") && !track.includes("X"));
 
 	let count = 0;
-	let total = lines.length;
+	let total = tracks.length;
 
-	console.log(`Playlist tracks: ${total}`);
+  if (total === 0) {
+    console.log("All tracks have been downloaded");
+    process.exit(1);
+  }
+
+	console.log(`Number of tracks: ${total}`);
 	console.log("---");
 
-	const restOfTracks = [...lines];
-	const downloadedTracks = [];
+	const succeededTracks = [];
 	const failedTracks = [];
+	const pendingTracks = [...tracks];
 
-	for (const line of lines) {
+	for (const track of tracks) {
 		count += 1;
-		console.log(`Downloading ${count}/${total} "${line}"`);
+		console.log(`Downloading ${count}/${total} "${track}"`);
 
 		try {
-			const result = await downloadTrack(line);
+			const result = "SUCCESS"; // mock
 
-			const index = restOfTracks.indexOf(line);
-			restOfTracks.splice(index, 1);
+			const index = pendingTracks.indexOf(track);
+
+			pendingTracks.splice(index, 1);
 
 			if (result === "SUCCESS") {
-				console.log(`${result}! ✔️`);
-
-				downloadedTracks.push(line);
-
-				tmpFile.write(`${line} ${line.includes("✔️") ? "" : "✔️"}\n`);
+				succeededTracks.push(track);
+				progress.submit(lineWithCheckmark(track));
 			} else {
-				console.log(`${result}! X`);
-
-				failedTracks.push(line);
-
-				tmpFile.write(`${line} X\n`);
+				failedTracks.push(track);
+				progress.submit(lineWithX(track));
 			}
 		} catch (err) {
-			if (err instanceof QuotaExceededError) {
-				console.error(
-					"Error occurred while searching YouTube: Request failed with status code 403."
-				);
-				console.error("Youtube daily quota exceeded. Exiting...");
+			console.error(err);
 
-				// bring back the rest of the tracks to download next time
-				restOfTracks.push(line);
-			}
-
-			// Write the rest of the tracks to the file
-			for (const track of restOfTracks) {
-				tmpFile.write(`${track}\n`);
-			}
-
-			tmpFile.end();
-
-			tmpFile.on("finish", () => {
-				// move to parent folder
-				process.chdir(__dirname);
-
-				// Replace the original file with the modified content
-				fs.renameSync(tmpFilePath, filePath);
-
-				console.log("fin! talk tomorrow!");
-
-				process.exit(1);
-			});
+			// bring current track back to pending to download next time
+			pendingTracks.push(track);
 		}
-		console.log("---");
+
+		// Write the rest of the tracks to the file
+		for (const track of pendingTracks) {
+			progress.submit(`${track}\n`);
+		}
 	}
 
-	tmpFile.end();
+	progress.complete();
 
-	tmpFile.on("finish", () => {
-		// move to parent folder
-		process.chdir(__dirname);
+	console.log("fin! talk tomorrow!");
 
-		// Replace the original file with the modified content
-		fs.renameSync(tmpFilePath, filePath);
-
-		console.log("fin!");
-
-		process.exit(1);
-	});
-}
-
-// Run the downloadList function with the provided argument
-if (process.argv.length < 3) {
-	console.error("Usage: node download.js playlist_<playlist>.txt");
 	process.exit(1);
 }
 
-const filename = process.argv[2];
-await downloadTrackList(filename);
+// Function to download all tracks from a list in a file
+export async function downloadTrackList({ playlist, options }) {
+	if (options.mock) {
+		await mockDownloadTrackList({ playlist, options });
+	} else {
+		await realDownloadTrackList({ playlist, options });
+	}
+}
