@@ -1,20 +1,7 @@
 import path from "path";
-import fs from "fs";
-import { getArrayFromFile, File } from "./utils/file.js";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
-
-// Get the filename of the current module
-const __filename = fileURLToPath(import.meta.url);
-
-// Get the directory name of the current module
-const __dirname = dirname(__filename);
-
-// Get the parent directory
-const parentDir = dirname(__dirname);
-
-const playlistsDir = path.join(parentDir, "playlists");
-const tmpFileName = path.join(parentDir, "playlists", "tmp.txt");
+import { getArrayFromFile } from "./utils/file.js";
+import { Progress } from "./utils/progress.js";
+import { PLAYLISTS_FOLDER } from "./constants.js";
 
 function checkmark(track) {
 	return track.includes("✔️") ? "" : "✔️";
@@ -28,42 +15,29 @@ function lineWithX(track) {
 	return `${track} X` + "\n";
 }
 
-class Progress {
-	constructor({ playlist }) {
-		this.playlist = playlist;
-    this.playlistPath = path.join(parentDir, "playlists", playlist);
-		this.tmpFile = new File(tmpFileName);
-	}
-
-	start() {
-		this.tmpFile.clear();
-	}
-
-	submit(line) {
-    console.log(line);
-		this.tmpFile.append(line);
-	}
-
-	complete() {
-		fs.renameSync(this.tmpFile.fileName, this.playlistPath);
-	}
+function nonDownloaded(track) {
+	return !track.includes("✔️") && !track.includes("X");
 }
 
 async function mockDownloadTrackList({ playlist, options }) {
-	const progress = new Progress({playlist});
+  const tmpFilePath = path.join(process.cwd(), PLAYLISTS_FOLDER, "tmp.txt");
+	const playlistFilePath = path.join(process.cwd(), PLAYLISTS_FOLDER, playlist);
+
+  const progress = new Progress({ tmpFilePath, playlistFilePath });
+
 	progress.start();
 
-	// Read the file track by track
-	const fileTracks = getArrayFromFile(path.join(playlistsDir, playlist));
-  const tracks = fileTracks.filter(track => !track.includes("✔️") && !track.includes("X"));
+	const tracks = getArrayFromFile(playlistFilePath).filter((track) =>
+		nonDownloaded(track)
+	);
 
 	let count = 0;
 	let total = tracks.length;
 
-  if (total === 0) {
-    console.log("All tracks have been downloaded");
-    process.exit(1);
-  }
+	if (total === 0) {
+		console.log("All tracks have been downloaded");
+		process.exit(1);
+	}
 
 	console.log(`Number of tracks: ${total}`);
 	console.log("---");
