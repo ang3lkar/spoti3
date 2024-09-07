@@ -1,8 +1,23 @@
-// a function that gets a title and converts it to a URL-friendly format
-export function titleToFriendlyName(title) {
-	// remove emojis
-	title = title.replace(/[\u{1F600}-\u{1F6FF}]/gu, "");
+function removeEmojis(text) {
+  return text.replace(/[\u{1F600}-\u{1F6FF}]/gu, "");
+}
 
-	// remove special characters
-	return title.replace(/\s/g, "_").toLowerCase();
+function removeSpecialCharacters(text) {
+  return text.replace(/[^\w\s]/gi, "");
+}
+
+/**
+ * Converts a video title to a friendly filename
+ *
+ * @param {*} title A string representing the title of a video
+ * @returns A string representing a friendly filename for the video
+ */
+export function titleToFriendlyName(title) {
+  const result = title;
+
+  result = removeEmojis(result);
+
+	result = removeSpecialCharacters(result);
+
+  return result;
 }
