@@ -45,7 +45,9 @@ node src/download.js playlist_<playlist_name>.txt
 - [x] Dynamic file names based on the playlist name.
 - [x] How are quotas handled by Youtube Search API? It registers much more requests than expected.
 - [x] Resume from last track downloaded.
-- [x] Move files under src folder.
+- [ ] Move files under src folder.
+- [ ] Use youtube-title-extractor (https://github.com/ang3lkar/youtube-track-title-extractor)
+- [ ] Handle SIGTERM and SIGINT signals.
 - [ ] Avoid streaming
 - [ ] Import script should use username/password to retrieve token
 - [ ] Smooth API, run each function independently or all at once.
