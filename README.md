@@ -48,7 +48,7 @@ node src/download.js playlist_<playlist_name>.txt
 - [x] Move files under src folder.
 - [ ] Use youtube-title-extractor (https://github.com/ang3lkar/youtube-track-title-extractor)
 - [ ] Handle SIGTERM and SIGINT signals.
-- [ ] Avoid streaming
+- [X] Avoid streaming
 - [ ] Import script should use username/password to retrieve token
 - [ ] Smooth API, run each function independently or all at once.
 - [ ] Add a way to download the songs in parallel.
