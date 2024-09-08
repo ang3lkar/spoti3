@@ -13,10 +13,9 @@ function removeSpecialCharacters(text) {
  * @returns A string representing a friendly filename for the video
  */
 export function titleToFriendlyName(title) {
-  const result = title;
+  let result = title;
 
   result = removeEmojis(result);
-
 	result = removeSpecialCharacters(result);
 
   return result;

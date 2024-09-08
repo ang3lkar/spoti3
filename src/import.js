@@ -3,9 +3,30 @@ import axios from "axios";
 import fs from "fs";
 import { titleToFriendlyName } from "./utils.js";
 
-const token = process.env.SPOTIFY_TOKEN;
+const tokenUrl = 'https://accounts.spotify.com/api/token';
 
-// Function to extract playlist ID from URL
+const clientId = process.env.SPOTIFY_CLIENT_ID;
+const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+
+async function getAccessToken() {
+  const authOptions = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': 'Basic ' + Buffer.from(`${clientId}:${clientSecret}`).toString('base64'),
+    },
+    data: 'grant_type=client_credentials', // Manually encoded body
+    url: tokenUrl,
+  };
+
+  try {
+    const response = await axios(authOptions);
+    return response.data.access_token;
+  } catch (error) {
+    console.error('Error getting access token', error);
+  }
+}
+
 function extractPlaylistId(url) {
 	const regex = /https?:\/\/open\.spotify\.com\/playlist\/([a-zA-Z0-9]+)/;
 	const match = url.match(regex);
@@ -16,12 +37,12 @@ function extractPlaylistId(url) {
 	}
 }
 
-async function getPlaylistDetails(playlistId) {
+async function getPlaylistDetails(accessToken, playlistId) {
 	let url = `https://api.spotify.com/v1/playlists/${playlistId}`;
 
 	const response = await axios.get(url, {
 		headers: {
-			Authorization: `Bearer ${token}`,
+			Authorization: `Bearer ${accessToken}`,
 		},
 	});
 
@@ -30,13 +51,13 @@ async function getPlaylistDetails(playlistId) {
 	};
 }
 
-async function getPlaylistTracks(playlistId) {
+async function getPlaylistTracks({accessToken, playlistId}) {
 	let tracks = [];
 	let url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
 
 	const response = await axios.get(url, {
 		headers: {
-			Authorization: `Bearer ${token}`,
+			Authorization: `Bearer ${accessToken}`,
 		},
 	});
 
@@ -60,35 +81,28 @@ function saveToTextFile(data, filename) {
 	console.log(`Playlist tracks saved to ${filename}`);
 }
 
-// Main function
-export async function importToFile() {
+export async function importToFile({playlistUrl}) {
 	try {
-		const playlistUrl = process.argv[2];
-		if (!playlistUrl) {
-			console.error(
-				"Please provide a Spotify playlist URL as a command line argument."
-			);
-			return;
-		}
-
 		const playlistId = extractPlaylistId(playlistUrl);
 
-		const playlistDetails = await getPlaylistDetails(playlistId);
+    const accessToken = await getAccessToken();
 
-		const outputFile = `playlist_${titleToFriendlyName(
+		const playlistDetails = await getPlaylistDetails(accessToken, playlistId);
+
+		const outputFile = `${titleToFriendlyName(
 			playlistDetails.name
 		)}.txt`;
 
-		const tracks = await getPlaylistTracks(playlistId);
+		const tracks = await getPlaylistTracks({accessToken, playlistId});
 
+		// TODO: Keep tracks original ordering so as to set the correct track number
+		// on the mp3 files
 		const sortedTracks = tracks.sort();
 
 		saveToTextFile(sortedTracks, outputFile);
 
 		return outputFile;
 	} catch (error) {
-		console.error("Error:", JSON.stringify(error));
+		console.error("Error:", error.message);
 	}
 }
-
-await importToFile();
