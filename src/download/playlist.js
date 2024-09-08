@@ -1,8 +1,5 @@
-import { QuotaExceededError } from "./errors.js";
+import { QuotaExceededError } from "../errors.js";
 import fs from "fs";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export async function realDownloadTrackList({playlist, options}) {
   const tmpFilePath = path.join(__dirname, `tmp_${filePath}`);

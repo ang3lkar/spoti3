@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { downloadTrackList } from "./download.js";
+import { downloadTrackList } from "./download/index.js";
 
 const program = new Command();
 
