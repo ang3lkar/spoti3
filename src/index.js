@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { downloadTrackList } from "./download/index.js";
+import { download } from "./download/index.js";
 
 const program = new Command();
 
@@ -13,7 +13,7 @@ program.command('mp3')
   .argument('<playlist>', 'the playlist file')
   .option('-m, --mock', 'do not download the files, just print the commands')
   .action(async (playlist, options) => {
-    await downloadTrackList({playlist, options});
+    await download({playlist, options});
   });
 
 program.parse();

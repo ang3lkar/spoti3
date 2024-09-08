@@ -1,4 +1,11 @@
-import { execSync } from "child_process";
+import { DOWNLOADS_FOLDER } from "../constants.js";
+import { QuotaExceededError } from "../errors.js";
+import { searchYouTube } from "../search.js";
+import fs from "fs";
+import path from "path";
+import { mp3 } from "../convert.js";
+
+const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
 // Function to search for a track and download it
 export async function downloadTrack(track) {
@@ -22,8 +29,6 @@ export async function downloadTrack(track) {
 		const videoId = searchResult.videoId;
 
 		console.log(`\nVideo ID: ${videoId}`);
-
-		const downloadsDir = path.join(__dirname, "downloads");
 
 		if (!fs.existsSync(downloadsDir)) {
 			fs.mkdirSync(downloadsDir);

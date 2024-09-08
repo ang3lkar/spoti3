@@ -2,22 +2,7 @@ import path from "path";
 import { getArrayFromFile } from "../utils/file.js";
 import { Progress } from "../utils/progress.js";
 import { PLAYLISTS_FOLDER } from "../constants.js";
-
-function checkmark(track) {
-	return track.includes("✔️") ? "" : "✔️";
-}
-
-function lineWithCheckmark(track) {
-	return `${track} ${checkmark(track)}` + "\n";
-}
-
-function lineWithX(track) {
-	return `${track} X` + "\n";
-}
-
-function nonDownloaded(track) {
-	return !track.includes("✔️") && !track.includes("X");
-}
+import { lineWithCheckmark, lineWithX, nonDownloaded } from "./helpers.js";
 
 export async function mockDownloadTrackList({ playlist, options }) {
 	const playlistFilePath = path.join(process.cwd(), PLAYLISTS_FOLDER, playlist);

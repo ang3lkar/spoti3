@@ -1,11 +1,11 @@
 import { mockDownloadTrackList } from "./mock.js";
-import { realDownloadTrackList } from "./playlist.js";
+import { downloadTrackList } from "./playlist.js";
 
 // Function to download all tracks from a list in a file
-export async function downloadTrackList({ playlist, options }) {
+export async function download({ playlist, options }) {
 	if (options.mock) {
 		await mockDownloadTrackList({ playlist, options });
 	} else {
-		await realDownloadTrackList({ playlist, options });
+		await downloadTrackList({ playlist, options });
 	}
 }

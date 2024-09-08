@@ -1,3 +1,5 @@
+import { execSync } from "child_process";
+
 // Function to download a track using yt-dlp
 export function mp3(videoId) {
 	try {

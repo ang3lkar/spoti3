@@ -1,45 +1,54 @@
+import { downloadTrack } from "./track.js";
+import { getArrayFromFile } from "../utils/file.js";
+import { lineWithCheckmark, lineWithX, nonDownloaded } from "./helpers.js";
+import { PLAYLISTS_FOLDER } from "../constants.js";
+import { Progress } from "../utils/progress.js";
 import { QuotaExceededError } from "../errors.js";
-import fs from "fs";
+import path from "path";
 
-export async function realDownloadTrackList({playlist, options}) {
-  const tmpFilePath = path.join(__dirname, `tmp_${filePath}`);
-	const tmpFile = fs.createWriteStream(tmpFilePath);
+export async function downloadTrackList({ playlist, options }) {
+	const playlistFilePath = path.join(process.cwd(), PLAYLISTS_FOLDER, playlist);
 
-	// Read the file line by line
-	const lines = fs.readFileSync(filePath, "utf-8").split("\n").filter(Boolean);
+  const progress = new Progress({ playlistFilePath });
+
+	progress.start();
+
+	const tracks = getArrayFromFile(playlistFilePath).filter((track) =>
+		nonDownloaded(track)
+	);
 
 	let count = 0;
-	let total = lines.length;
+	let total = tracks.length;
 
-	console.log(`Playlist tracks: ${total}`);
+	if (total === 0) {
+		console.log("All tracks have been downloaded");
+		process.exit(1);
+	}
+
+	console.log(`Number of tracks: ${total}`);
 	console.log("---");
 
-	const restOfTracks = [...lines];
-	const downloadedTracks = [];
+	const succeededTracks = [];
 	const failedTracks = [];
+	const pendingTracks = [...tracks];
 
-	for (const line of lines) {
+	for (const track of tracks) {
 		count += 1;
-		console.log(`Downloading ${count}/${total} "${line}"`);
+		console.log(`Downloading ${count}/${total} "${track}"`);
 
 		try {
-			const result = await downloadTrack(line);
+			const result = await downloadTrack(track);
 
-			const index = restOfTracks.indexOf(line);
-			restOfTracks.splice(index, 1);
+			const index = pendingTracks.indexOf(track);
+
+			pendingTracks.splice(index, 1);
 
 			if (result === "SUCCESS") {
-				console.log(`${result}! ✔️`);
-
-				downloadedTracks.push(line);
-
-				tmpFile.write(`${line} ${line.includes("✔️") ? "" : "✔️"}\n`);
+				succeededTracks.push(track);
+				progress.submit(lineWithCheckmark(track));
 			} else {
-				console.log(`${result}! X`);
-
-				failedTracks.push(line);
-
-				tmpFile.write(`${line} X\n`);
+				failedTracks.push(track);
+				progress.submit(lineWithX(track));
 			}
 		} catch (err) {
 			if (err instanceof QuotaExceededError) {
@@ -47,44 +56,23 @@ export async function realDownloadTrackList({playlist, options}) {
 					"Error occurred while searching YouTube: Request failed with status code 403."
 				);
 				console.error("Youtube daily quota exceeded. Exiting...");
-
-				// bring back the rest of the tracks to download next time
-				restOfTracks.push(line);
 			}
 
-			// Write the rest of the tracks to the file
-			for (const track of restOfTracks) {
-				tmpFile.write(`${track}\n`);
-			}
-
-			tmpFile.end();
-
-			tmpFile.on("finish", () => {
-				// move to parent folder
-				process.chdir(__dirname);
-
-				// Replace the original file with the modified content
-				fs.renameSync(tmpFilePath, filePath);
-
-				console.log("fin! talk tomorrow!");
-
-				process.exit(1);
-			});
+			console.error(err);
+			// bring current track back to pending to download next time
+			pendingTracks.push(track);
 		}
-		console.log("---");
+
+		// Write the rest of the tracks to the file
+		for (const track of pendingTracks) {
+			progress.submit(`${track}\n`);
+		}
 	}
 
-	tmpFile.end();
+	progress.complete();
 
-	tmpFile.on("finish", () => {
-		// move to parent folder
-		process.chdir(__dirname);
+	console.log("fin! talk tomorrow!");
 
-		// Replace the original file with the modified content
-		fs.renameSync(tmpFilePath, filePath);
-
-		console.log("fin!");
-
-		process.exit(1);
-	});
+	process.exit(1);
 }
+
