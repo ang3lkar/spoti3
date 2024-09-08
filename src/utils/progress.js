@@ -1,9 +1,11 @@
 import fs from "fs";
+import path from "path";
 import { File } from "./file.js";
+import { PLAYLISTS_FOLDER } from "../constants.js";
 
 export class Progress {
-	constructor({ tmpFilePath, playlistFilePath }) {
-    this.tmpFilePath = tmpFilePath;
+	constructor({ playlistFilePath }) {
+    this.tmpFilePath = path.join(process.cwd(), PLAYLISTS_FOLDER, "tmp.txt");
     this.playlistPath = playlistFilePath
 		this.tmpFile = new File(this.tmpFilePath);
 	}

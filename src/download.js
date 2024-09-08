@@ -20,10 +20,9 @@ function nonDownloaded(track) {
 }
 
 async function mockDownloadTrackList({ playlist, options }) {
-  const tmpFilePath = path.join(process.cwd(), PLAYLISTS_FOLDER, "tmp.txt");
 	const playlistFilePath = path.join(process.cwd(), PLAYLISTS_FOLDER, playlist);
 
-  const progress = new Progress({ tmpFilePath, playlistFilePath });
+  const progress = new Progress({ playlistFilePath });
 
 	progress.start();
 

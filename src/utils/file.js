@@ -10,10 +10,6 @@ export function getArrayFromFile(filePath) {
   return fs.readFileSync(filePath, "utf-8").split("\n").filter(Boolean);
 }
 
-export function currentFilename() {
-  return fileURLToPath(import.meta.url);
-}
-
 export class File {
   constructor(fileName) {
     this.fileName = fileName;
