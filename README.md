@@ -4,8 +4,8 @@ This is a simple script that allows you to download songs from Spotify to mp3 fo
 
 It combines several scripts to achieve this:
 
-- `import_to_file.js` to get the song names and artist from a Spotify playlist URL
-- `youtube_search.js` to search for the song in YouTube
+- `import.js` to get the song names and artist from a Spotify playlist URL
+- `search.js` to search for the song in YouTube using the YouTube API
 - `yt-dlp` to download the song from YouTube
 
 ## Requirements
@@ -23,11 +23,11 @@ npm install
 ## Usage
 
 ```bash
-# Get the song names and artists from a Spotify playlist in to a playlist_<playlist_name>.txt
+# Get the song names and artists from a Spotify playlist in to a <playlist_name>.txt
 node src/import.js <spotify_url>
 
-# Download the songs from the file.txt
-node src/download.js playlist_<playlist_name>.txt
+# Download the songs in mp3 format from the <playlist>.txt
+node src/index.js mp3 <playlist_name>.txt
 ```
 
 ## Notes
