@@ -46,9 +46,10 @@ node src/download.js playlist_<playlist_name>.txt
 - [x] How are quotas handled by Youtube Search API? It registers much more requests than expected.
 - [x] Resume from last track downloaded.
 - [x] Move files under src folder.
-- [ ] Use youtube-title-extractor (https://github.com/ang3lkar/youtube-track-title-extractor)
-- [ ] Handle SIGTERM and SIGINT signals.
 - [X] Avoid streaming
+- [ ] Use youtube-title-extractor (https://github.com/ang3lkar/youtube-track-title-extractor)
+- [ ] Remove youtube ids from the file
+- [ ] Handle SIGTERM and SIGINT signals.
 - [ ] Import script should use username/password to retrieve token
 - [ ] Smooth API, run each function independently or all at once.
 - [ ] Add a way to download the songs in parallel.
