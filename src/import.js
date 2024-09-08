@@ -2,6 +2,7 @@ import "dotenv/config";
 import axios from "axios";
 import fs from "fs";
 import { titleToFriendlyName } from "./utils.js";
+import { PLAYLISTS_FOLDER } from "./constants.js";
 
 const tokenUrl = 'https://accounts.spotify.com/api/token';
 
@@ -89,7 +90,7 @@ export async function importToFile({playlistUrl}) {
 
 		const playlistDetails = await getPlaylistDetails(accessToken, playlistId);
 
-		const outputFile = `${titleToFriendlyName(
+		const outputFile = `${PLAYLISTS_FOLDER}/${titleToFriendlyName(
 			playlistDetails.name
 		)}.txt`;
 
