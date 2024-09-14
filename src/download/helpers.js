@@ -10,6 +10,6 @@ export function lineWithX(track) {
 	return `${track} X` + "\n";
 }
 
-export function nonDownloaded(track) {
-	return !track.includes("✔️") && !track.includes("X");
+export function hasBeenAttempted(track) {
+	return track.includes("✔️") || track.includes("X");
 }

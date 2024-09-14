@@ -1,4 +1,7 @@
 import fs from "fs";
+import path from "path";
+
+import { PLAYLISTS_FOLDER } from "../constants.js";
 
 /**
  * A function to get an array of strings from a file
@@ -10,18 +13,21 @@ export function getArrayFromFile(filePath) {
   return fs.readFileSync(filePath, "utf-8").split("\n").filter(Boolean);
 }
 
+export function getTmpFilePath() {
+	return path.join(process.cwd(), PLAYLISTS_FOLDER, "tmp.txt");
+}
+
 export class File {
   constructor(fileName) {
     this.fileName = fileName;
   }
 
-  // Clear the file before writing
   clear() {
     fs.writeFileSync(this.fileName, "");
   }
 
   append(line) {
-    fs.writeFileSync(this.fileName, `${line}\n`, { flag: "a" });
+    fs.writeFileSync(this.fileName, line, { flag: "a" });
   }
 }
 

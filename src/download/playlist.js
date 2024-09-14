@@ -1,6 +1,6 @@
 import { downloadTrack } from "./track.js";
 import { getArrayFromFile } from "../utils/file.js";
-import { lineWithCheckmark, lineWithX, nonDownloaded } from "./helpers.js";
+import { lineWithCheckmark, lineWithX, hasBeenAttempted } from "./helpers.js";
 import { PLAYLISTS_FOLDER } from "../constants.js";
 import { Progress } from "../utils/progress.js";
 import { QuotaExceededError } from "../errors.js";
@@ -14,7 +14,7 @@ export async function downloadTrackList({ playlist, options }) {
 	progress.start();
 
 	const tracks = getArrayFromFile(playlistFilePath).filter((track) =>
-		nonDownloaded(track)
+		!hasBeenAttempted(track)
 	);
 
 	let count = 0;
@@ -61,11 +61,11 @@ export async function downloadTrackList({ playlist, options }) {
 			console.error(err);
 			// bring current track back to pending to download next time
 			pendingTracks.push(track);
-		}
 
-		// Write the rest of the tracks to the file
-		for (const track of pendingTracks) {
-			progress.submit(`${track}\n`);
+			// Write the rest of the tracks to the file
+			for (const track of pendingTracks) {
+				progress.submit(`${track}\n`);
+			}
 		}
 	}
 
