@@ -1,15 +1,17 @@
-function checkmark(track) {
-	return track.includes("✔️") ? "" : "✔️";
+import {checkMark, failMark} from "../constants.js"
+
+function applyCheckmark(track) {
+	return track.includes(checkMark) ? "" : checkMark;
 }
 
 export function lineWithCheckmark(track) {
-	return `${track} ${checkmark(track)}` + "\n";
+	return `${track} ${applyCheckmark(track)}` + "\n";
 }
 
 export function lineWithX(track) {
-	return `${track} X` + "\n";
+	return `${track} ${failMark}` + "\n";
 }
 
 export function hasBeenAttempted(track) {
-	return track.includes("✔️") || track.includes("X");
+	return track.includes(checkMark) || track.includes(failMark);
 }

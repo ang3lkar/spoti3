@@ -1,4 +1,4 @@
-import { DOWNLOADS_FOLDER } from "../constants.js";
+import { DOWNLOADS_FOLDER, checkMark } from "../constants.js";
 import { QuotaExceededError } from "../errors.js";
 import { searchYouTube } from "../search.js";
 import fs from "fs";
@@ -14,7 +14,7 @@ export async function downloadTrack({track, options}) {
 		return false;
 	}
 
-	if (track.includes("✔")) {
+	if (track.includes(checkMark)) {
 		console.log("Track already downloaded");
 		return "SUCCESS";
 	}

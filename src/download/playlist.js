@@ -5,11 +5,16 @@ import { PLAYLISTS_FOLDER } from "../constants.js";
 import { Progress } from "../utils/progress.js";
 import { QuotaExceededError } from "../errors.js";
 import path from "path";
+import {consola} from "consola";
 
 export async function downloadTrackList({ playlist, options }) {
 	const playlistFilePath = path.join(process.cwd(), PLAYLISTS_FOLDER, playlist);
 
   const progress = new Progress({ playlistFilePath });
+
+	if (options.mock) {
+		consola.warn('Mock mode enabled. In this mode app will not search and download files to avoid reaching Youtube quotas.')
+	}
 
 	progress.start();
 
@@ -21,12 +26,20 @@ export async function downloadTrackList({ playlist, options }) {
 	let total = tracks.length;
 
 	if (total === 0) {
-		console.log("All tracks have been downloaded");
+		consola.success("All tracks have been downloaded!");
 		process.exit(1);
 	}
 
-	console.log(`Number of tracks: ${total}`);
-	console.log("---");
+	const proceed = await consola.prompt(`Download ${total} tracks from ${playlist} playlist?`, {
+		type: "confirm",
+	});
+
+	if (!proceed) {
+		console.log("bye bye!");
+		process.exit(1);
+	}
+
+	consola.start('Downloading playlist...');
 
 	const succeededTracks = [];
 	const failedTracks = [];
@@ -58,7 +71,8 @@ export async function downloadTrackList({ playlist, options }) {
 				console.error("Youtube daily quota exceeded. Exiting...");
 			}
 
-			console.error(err);
+			consola.error(err);
+
 			// bring current track back to pending to download next time
 			pendingTracks.push(track);
 

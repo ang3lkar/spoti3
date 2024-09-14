@@ -1,5 +1,6 @@
 import fs from "fs";
 import { getTmpFilePath, File } from "./file.js";
+import { consola } from "consola";
 
 export class Progress {
 	constructor({ playlistFilePath }) {
@@ -13,11 +14,13 @@ export class Progress {
 	}
 
 	submit(line) {
-    console.log(line);
 		this.tmpFile.append(line);
 	}
 
 	complete() {
 		fs.renameSync(this.tmpFilePath, this.playlistPath);
+
+		const results = fs.readFileSync(this.playlistPath).toString();
+		consola.box(results);
 	}
 }

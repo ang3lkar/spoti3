@@ -13,6 +13,7 @@
   "dependencies": {
     "axios": "1.7.4",
     "commander": "12.1.0",
+    "consola": "3.2.3",
     "dotenv": "16.4.5",
     "youtube-track-title-extractor": "1.1.0"
   }
