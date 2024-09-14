@@ -4,8 +4,8 @@ import { consola } from "consola";
 
 export class Progress {
 	constructor({ playlistFilePath }) {
-    this.tmpFilePath = getTmpFilePath();
-    this.playlistPath = playlistFilePath
+		this.tmpFilePath = getTmpFilePath();
+		this.playlistPath = playlistFilePath;
 		this.tmpFile = new File(this.tmpFilePath);
 	}
 

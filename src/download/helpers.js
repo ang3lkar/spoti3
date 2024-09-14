@@ -1,4 +1,4 @@
-import {checkMark, failMark} from "../constants.js"
+import { checkMark, failMark } from "../constants.js";
 
 function applyCheckmark(track) {
 	return track.includes(checkMark) ? "" : checkMark;

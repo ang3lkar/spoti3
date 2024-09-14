@@ -10,7 +10,7 @@ import { PLAYLISTS_FOLDER } from "../constants.js";
  * @returns An array of strings representing the lines in the file
  */
 export function getArrayFromFile(filePath) {
-  return fs.readFileSync(filePath, "utf-8").split("\n").filter(Boolean);
+	return fs.readFileSync(filePath, "utf-8").split("\n").filter(Boolean);
 }
 
 export function getTmpFilePath() {
@@ -18,16 +18,15 @@ export function getTmpFilePath() {
 }
 
 export class File {
-  constructor(fileName) {
-    this.fileName = fileName;
-  }
+	constructor(fileName) {
+		this.fileName = fileName;
+	}
 
-  clear() {
-    fs.writeFileSync(this.fileName, "");
-  }
+	clear() {
+		fs.writeFileSync(this.fileName, "");
+	}
 
-  append(line) {
-    fs.writeFileSync(this.fileName, line, { flag: "a" });
-  }
+	append(line) {
+		fs.writeFileSync(this.fileName, line, { flag: "a" });
+	}
 }
-

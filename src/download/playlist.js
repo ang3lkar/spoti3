@@ -5,7 +5,7 @@ import { PLAYLISTS_FOLDER } from "../constants.js";
 import { Progress } from "../utils/progress.js";
 import { QuotaExceededError } from "../errors.js";
 import path from "path";
-import {consola} from "consola";
+import { consola } from "consola";
 
 export async function downloadTrackList({ playlist, options }) {
 	let count = 0;
@@ -13,16 +13,18 @@ export async function downloadTrackList({ playlist, options }) {
 
 	const playlistFilePath = path.join(process.cwd(), PLAYLISTS_FOLDER, playlist);
 
-  const progress = new Progress({ playlistFilePath });
+	const progress = new Progress({ playlistFilePath });
 
 	if (options.mock) {
-		consola.warn('Mock mode enabled. In this mode app will not search and download files to avoid reaching Youtube quotas.')
+		consola.warn(
+			"Mock mode enabled. In this mode app will not search and download files to avoid reaching Youtube quotas.",
+		);
 	}
 
 	progress.start();
 
-	const tracks = getArrayFromFile(playlistFilePath).filter((track) =>
-		!hasBeenAttempted(track)
+	const tracks = getArrayFromFile(playlistFilePath).filter(
+		(track) => !hasBeenAttempted(track),
 	);
 
 	let total = tracks.length;
@@ -32,24 +34,27 @@ export async function downloadTrackList({ playlist, options }) {
 		process.exit(1);
 	}
 
-	const proceed = await consola.prompt(`Download ${total} tracks from ${playlist} playlist?`, {
-		type: "confirm",
-	});
+	const proceed = await consola.prompt(
+		`Download ${total} tracks from ${playlist} playlist?`,
+		{
+			type: "confirm",
+		},
+	);
 
 	if (!proceed) {
 		console.log("bye bye!");
 		process.exit(1);
 	}
 
-	consola.start('Downloading playlist...');
+	consola.start("Downloading playlist...");
 
 	const succeededTracks = [];
 	const failedTracks = [];
 	const pendingTracks = [...tracks];
 
 	// Handle Ctrl+C (SIGINT)
-	process.on('SIGINT', () => {
-		console.log('\nCaught interrupt signal (Ctrl+C), cleaning up...');
+	process.on("SIGINT", () => {
+		console.log("\nCaught interrupt signal (Ctrl+C), cleaning up...");
 
 		// bring current track back to pending to download next time
 		pendingTracks.push(currentTrack);
@@ -71,7 +76,7 @@ export async function downloadTrackList({ playlist, options }) {
 		console.log(`Downloading ${count}/${total} "${track}"`);
 
 		try {
-			const result = await downloadTrack({track, options});
+			const result = await downloadTrack({ track, options });
 
 			const index = pendingTracks.indexOf(track);
 
@@ -87,7 +92,7 @@ export async function downloadTrackList({ playlist, options }) {
 		} catch (err) {
 			if (err instanceof QuotaExceededError) {
 				console.error(
-					"Error occurred while searching YouTube: Request failed with status code 403."
+					"Error occurred while searching YouTube: Request failed with status code 403.",
 				);
 				console.error("Youtube daily quota exceeded. Exiting...");
 			}
@@ -108,4 +113,3 @@ export async function downloadTrackList({ playlist, options }) {
 
 	process.exit();
 }
-

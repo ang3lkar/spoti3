@@ -1,27 +1,29 @@
-import { Command } from 'commander';
+import { Command } from "commander";
 import { download } from "./download/index.js";
 import { importToFile } from "./import.js";
 
 const program = new Command();
 
 program
-  .name('fox')
-  .description('CLI to download music from YouTube')
-  .version('0.0.0');
+	.name("fox")
+	.description("CLI to download music from YouTube")
+	.version("0.0.0");
 
-program.command('import')
-  .description('Imports a playlist from Spotify')
-  .argument('<playlist>', 'the Spotify playlist URL')
-  .action(async (playlistUrl) => {
-    await importToFile({playlistUrl});
-  });
+program
+	.command("import")
+	.description("Imports a playlist from Spotify")
+	.argument("<playlist>", "the Spotify playlist URL")
+	.action(async (playlistUrl) => {
+		await importToFile({ playlistUrl });
+	});
 
-program.command('mp3')
-  .description('Downloads a tracklist into mp3 files from YouTube')
-  .argument('<playlist>', 'the playlist file')
-  .option('-m, --mock', 'do not download the files, just print the commands')
-  .action(async (playlist, options) => {
-    await download({playlist, options});
-  });
+program
+	.command("mp3")
+	.description("Downloads a tracklist into mp3 files from YouTube")
+	.argument("<playlist>", "the playlist file")
+	.option("-m, --mock", "do not download the files, just print the commands")
+	.action(async (playlist, options) => {
+		await download({ playlist, options });
+	});
 
 program.parse();

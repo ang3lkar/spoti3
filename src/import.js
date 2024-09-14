@@ -4,28 +4,30 @@ import fs from "fs";
 import { titleToFriendlyName } from "./utils.js";
 import { PLAYLISTS_FOLDER } from "./constants.js";
 
-const tokenUrl = 'https://accounts.spotify.com/api/token';
+const tokenUrl = "https://accounts.spotify.com/api/token";
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
 async function getAccessToken() {
-  const authOptions = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Basic ' + Buffer.from(`${clientId}:${clientSecret}`).toString('base64'),
-    },
-    data: 'grant_type=client_credentials', // Manually encoded body
-    url: tokenUrl,
-  };
+	const authOptions = {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/x-www-form-urlencoded",
+			Authorization:
+				"Basic " +
+				Buffer.from(`${clientId}:${clientSecret}`).toString("base64"),
+		},
+		data: "grant_type=client_credentials", // Manually encoded body
+		url: tokenUrl,
+	};
 
-  try {
-    const response = await axios(authOptions);
-    return response.data.access_token;
-  } catch (error) {
-    console.error('Error getting access token', error);
-  }
+	try {
+		const response = await axios(authOptions);
+		return response.data.access_token;
+	} catch (error) {
+		console.error("Error getting access token", error);
+	}
 }
 
 function extractPlaylistId(url) {
@@ -52,7 +54,7 @@ async function getPlaylistDetails(accessToken, playlistId) {
 	};
 }
 
-async function getPlaylistTracks({accessToken, playlistId}) {
+async function getPlaylistTracks({ accessToken, playlistId }) {
 	let tracks = [];
 	let url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
 
@@ -82,19 +84,19 @@ function saveToTextFile(data, filename) {
 	console.log(`Playlist tracks saved to ${filename}`);
 }
 
-export async function importToFile({playlistUrl}) {
+export async function importToFile({ playlistUrl }) {
 	try {
 		const playlistId = extractPlaylistId(playlistUrl);
 
-    const accessToken = await getAccessToken();
+		const accessToken = await getAccessToken();
 
 		const playlistDetails = await getPlaylistDetails(accessToken, playlistId);
 
 		const outputFile = `${PLAYLISTS_FOLDER}/${titleToFriendlyName(
-			playlistDetails.name
+			playlistDetails.name,
 		)}.txt`;
 
-		const tracks = await getPlaylistTracks({accessToken, playlistId});
+		const tracks = await getPlaylistTracks({ accessToken, playlistId });
 
 		// TODO: Keep tracks original ordering so as to set the correct track number
 		// on the mp3 files

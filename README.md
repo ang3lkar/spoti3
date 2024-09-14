@@ -37,7 +37,6 @@ node src/index.js mp3 <playlist_name>.txt
 >
 > So, essentially, you can only download 100 songs per day.
 
-
 ## Pending
 
 - [x] dotenv for API keys.

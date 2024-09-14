@@ -9,7 +9,7 @@ import { delay } from "../utils.js";
 const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
 // Function to search for a track and download it
-export async function downloadTrack({track, options}) {
+export async function downloadTrack({ track, options }) {
 	if (!track) {
 		console.error("Missing track name");
 		return false;
