@@ -20,6 +20,7 @@ export async function downloadTrack({track, options}) {
 	}
 
 	if (options.mock) {
+		console.log(`'${track}' downloaded`);
 		return "SUCCESS";
 	}
 
@@ -32,16 +33,13 @@ export async function downloadTrack({track, options}) {
 
 		const videoId = searchResult.videoId;
 
-		console.log(`\nVideo ID: ${videoId}`);
-
 		if (!fs.existsSync(downloadsDir)) {
 			fs.mkdirSync(downloadsDir);
 		}
 
 		process.chdir(downloadsDir);
 
-		// Call the mp3 function with the video ID
-		mp3(videoId);
+		mp3(track, videoId);
 
 		return "SUCCESS";
 	} catch (error) {
