@@ -8,6 +8,9 @@ import path from "path";
 import {consola} from "consola";
 
 export async function downloadTrackList({ playlist, options }) {
+	let count = 0;
+	let currentTrack;
+
 	const playlistFilePath = path.join(process.cwd(), PLAYLISTS_FOLDER, playlist);
 
   const progress = new Progress({ playlistFilePath });
@@ -22,7 +25,6 @@ export async function downloadTrackList({ playlist, options }) {
 		!hasBeenAttempted(track)
 	);
 
-	let count = 0;
 	let total = tracks.length;
 
 	if (total === 0) {
@@ -45,8 +47,27 @@ export async function downloadTrackList({ playlist, options }) {
 	const failedTracks = [];
 	const pendingTracks = [...tracks];
 
+	// Handle Ctrl+C (SIGINT)
+	process.on('SIGINT', () => {
+		console.log('\nCaught interrupt signal (Ctrl+C), cleaning up...');
+
+		// bring current track back to pending to download next time
+		pendingTracks.push(currentTrack);
+
+		// Write the rest of the tracks to the file
+		for (const track of pendingTracks) {
+			progress.submit(`${track}\n`);
+		}
+
+		progress.complete();
+
+		// After cleanup, exit the process
+		process.exit();
+	});
+
 	for (const track of tracks) {
 		count += 1;
+		currentTrack = track;
 		console.log(`Downloading ${count}/${total} "${track}"`);
 
 		try {
@@ -85,8 +106,6 @@ export async function downloadTrackList({ playlist, options }) {
 
 	progress.complete();
 
-	console.log("fin! talk tomorrow!");
-
-	process.exit(1);
+	process.exit();
 }
 

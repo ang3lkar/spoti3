@@ -50,7 +50,7 @@ node src/index.js mp3 <playlist_name>.txt
 - [x] Import script should use username/password to retrieve token
 - [x] Use Spotify track name instead of YouTube's
 - [x] Remove youtube ids from the file
-- [ ] Handle SIGTERM and SIGINT signals.
+- [x] Handle SIGTERM and SIGINT signals.
 - [ ] Smooth API, run each function independently or all at once.
 - [ ] Add a way to download the songs in parallel.
 - [ ] Add a progress bar and colors.
