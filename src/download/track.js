@@ -4,6 +4,7 @@ import { searchYouTube } from "../search.js";
 import fs from "fs";
 import path from "path";
 import { mp3 } from "../convert.js";
+import { delay } from "../utils.js";
 
 const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
@@ -15,12 +16,12 @@ export async function downloadTrack({track, options}) {
 	}
 
 	if (track.includes(checkMark)) {
-		console.log("Track already downloaded");
+		console.log(`'${track}' already downloaded`);
 		return "SUCCESS";
 	}
 
 	if (options.mock) {
-		console.log(`'${track}' downloaded`);
+		await delay(1000);
 		return "SUCCESS";
 	}
 
