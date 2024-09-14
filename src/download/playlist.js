@@ -37,7 +37,7 @@ export async function downloadTrackList({ playlist, options }) {
 		console.log(`Downloading ${count}/${total} "${track}"`);
 
 		try {
-			const result = await downloadTrack(track);
+			const result = await downloadTrack({track, options});
 
 			const index = pendingTracks.indexOf(track);
 

@@ -8,7 +8,7 @@ import { mp3 } from "../convert.js";
 const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
 // Function to search for a track and download it
-export async function downloadTrack(track) {
+export async function downloadTrack({track, options}) {
 	if (!track) {
 		console.error("Missing track name");
 		return false;
@@ -16,6 +16,10 @@ export async function downloadTrack(track) {
 
 	if (track.includes("✔")) {
 		console.log("Track already downloaded");
+		return "SUCCESS";
+	}
+
+	if (options.mock) {
 		return "SUCCESS";
 	}
 
