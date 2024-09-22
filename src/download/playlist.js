@@ -1,19 +1,11 @@
 import { downloadTrack } from "./track.js";
-import { getArrayFromFile } from "../utils/file.js";
-import { lineWithCheckmark, lineWithX, hasBeenAttempted } from "./helpers.js";
-import { PLAYLISTS_FOLDER } from "../constants.js";
-import { Progress } from "../utils/progress.js";
+import { lineWithCheckmark, lineWithX } from "./helpers.js";
 import { QuotaExceededError } from "../errors.js";
-import path from "path";
 import { consola } from "consola";
 
-export async function downloadTrackList({ playlist, options }) {
+export async function downloadTrackList({ tracks, progress, options }) {
 	let count = 0;
 	let currentTrack;
-
-	const playlistFilePath = path.join(process.cwd(), PLAYLISTS_FOLDER, playlist);
-
-	const progress = new Progress({ playlistFilePath });
 
 	if (options.mock) {
 		consola.warn(
@@ -23,26 +15,10 @@ export async function downloadTrackList({ playlist, options }) {
 
 	progress.start();
 
-	const tracks = getArrayFromFile(playlistFilePath).filter(
-		(track) => !hasBeenAttempted(track),
-	);
-
 	let total = tracks.length;
 
 	if (total === 0) {
 		consola.success("All tracks have been downloaded!");
-		process.exit(1);
-	}
-
-	const proceed = await consola.prompt(
-		`Download ${total} tracks from ${playlist} playlist?`,
-		{
-			type: "confirm",
-		},
-	);
-
-	if (!proceed) {
-		console.log("bye bye!");
 		process.exit(1);
 	}
 
