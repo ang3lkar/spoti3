@@ -82,7 +82,7 @@ export async function downloadTrackList({ playlist, options }) {
 
 			pendingTracks.splice(index, 1);
 
-			if (result === "SUCCESS") {
+			if (result.outcome === "SUCCESS") {
 				succeededTracks.push(track);
 				progress.submit(lineWithCheckmark(track));
 			} else {

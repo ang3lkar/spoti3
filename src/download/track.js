@@ -12,24 +12,24 @@ const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 export async function downloadTrack({ track, options }) {
 	if (!track) {
 		console.error("Missing track name");
-		return false;
+		return { outcome: "MISSING_TRACK" };
 	}
 
 	if (track.includes(checkMark)) {
 		console.log(`'${track}' already downloaded`);
-		return "SUCCESS";
+		return { outcome: "SUCCESS" };
 	}
 
 	if (options.mock) {
-		await delay(1000);
-		return "SUCCESS";
+		await delay(300);
+		return { outcome: "SUCCESS" };
 	}
 
 	try {
 		const searchResult = await searchYouTube(track);
 
 		if (!searchResult) {
-			return "NO_VIDEO_FOUND";
+			return { outcome: "NO_VIDEO_FOUND" };
 		}
 
 		const videoId = searchResult.videoId;
@@ -42,13 +42,13 @@ export async function downloadTrack({ track, options }) {
 
 		mp3(track, videoId);
 
-		return "SUCCESS";
+		return { outcome: "SUCCESS", mp3File: `${downloadsDir}/${track}` };
 	} catch (error) {
 		if (error instanceof QuotaExceededError) {
 			throw error;
 		}
 
 		console.error("Error during track download:", error.message);
-		return "DOWNLOAD_ERROR";
+		return { outcome: "DOWNLOAD_ERROR" };
 	}
 }
