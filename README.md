@@ -1,11 +1,11 @@
-# Spotify to Mp3
+# Spoti3
 
 This is a simple script that allows you to download songs from Spotify to mp3 format.
 
-It combines several scripts to achieve this:
+It combines several APIs to achieve this:
 
-- `import.js` to get the song names and artist from a Spotify playlist URL
-- `search.js` to search for the song in YouTube using the YouTube API
+- The Spotify playlist API, to get the contents of a playlist URL.
+- The Youtube Search API to search for the song
 - `yt-dlp` to download the song from YouTube
 
 ## Requirements
@@ -13,11 +13,21 @@ It combines several scripts to achieve this:
 The project assumes you already have `yt-dlp` and `ffmpeg` installed in your system.
 
 - Node.js
+- A Spotify developer account
+- A Youtube developer account
 
 ## Installation
 
 ```bash
 npm install
+```
+
+Setup your developer keys:
+
+```
+SPOTIFY_CLIENT_ID=
+SPOTIFY_CLIENT_SECRET=
+YOUTUBE_API_KEY=
 ```
 
 ## Usage
@@ -33,7 +43,7 @@ node src/index.js mp3 <playlist_name>.txt
 ## Notes
 
 > [!WARNING]
-> Beware of quotas and limits, especially from Youtube API, as it allows only 10_000 requests per day. Youtube search API has an increased quota impact: A call to this method has a quota cost of 100 units!
+> Beware of quotas and limits, especially for Youtube API, which has an increased quota impact: A call to this method has a quota cost of 100 units!
 >
 > So, essentially, you can only download 100 songs per day.
 
@@ -50,6 +60,9 @@ node src/index.js mp3 <playlist_name>.txt
 - [x] Use Spotify track name instead of YouTube's
 - [x] Remove youtube ids from the file
 - [x] Handle SIGTERM and SIGINT signals.
+- [ ] Set up logging (with debug)
+- [ ] Apply mp3 tag after download
+- [ ] Add cli option for playlist's tag
 - [ ] Smooth API, run each function independently or all at once.
 - [ ] Add a way to download the songs in parallel.
 - [ ] Add a progress bar and colors.
