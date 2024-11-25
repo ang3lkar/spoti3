@@ -1,35 +1,67 @@
 import { downloadTrackList } from "./playlist.js";
-import { PLAYLISTS_FOLDER } from "../constants.js";
-import path from 'path';
-import { Progress } from '../utils/progress.js';
+import path from "path";
+import { Progress } from "../utils/progress.js";
 import { getArrayFromFile } from "../utils/file.js";
 import { hasBeenAttempted } from "./helpers.js";
 import { consola } from "consola";
+import { saveToFile } from "../import.js";
+import {
+  fetchAccessToken,
+  fetchPlaylistDetails,
+  fetchPlaylistTracks,
+} from "../gateway/spotify.js";
+import { extractPlaylistId } from "../utils/basic.js";
 
-async function askToProceed(tracks, playlist) {
-	const proceed = await consola.prompt(
-		`Download ${tracks.length} remaining tracks from ${playlist} playlist?`,
-		{
-			type: "confirm",
-		},
-	);
+/**
+ * Construct the playlist details and tracks using the Spotify API
+ *
+ * @param {*} playlistId
+ * @returns {Playlist} { name: string, tracks: string[] }
+ */
+export async function getPlaylistDetails(playlistId) {
+  const accessToken = await fetchAccessToken();
 
-	if (!proceed) {
-		console.log("bye bye!");
-		process.exit();
-	}
+  const details = await fetchPlaylistDetails({ accessToken, playlistId });
+  const tracks = await fetchPlaylistTracks({ accessToken, playlistId });
+
+  // TODO: Keep tracks original ordering so as to set the correct track number
+  // on the mp3 files
+  const sortedTracks = tracks.sort();
+
+  return { ...details, tracks: sortedTracks };
 }
 
-export async function download({ playlist, options }) {
-	const playlistFilePath = path.join(process.cwd(), PLAYLISTS_FOLDER, playlist);
+async function askToProceed(tracks, playlist) {
+  const proceed = await consola.prompt(
+    `Download ${tracks.length} remaining tracks from '${playlist}' playlist?`,
+    {
+      type: "confirm",
+    }
+  );
 
-	const tracks = getArrayFromFile(playlistFilePath).filter(
-		(track) => !hasBeenAttempted(track),
-	);
+  if (!proceed) {
+    console.log("bye bye!");
+    process.exit();
+  }
+}
 
-	await askToProceed(tracks, playlist);
+export async function download({ playlistUrl, options }) {
+  const playlist = await getPlaylistDetails(extractPlaylistId(playlistUrl));
 
-	const progress = new Progress({ playlistFilePath });
+  const { filename } = await saveToFile({
+    playlist, options
+  });
 
-	await downloadTrackList({ tracks, progress, options });
+  const album = options.album || playlist.name;
+  const playlistFilePath = path.join(process.cwd(), filename);
+
+  const pendingTracks = getArrayFromFile(playlistFilePath).filter(
+    (track) => !hasBeenAttempted(track)
+  );
+
+  await askToProceed(pendingTracks, playlist.name);
+
+  const progress = new Progress({ playlistFilePath });
+
+  await downloadTrackList({ tracks: pendingTracks, progress, album, options });
 }

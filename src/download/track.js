@@ -5,11 +5,11 @@ import fs from "fs";
 import path from "path";
 import { mp3 } from "../convert.js";
 import { delay } from "../utils.js";
+import { setTags } from "../tag/index.js";
 
 const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
-// Function to search for a track and download it
-export async function downloadTrack({ track, options }) {
+export async function downloadTrack({ track, tagOptions, downloadOptions }) {
 	if (!track) {
 		console.error("Missing track name");
 		return { outcome: "MISSING_TRACK" };
@@ -20,7 +20,7 @@ export async function downloadTrack({ track, options }) {
 		return { outcome: "SUCCESS" };
 	}
 
-	if (options.mock) {
+	if (downloadOptions.mock) {
 		await delay(300);
 		return { outcome: "SUCCESS" };
 	}
@@ -40,7 +40,13 @@ export async function downloadTrack({ track, options }) {
 
 		process.chdir(downloadsDir);
 
-		mp3(track, videoId);
+		const trackFilename = `${downloadsDir}/${track}.mp3`;
+
+		if (!fs.existsSync(trackFilename)) {
+			mp3(track, videoId);
+		}
+
+		setTags(trackFilename, tagOptions);
 
 		return { outcome: "SUCCESS", mp3File: `${downloadsDir}/${track}` };
 	} catch (error) {

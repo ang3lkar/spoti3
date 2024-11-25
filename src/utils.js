@@ -7,16 +7,19 @@ function removeSpecialCharacters(text) {
 }
 
 /**
- * Converts a video title to a friendly filename
+ * Converts a title to a friendly filename, no spaces and irregular chars and adding the playlist id
  *
- * @param {*} title A string representing the title of a video
- * @returns A string representing a friendly filename for the video
+ * @param {*} playlist The Spotify playlist object
+ * @returns A string representing the friendly filename
  */
-export function titleToFriendlyName(title) {
-	let result = title;
+export function titleToFriendlyName(playlist) {
+	let result = playlist.name;
 
 	result = removeEmojis(result);
 	result = removeSpecialCharacters(result);
+	result = result.replace(/\s/g, "-");
+
+	result = `${result}-${playlist.id}`;
 
 	return result;
 }

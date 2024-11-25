@@ -9,7 +9,7 @@ export async function downloadTrackList({ tracks, progress, options }) {
 
 	if (options.mock) {
 		consola.warn(
-			"Mock mode enabled. In this mode app will not search and download files to avoid reaching Youtube quotas.",
+			"Mock mode enabled. In this mode app will not search or download files to avoid reaching Youtube quotas.",
 		);
 	}
 
@@ -51,8 +51,18 @@ export async function downloadTrackList({ tracks, progress, options }) {
 		currentTrack = track;
 		console.log(`Downloading ${count}/${total} "${track}"`);
 
+		const tagOptions = {
+			title: track,
+			ordinal: count,
+			album: options.album,
+		}
+
+		const downloadOptions = {
+			...options
+		}
+
 		try {
-			const result = await downloadTrack({ track, options });
+			const result = await downloadTrack({ track, tagOptions, downloadOptions });
 
 			const index = pendingTracks.indexOf(track);
 
