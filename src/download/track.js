@@ -11,13 +11,8 @@ const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
 export async function downloadTrack({ track, tagOptions, downloadOptions }) {
 	if (!track) {
-		console.error("Missing track name");
+		console.error("Missing track");
 		return { outcome: "MISSING_TRACK" };
-	}
-
-	if (track.includes(checkMark)) {
-		console.log(`'${track}' already downloaded`);
-		return { outcome: "SUCCESS" };
 	}
 
 	if (downloadOptions.mock) {
@@ -26,7 +21,7 @@ export async function downloadTrack({ track, tagOptions, downloadOptions }) {
 	}
 
 	try {
-		const searchResult = await searchYouTube(track);
+		const searchResult = await searchYouTube(track.trackTitle);
 
 		if (!searchResult) {
 			return { outcome: "NO_VIDEO_FOUND" };
@@ -40,11 +35,18 @@ export async function downloadTrack({ track, tagOptions, downloadOptions }) {
 
 		process.chdir(downloadsDir);
 
-		const trackFilename = `${downloadsDir}/${track}.mp3`;
+		const trackFilename = `${downloadsDir}/${track.trackTitle}.mp3`;
 
 		if (!fs.existsSync(trackFilename)) {
-			mp3(track, videoId);
+			mp3(track.trackTitle, videoId);
 		}
+
+		tagOptions = {
+			ordinal: tagOptions.ordinal,
+			title: track.name,
+			album: tagOptions.album || track.album.name,
+			artist: track.artists.map(a => a.name).join("& ")
+		};
 
 		setTags(trackFilename, tagOptions);
 

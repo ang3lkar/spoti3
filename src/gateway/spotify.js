@@ -72,11 +72,22 @@ export async function fetchPlaylistTracks({ accessToken, playlistId }) {
 			.map((artist) => artist.name)
 			.join(", ")} - ${track.name}`;
 
-		tracks.push(trackLine);
+		tracks.push({trackDetails: item, trackTitle: trackLine});
 	});
 
-	// Get the next page of results, if available
-	url = response.data.next;
-
 	return tracks;
+}
+
+export async function fetchTrackDetails({ accessToken, trackId }) {
+	let url = `https://api.spotify.com/v1/tracks/${trackId}`;
+
+	const response = await axios.get(url, {
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+		},
+	});
+
+	return {
+		...response.data
+	};
 }

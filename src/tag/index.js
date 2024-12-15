@@ -19,7 +19,7 @@ export function setTags(file, tags = {}) {
 
     if (title) {
       mp3tag.tags.title = title;
-			mp3tag.tags.v2.TRCK = title
+			mp3tag.tags.v2.TIT2 = title
     }
 
     if (artist) {
@@ -29,12 +29,15 @@ export function setTags(file, tags = {}) {
 
     if (ordinal) {
       mp3tag.tags.track = ordinal;
-			mp3tag.tags.v2.TSOA = ordinal;
+			mp3tag.tags.v2.TRCK = ordinal.toString();
     }
 
     if (album) {
       mp3tag.tags.album = album;
+			mp3tag.tags.v2.TALB = album;
     }
+
+		console.log(`Mp3Tag: Writing v2 tags: `, mp3tag.tags.v2);
 
     mp3tag.save();
 
@@ -44,6 +47,6 @@ export function setTags(file, tags = {}) {
     // Write the new buffer to file
     fs.writeFileSync(file, mp3tag.buffer);
   } catch (err) {
-    console.error(err);
+    console.error(`Mp3Tag: ${err}`);
   }
 }

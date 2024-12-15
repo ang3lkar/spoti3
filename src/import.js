@@ -4,7 +4,7 @@ import { titleToFriendlyName } from "./utils.js";
 import { PLAYLISTS_FOLDER } from "./constants.js";
 
 function saveToTextFileSync(data, filename) {
-	fs.writeFileSync(filename, data.join("\n"));
+	fs.writeFileSync(filename, data.map(t => `${t.id}: ${t.trackTitle}`).join("\n"));
 	console.log(`Playlist tracks saved to ${filename}`);
 }
 
@@ -20,9 +20,15 @@ export async function saveToFile({playlist, options}) {
 			playlist
 		)}.txt`;
 
-		if (fs.existsSync(filename)) {
+		if (!options.force && fs.existsSync(filename)) {
 			console.log(`File ${filename} already exists. Skipping save.`);
 			return { filename };
+		}
+
+		if (options.force) {
+			console.log("Force option enabled. Overwriting existing file.");
+			// Remove the file if it exists
+			fs.rmSync(filename, { force: true });
 		}
 
 		saveToTextFileSync(playlist.tracks, filename);

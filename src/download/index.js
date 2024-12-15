@@ -24,9 +24,13 @@ export async function getPlaylistDetails(playlistId) {
   const details = await fetchPlaylistDetails({ accessToken, playlistId });
   const tracks = await fetchPlaylistTracks({ accessToken, playlistId });
 
-  // TODO: Keep tracks original ordering so as to set the correct track number
-  // on the mp3 files
-  const sortedTracks = tracks.sort();
+  const sortedTracks = tracks.sort((a, b) => a.trackTitle.localeCompare(b.trackTitle))
+	.map((track) => {
+		return {
+			...track.trackDetails.track,
+			trackTitle: track.trackTitle
+		}
+	});
 
   return { ...details, tracks: sortedTracks };
 }
@@ -62,9 +66,14 @@ export async function download({ playlistUrl, options }) {
 
   const pendingTracks = getArrayFromFile(playlistFilePath).filter(
     (track) => options.force || !hasBeenAttempted(track)
-  );
+  ).map(track => {
+		const trackId = track.split(':')[0];
+	  return playlist.tracks.find(t => t.id === trackId);
+	});
 
-  await askToProceed(pendingTracks, playlist.name);
+	if (!options.force) {
+ 	  await askToProceed(pendingTracks, playlist.name);
+	}
 
   const progress = new Progress({ playlistFilePath });
 
