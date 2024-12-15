@@ -21,9 +21,9 @@ program
 	.command("mp3")
 	.description("Downloads a tracklist into mp3 files from YouTube")
 	.argument("<playlistUrl>", "the Spotify playlist URL")
-	.option("-m, --mock", "do not download the files, just print the commands")
-	.option("-a, --album-tag", "set album name in mp3 files, defaults to playlist name")
-	.option("-f, --force", "force download even if the track has been attempted")
+	.option("-m, --mock", "do not download the files")
+	.option("-a, --album-tag", "set album name in mp3 files, will override default album name")
+	.option("-f, --force", "force download of all tracks")
 	.action(async (playlistUrl, options) => {
 		await download({ playlistUrl, options });
 	});

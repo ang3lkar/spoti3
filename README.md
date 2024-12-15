@@ -40,6 +40,23 @@ node src/import.js <spotify_url>
 node src/index.js mp3 <playlist_name>.txt
 ```
 
+Options:
+
+```
+Usage: spoti3 mp3 [options] <playlistUrl>
+
+Downloads a tracklist into mp3 files from YouTube
+
+Arguments:
+  playlistUrl      the Spotify playlist URL
+
+Options:
+  -m, --mock       do not download the files, just print the commands
+  -a, --album-tag  set album name in mp3 files, defaults to playlist name
+  -f, --force      force download of all tracks
+  -h, --help       display help for command
+```
+
 ## Notes
 
 > [!WARNING]
@@ -60,9 +77,9 @@ node src/index.js mp3 <playlist_name>.txt
 - [x] Use Spotify track name instead of YouTube's
 - [x] Remove youtube ids from the file
 - [x] Handle SIGTERM and SIGINT signals.
+- [x] Apply mp3 tag after download
+- [x] Add cli option for playlist's tag
 - [ ] Set up logging (with debug)
-- [ ] Apply mp3 tag after download
-- [ ] Add cli option for playlist's tag
 - [ ] Smooth API, run each function independently or all at once.
 - [ ] Add a way to download the songs in parallel.
 - [ ] Add a progress bar and colors.
