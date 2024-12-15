@@ -32,6 +32,11 @@ export async function getPlaylistDetails(playlistId) {
 }
 
 async function askToProceed(tracks, playlist) {
+	if (tracks.length === 0) {
+		consola.info(`All tracks from ${playlist} playlist have been downloaded.`);
+		process.exit();
+	}
+
   const proceed = await consola.prompt(
     `Download ${tracks.length} remaining tracks from '${playlist}' playlist?`,
     {
