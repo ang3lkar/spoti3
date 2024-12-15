@@ -5,7 +5,7 @@ import MP3Tag from 'mp3tag.js';
 import { setTags } from './index.js';
 
 describe('setTags', () => {
-	const audioPath = `${process.cwd()}/src/tag/Warhaus - Where the names are real.mp3`;
+	const audioPath = `${process.cwd()}/src/tag/test.mp3`;
 
 	before(() => {
 		const buffer = fs.readFileSync(audioPath);
