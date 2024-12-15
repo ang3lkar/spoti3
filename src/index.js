@@ -23,6 +23,7 @@ program
 	.argument("<playlistUrl>", "the Spotify playlist URL")
 	.option("-m, --mock", "do not download the files, just print the commands")
 	.option("-a, --album-tag", "set album name in mp3 files, defaults to playlist name")
+	.option("-f, --force", "force download even if the track has been attempted")
 	.action(async (playlistUrl, options) => {
 		await download({ playlistUrl, options });
 	});

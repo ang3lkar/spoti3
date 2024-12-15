@@ -61,7 +61,7 @@ export async function download({ playlistUrl, options }) {
   const playlistFilePath = path.join(process.cwd(), filename);
 
   const pendingTracks = getArrayFromFile(playlistFilePath).filter(
-    (track) => !hasBeenAttempted(track)
+    (track) => options.force || !hasBeenAttempted(track)
   );
 
   await askToProceed(pendingTracks, playlist.name);

@@ -17,11 +17,6 @@ export async function downloadTrackList({ tracks, progress, options }) {
 
 	let total = tracks.length;
 
-	if (total === 0) {
-		consola.success("All tracks have been downloaded!");
-		process.exit(1);
-	}
-
 	consola.start("Downloading playlist...");
 
 	const succeededTracks = [];
