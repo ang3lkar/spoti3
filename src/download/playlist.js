@@ -1,5 +1,5 @@
 import { downloadTrack } from "./track.js";
-import { lineWithCheckmark, lineWithX } from "./helpers.js";
+import { lineWithCheckmark, lineWithX } from "../store/helpers.js";
 import { QuotaExceededError } from "../errors.js";
 import { consola } from "consola";
 

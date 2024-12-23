@@ -1,6 +1,6 @@
 import "dotenv/config";
 import axios from "axios";
-import { QuotaExceededError } from "./errors.js";
+import { QuotaExceededError } from "../errors.js";
 
 const url = "https://www.googleapis.com/youtube/v3/search";
 

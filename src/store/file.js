@@ -1,7 +1,7 @@
 import "dotenv/config";
 import fs from "fs";
-import { titleToFriendlyName } from "./utils/basic.js";
-import { PLAYLISTS_FOLDER } from "./constants.js";
+import { titleToFriendlyName } from "../utils/basic.js";
+import { PLAYLISTS_FOLDER } from "../constants.js";
 
 function saveToTextFileSync(data, filename) {
 	fs.writeFileSync(filename, data.map(t => `${t.id}: ${t.trackTitle}`).join("\n"));
@@ -9,9 +9,10 @@ function saveToTextFileSync(data, filename) {
 }
 
 /**
- * Extracts playlist content from Spotify and saves it to a text file
+ * Extracts playlist content from Spotify and saves it to a text file.
  *
  * @param {*} playlist The Spotify playlist object
+ * @param {Object} force Whether to ignore all progress and start from the beginning
  * @returns {Promise<string>} The filename where the playlist was saved
  */
 export async function saveToFile({playlist, options}) {

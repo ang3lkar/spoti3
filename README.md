@@ -79,7 +79,7 @@ Options:
 - [x] Handle SIGTERM and SIGINT signals.
 - [x] Apply mp3 tag after download
 - [x] Add cli option for playlist's tag
-- [ ] Set up logging (with debug)
-- [ ] Smooth API, run each function independently or all at once.
-- [ ] Add a way to download the songs in parallel.
-- [ ] Add a progress bar and colors.
+- [x] FIX: Create playlists folder if it doesn't exist
+- [ ] FIX: Handle `/` character in filename as it messes with file structure
+- [ ] FEAT: Smooth logging, keep progress on last line, progress bar
+- [ ] FEAT: Fine-grained logging (with debug)

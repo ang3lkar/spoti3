@@ -1,10 +1,7 @@
 import { downloadTrackList } from "./playlist.js";
-import path from "path";
 import { Progress } from "../utils/progress.js";
-import { getArrayFromFile } from "../utils/file.js";
-import { hasBeenAttempted } from "./helpers.js";
 import { consola } from "consola";
-import { saveToFile } from "../import.js";
+import { storePlaylist } from "../store/index.js";
 import {
   fetchAccessToken,
   fetchPlaylistDetails,
@@ -55,26 +52,17 @@ export async function download({ playlistUrl, options }) {
 	try {
 		const playlist = await getPlaylistDetails(extractPlaylistId(playlistUrl));
 
-		const { filename } = await saveToFile({
-			playlist, options
-		});
+		const { filename } = await storePlaylist(playlist, options);
 
-		const album = options.album || playlist.name;
-		const playlistFilePath = path.join(process.cwd(), filename);
-
-		const pendingTracks = getArrayFromFile(playlistFilePath).filter(
-			(track) => options.force || !hasBeenAttempted(track)
-		).map(track => {
-			const trackId = track.split(':')[0];
-			return playlist.tracks.find(t => t.id === trackId);
-		});
+		const pendingTracks = getPendingTracks(filename, options);
 
 		if (!options.force) {
-			 await askToProceed(pendingTracks, playlist.name);
+			await askToProceed(pendingTracks, playlist.name);
 		}
 
 		const progress = new Progress({ playlistFilePath });
 
+		const album = options.album || playlist.name;
 		await downloadTrackList({ tracks: pendingTracks, progress, album, options });
 	} catch(err) {
 		console.error(err);

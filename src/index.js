@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { download } from "./download/index.js";
-import { saveToFile } from "./import.js";
+import { saveToFile } from "./store/file.js";
 
 const program = new Command();
 
