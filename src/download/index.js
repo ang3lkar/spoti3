@@ -22,17 +22,14 @@ export async function getPlaylistDetails(playlistId) {
   const accessToken = await fetchAccessToken();
 
   const details = await fetchPlaylistDetails({ accessToken, playlistId });
-  const tracks = await fetchPlaylistTracks({ accessToken, playlistId });
+  const tracks = (await fetchPlaylistTracks({ accessToken, playlistId }))
+		.map((track) => {
+			return {
+				...track,
+				trackTitle: track.trackTitle
+			}});
 
-  const sortedTracks = tracks.sort((a, b) => a.trackTitle.localeCompare(b.trackTitle))
-	.map((track) => {
-		return {
-			...track.trackDetails.track,
-			trackTitle: track.trackTitle
-		}
-	});
-
-  return { ...details, tracks: sortedTracks };
+  return { ...details, tracks };
 }
 
 async function askToProceed(tracks, playlist) {
