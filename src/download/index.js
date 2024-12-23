@@ -1,7 +1,7 @@
 import { downloadTrackList } from "./playlist.js";
 import { Progress } from "../utils/progress.js";
 import { consola } from "consola";
-import { storePlaylist } from "../store/index.js";
+import { storePlaylist, getPendingTracks } from "../store/index.js";
 import {
   fetchAccessToken,
   fetchPlaylistDetails,
@@ -63,7 +63,11 @@ export async function download({ playlistUrl, options }) {
 		const progress = new Progress({ playlistFilePath });
 
 		const album = options.album || playlist.name;
-		await downloadTrackList({ tracks: pendingTracks, progress, album, options });
+		await downloadTrackList({
+			tracks: pendingTracks,
+			progress,
+			album,
+			options });
 	} catch(err) {
 		console.error(err);
 	}
