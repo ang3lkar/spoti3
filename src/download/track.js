@@ -1,6 +1,6 @@
 import { DOWNLOADS_FOLDER, checkMark } from "../constants.js";
 import { QuotaExceededError } from "../errors.js";
-import { searchYouTube } from "../search.js";
+import { searchYouTube } from "../gateway/youtube.js";
 import fs from "fs";
 import path from "path";
 import { mp3 } from "../convert.js";
