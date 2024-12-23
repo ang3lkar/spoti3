@@ -2,7 +2,7 @@ import fs from "fs";
 import { getTmpFilePath, File } from "./file.js";
 import { consola } from "consola";
 
-export class Progress {
+class FileProgress {
 	constructor({ playlistFilePath }) {
 		this.tmpFilePath = getTmpFilePath();
 		this.playlistPath = playlistFilePath;
@@ -22,5 +22,23 @@ export class Progress {
 
 		const results = fs.readFileSync(this.playlistPath).toString();
 		consola.box(results);
+	}
+}
+
+export class Progress {
+	constructor({playlistFilePath}) {
+		this.fileProgress = new FileProgress({playlistFilePath})
+	}
+
+	start() {
+		this.fileProgress.start();
+	}
+
+	submit(line) {
+		this.fileProgress.submit(line);
+	}
+
+	complete() {
+		this.fileProgress.complete();
 	}
 }

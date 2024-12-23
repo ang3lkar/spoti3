@@ -69,6 +69,6 @@ export async function download({ playlistUrl, options }) {
 			album,
 			options });
 	} catch(err) {
-		console.error(err);
+		console.error(`ERROR: ${err.message}`);
 	}
 }
