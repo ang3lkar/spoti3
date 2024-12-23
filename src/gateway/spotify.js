@@ -6,7 +6,7 @@ const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
 /**
- * Get an access token from Spotify
+ * Get an temporary access token from Spotify
  * @returns {string} The access token
  */
 export async function fetchAccessToken() {
@@ -22,8 +22,12 @@ export async function fetchAccessToken() {
 		url: tokenUrl,
 	};
 
-	const response = await axios(authOptions);
-	return response.data.access_token;
+	try {
+		const response = await axios(authOptions);
+		return response.data.access_token;
+	} catch(err) {
+		// noop
+	}
 }
 
 /**
