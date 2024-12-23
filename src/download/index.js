@@ -10,7 +10,7 @@ import {
   fetchPlaylistDetails,
   fetchPlaylistTracks,
 } from "../gateway/spotify.js";
-import { extractPlaylistId } from "../utils/basic.js";
+import { extractPlaylistId } from "../utils/spotify.js";
 
 /**
  * Construct the playlist details and tracks using the Spotify API
