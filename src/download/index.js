@@ -55,27 +55,31 @@ async function askToProceed(tracks, playlist) {
 }
 
 export async function download({ playlistUrl, options }) {
-  const playlist = await getPlaylistDetails(extractPlaylistId(playlistUrl));
+	try {
+		const playlist = await getPlaylistDetails(extractPlaylistId(playlistUrl));
 
-  const { filename } = await saveToFile({
-    playlist, options
-  });
+		const { filename } = await saveToFile({
+			playlist, options
+		});
 
-  const album = options.album || playlist.name;
-  const playlistFilePath = path.join(process.cwd(), filename);
+		const album = options.album || playlist.name;
+		const playlistFilePath = path.join(process.cwd(), filename);
 
-  const pendingTracks = getArrayFromFile(playlistFilePath).filter(
-    (track) => options.force || !hasBeenAttempted(track)
-  ).map(track => {
-		const trackId = track.split(':')[0];
-	  return playlist.tracks.find(t => t.id === trackId);
-	});
+		const pendingTracks = getArrayFromFile(playlistFilePath).filter(
+			(track) => options.force || !hasBeenAttempted(track)
+		).map(track => {
+			const trackId = track.split(':')[0];
+			return playlist.tracks.find(t => t.id === trackId);
+		});
 
-	if (!options.force) {
- 	  await askToProceed(pendingTracks, playlist.name);
+		if (!options.force) {
+			 await askToProceed(pendingTracks, playlist.name);
+		}
+
+		const progress = new Progress({ playlistFilePath });
+
+		await downloadTrackList({ tracks: pendingTracks, progress, album, options });
+	} catch(err) {
+		console.error(err);
 	}
-
-  const progress = new Progress({ playlistFilePath });
-
-  await downloadTrackList({ tracks: pendingTracks, progress, album, options });
 }
