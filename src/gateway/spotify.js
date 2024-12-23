@@ -22,12 +22,8 @@ export async function fetchAccessToken() {
 		url: tokenUrl,
 	};
 
-	try {
-		const response = await axios(authOptions);
-		return response.data.access_token;
-	} catch (error) {
-		console.error("Error getting access token", error);
-	}
+	const response = await axios(authOptions);
+	return response.data.access_token;
 }
 
 /**
