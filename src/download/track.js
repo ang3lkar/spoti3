@@ -3,7 +3,7 @@ import { QuotaExceededError } from "../errors.js";
 import { searchYouTube } from "../gateway/youtube.js";
 import fs from "fs";
 import path from "path";
-import { mp3 } from "../convert.js";
+import { mp3 } from "../convert/index.js";
 import { delay } from "../utils/basic.js";
 import { setTags } from "../tag/index.js";
 
