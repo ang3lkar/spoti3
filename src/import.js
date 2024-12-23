@@ -27,8 +27,11 @@ export async function saveToFile({playlist, options}) {
 
 		if (options.force) {
 			console.log("Force option enabled. Overwriting existing file.");
-			// Remove the file if it exists
 			fs.rmSync(filename, { force: true });
+		}
+
+		if (!fs.existsSync(PLAYLISTS_FOLDER)) {
+			fs.mkdirSync(PLAYLISTS_FOLDER);
 		}
 
 		saveToTextFileSync(playlist.tracks, filename);
