@@ -1,6 +1,6 @@
 import "dotenv/config";
 import fs from "fs";
-import { titleToFriendlyName } from "./utils.js";
+import { titleToFriendlyName } from "./utils/basic.js";
 import { PLAYLISTS_FOLDER } from "./constants.js";
 
 function saveToTextFileSync(data, filename) {

@@ -1,5 +1,5 @@
 import { QuotaExceededError } from "../errors.js";
-import { delay } from "../utils.js";
+import { delay } from "../utils/basic.js";
 
 export async function fetchTrackDetails({ track, tagOptions, downloadOptions }) {
 	if (!track) {

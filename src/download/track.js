@@ -4,7 +4,7 @@ import { searchYouTube } from "../search.js";
 import fs from "fs";
 import path from "path";
 import { mp3 } from "../convert.js";
-import { delay } from "../utils.js";
+import { delay } from "../utils/basic.js";
 import { setTags } from "../tag/index.js";
 
 const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
