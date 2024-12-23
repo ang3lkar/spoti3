@@ -15,8 +15,8 @@ import { extractPlaylistId } from "../utils/spotify.js";
  * @param {*} playlistId
  * @returns {Playlist} { name: string, tracks: string[] }
  */
-export async function getPlaylistDetails(playlistId) {
-  const accessToken = await fetchAccessToken();
+export async function fetchPlaylist(playlistId) {
+  const accessToken = fetchAccessToken();
 
   const details = await fetchPlaylistDetails({ accessToken, playlistId });
   const tracks = (await fetchPlaylistTracks({ accessToken, playlistId }))
@@ -50,11 +50,13 @@ async function askToProceed(tracks, playlist) {
 
 export async function download({ playlistUrl, options }) {
 	try {
-		const playlist = await getPlaylistDetails(extractPlaylistId(playlistUrl));
+		const playlistId = extractPlaylistId(playlistUrl);
 
-		const { filename } = await storePlaylist(playlist, options);
+		const playlist = await fetchPlaylist(playlistId);
 
-		const pendingTracks = getPendingTracks(filename, options);
+		await storePlaylist(playlist, options);
+
+		const pendingTracks = getPendingTracks(playlist, options);
 
 		if (!options.force) {
 			await askToProceed(pendingTracks, playlist.name);

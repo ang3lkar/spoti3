@@ -1,24 +1,12 @@
-import { saveToFile } from "./file.js";
-import { getArrayFromFile } from "../utils/file.js";
-import { hasBeenAttempted } from "./helpers.js";
+import { saveToFile, getPendingTracksFromFile } from "./file.js";
 
 export async function storePlaylist(playlist, options) {
-	const { filename } = await saveToFile({
-		playlist, options
-	});
-
-	return filename;
+  return saveToFile({
+    playlist,
+    options,
+  });
 }
 
-export function getPendingTracks(filename, options) {
-	const playlistFilePath = path.join(process.cwd(), filename);
-
-	const result = getArrayFromFile(playlistFilePath).filter(
-		(track) => options.force || !hasBeenAttempted(track)
-	).map(track => {
-		const trackId = track.split(':')[0];
-		return playlist.tracks.find(t => t.id === trackId);
-	});
-
-	return result;
+export function getPendingTracks(playlist, options) {
+  return getPendingTracksFromFile(playlist, options);
 }

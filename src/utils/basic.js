@@ -13,13 +13,15 @@ function removeSpecialCharacters(text) {
  * @returns A string representing the friendly filename
  */
 export function titleToFriendlyName(playlist) {
-	let result = playlist.name;
+	const {id, name} = playlist;
+
+	let result = name;
 
 	result = removeEmojis(result);
 	result = removeSpecialCharacters(result);
 	result = result.replace(/\s/g, "-");
 
-	result = `${result}-${playlist.id}`;
+	result = `${result}-${id}`;
 
 	return result;
 }
