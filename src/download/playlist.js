@@ -44,10 +44,10 @@ export async function downloadTrackList({ tracks, progress, options }) {
 	for (const track of tracks) {
 		count += 1;
 		currentTrack = track;
-		console.log(`Downloading ${count}/${total} "${track.id}: ${track.trackTitle}"`);
+		console.log(`Downloading ${count}/${total} "${track.id}: ${track.fullTitle}"`);
 
 		const tagOptions = {
-			title: track.trackTitle,
+			title: track.fullTitle,
 			ordinal: count,
 			album: options.album,
 		}
@@ -65,10 +65,10 @@ export async function downloadTrackList({ tracks, progress, options }) {
 
 			if (result.outcome === "SUCCESS") {
 				succeededTracks.push(track);
-				progress.submit(lineWithCheckmark(track.trackTitle));
+				progress.submit(lineWithCheckmark(track.fullTitle));
 			} else {
 				failedTracks.push(track);
-				progress.submit(lineWithX(track.trackTitle));
+				progress.submit(lineWithX(track.fullTitle));
 			}
 		} catch (err) {
 			if (err instanceof QuotaExceededError) {

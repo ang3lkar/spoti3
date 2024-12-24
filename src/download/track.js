@@ -21,7 +21,7 @@ export async function downloadTrack({ track, tagOptions, downloadOptions }) {
 	}
 
 	try {
-		const searchResult = await searchYouTube(track.trackTitle);
+		const searchResult = await searchYouTube(track.fullTitle);
 
 		if (!searchResult) {
 			return { outcome: "NO_VIDEO_FOUND" };
@@ -35,10 +35,10 @@ export async function downloadTrack({ track, tagOptions, downloadOptions }) {
 
 		process.chdir(downloadsDir);
 
-		const trackFilename = `${downloadsDir}/${track.trackTitle}.mp3`;
+		const trackFilename = `${downloadsDir}/${track.fullTitle}.mp3`;
 
 		if (!fs.existsSync(trackFilename)) {
-			mp3(track.trackTitle, videoId);
+			mp3(track.fullTitle, videoId);
 		}
 
 		tagOptions = {

@@ -1,6 +1,8 @@
 import fs from "fs";
 import { getTmpFilePath, File } from "./file.js";
 import { consola } from "consola";
+import path from "path";
+import { getPlaylistFileName } from "../store/file.js";
 
 class FileProgress {
 	constructor({ playlistFilePath }) {
@@ -26,7 +28,8 @@ class FileProgress {
 }
 
 export class Progress {
-	constructor({playlistFilePath}) {
+	constructor(playlist) {
+		const playlistFilePath = path.join(process.cwd(), getPlaylistFileName(playlist));
 		this.fileProgress = new FileProgress({playlistFilePath})
 	}
 

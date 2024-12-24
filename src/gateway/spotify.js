@@ -67,12 +67,18 @@ export async function fetchPlaylistTracks({ accessToken, playlistId }) {
 	});
 
 	response.data.items.forEach((item) => {
-		const track = item.track;
-		const trackLine = `${track.artists
-			.map((artist) => artist.name)
-			.join(", ")} - ${track.name}`;
+		const {track} = item;
 
-		tracks.push({trackDetails: item, trackTitle: trackLine});
+		const artists = track.artists
+			.map((artist) => artist.name)
+			.join(", ");
+
+		// Replace / with | to avoid filename issues
+		const name = track.name.replace(/\//g, "|");
+
+		const fullTitle = `${artists} - ${name}`;
+
+		tracks.push({...item.track, fullTitle});
 	});
 
 	return tracks;

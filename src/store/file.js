@@ -1,17 +1,19 @@
 import "dotenv/config";
 import fs from "fs";
+import path from "path";
 import { titleToFriendlyName } from "../utils/basic.js";
 import { PLAYLISTS_FOLDER } from "../constants.js";
 import { hasBeenAttempted } from "./helpers.js";
+import { getArrayFromFile } from "../utils/file.js";
 
-function getPlaylistFileName(playlist) {
+export function getPlaylistFileName(playlist) {
 	return `${PLAYLISTS_FOLDER}/${titleToFriendlyName(
 		playlist
 	)}.txt`;
 }
 
 function saveToTextFileSync(data, filename) {
-	fs.writeFileSync(filename, data.map(t => `${t.id}: ${t.trackTitle}`).join("\n"));
+	fs.writeFileSync(filename, data.map(t => `${t.id}: ${t.fullTitle}`).join("\n"));
 	console.log(`Playlist tracks saved to ${filename}`);
 }
 

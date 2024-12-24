@@ -16,17 +16,12 @@ import { extractPlaylistId } from "../utils/spotify.js";
  * @returns {Playlist} { name: string, tracks: string[] }
  */
 export async function fetchPlaylist(playlistId) {
-  const accessToken = fetchAccessToken();
+  const accessToken = await fetchAccessToken();
 
-  const details = await fetchPlaylistDetails({ accessToken, playlistId });
-  const tracks = (await fetchPlaylistTracks({ accessToken, playlistId }))
-		.map((track) => {
-			return {
-				...track,
-				trackTitle: track.trackTitle
-			}});
+  const playlistDetails = await fetchPlaylistDetails({ accessToken, playlistId });
+  const tracks = await fetchPlaylistTracks({ accessToken, playlistId });
 
-  return { ...details, tracks };
+  return { ...playlistDetails, tracks };
 }
 
 async function askToProceed(tracks, playlist) {
@@ -56,13 +51,13 @@ export async function download({ playlistUrl, options }) {
 
 		await storePlaylist(playlist, options);
 
-		const pendingTracks = getPendingTracks(playlist, options);
+		const pendingTracks = await getPendingTracks(playlist, options);
 
 		if (!options.force) {
 			await askToProceed(pendingTracks, playlist.name);
 		}
 
-		const progress = new Progress({ playlistFilePath });
+		const progress = new Progress(playlist);
 
 		const album = options.album || playlist.name;
 		await downloadTrackList({

@@ -80,6 +80,6 @@ Options:
 - [x] Apply mp3 tag after download
 - [x] Add cli option for playlist's tag
 - [x] FIX: Create playlists folder if it doesn't exist
-- [ ] FIX: Handle `/` character in filename as it messes with file structure
+- [x] FIX: Handle `/` character in filename as it messes with file structure
 - [ ] FEAT: Smooth logging, keep progress on last line, progress bar
 - [ ] FEAT: Fine-grained logging (with debug)
