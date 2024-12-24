@@ -5,7 +5,8 @@ import path from "path";
 import { getPlaylistFileName } from "../store/file.js";
 
 class FileProgress {
-	constructor({ playlistFilePath }) {
+	constructor(playlist) {
+		const playlistFilePath = path.join(process.cwd(), getPlaylistFileName(playlist));
 		this.tmpFilePath = getTmpFilePath();
 		this.playlistPath = playlistFilePath;
 		this.tmpFile = new File(this.tmpFilePath);
@@ -29,8 +30,7 @@ class FileProgress {
 
 export class Progress {
 	constructor(playlist) {
-		const playlistFilePath = path.join(process.cwd(), getPlaylistFileName(playlist));
-		this.fileProgress = new FileProgress({playlistFilePath})
+		this.fileProgress = new FileProgress(playlist);
 	}
 
 	start() {
