@@ -5,13 +5,13 @@ This is a simple script that allows you to download songs from Spotify to mp3 fo
 It combines several APIs to achieve this:
 
 - The Spotify playlist API, to get the contents of a playlist URL.
-- The Youtube Search API to search for the song
-- `yt-dlp` to download the song from YouTube
+- The Youtube Search API to search for the song.
+- The `yt-dlp` tool to actually download the song from YouTube in mp3 format.
 
 ## Requirements
 
-The project assumes you already have `yt-dlp` and `ffmpeg` installed in your system.
-
+- yt-dlp
+- ffmpeg
 - Node.js
 - A Spotify developer account
 - A Youtube developer account
@@ -22,7 +22,7 @@ The project assumes you already have `yt-dlp` and `ffmpeg` installed in your sys
 npm install
 ```
 
-Setup your developer keys:
+Setup your developer keys on a `.env` file:
 
 ```
 SPOTIFY_CLIENT_ID=
@@ -33,9 +33,6 @@ YOUTUBE_API_KEY=
 ## Usage
 
 ```bash
-# Get the song names and artists from a Spotify playlist in to a <playlist_name>.txt
-node src/import.js <spotify_url>
-
 # Download the songs in mp3 format from the <playlist>.txt
 node src/index.js mp3 <playlist_name>.txt
 ```
@@ -63,23 +60,3 @@ Options:
 > Beware of quotas and limits, especially for Youtube API, which has an increased quota impact: A call to this method has a quota cost of 100 units!
 >
 > So, essentially, you can only download 100 songs per day.
-
-## Pending
-
-- [x] dotenv for API keys.
-- [x] Handle quotas error.
-- [x] Dynamic file names based on the playlist name.
-- [x] How are quotas handled by Youtube Search API? It registers much more requests than expected.
-- [x] Resume from last track downloaded.
-- [x] Move files under src folder.
-- [x] Avoid streaming
-- [x] Import script should use username/password to retrieve token
-- [x] Use Spotify track name instead of YouTube's
-- [x] Remove youtube ids from the file
-- [x] Handle SIGTERM and SIGINT signals.
-- [x] Apply mp3 tag after download
-- [x] Add cli option for playlist's tag
-- [x] FIX: Create playlists folder if it doesn't exist
-- [x] FIX: Handle `/` character in filename as it messes with file structure
-- [ ] FEAT: Smooth logging, keep progress on last line, progress bar
-- [ ] FEAT: Fine-grained logging (with debug)

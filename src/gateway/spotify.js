@@ -66,34 +66,20 @@ export async function fetchPlaylistTracks({ accessToken, playlistId }) {
 		},
 	});
 
-	response.data.items.forEach((item) => {
+	for (const item of response.data.items) {
 		const {track} = item;
 
 		const artists = track.artists
 			.map((artist) => artist.name)
 			.join(", ");
 
-		// Replace / with | to avoid filename issues
+		// Replace / with | to avoid creating folders when creating mp3 files
 		const name = track.name.replace(/\//g, "|");
 
 		const fullTitle = `${artists} - ${name}`;
 
 		tracks.push({...item.track, fullTitle});
-	});
+	}
 
 	return tracks;
-}
-
-export async function fetchTrackDetails({ accessToken, trackId }) {
-	let url = `https://api.spotify.com/v1/tracks/${trackId}`;
-
-	const response = await axios.get(url, {
-		headers: {
-			Authorization: `Bearer ${accessToken}`,
-		},
-	});
-
-	return {
-		...response.data
-	};
 }
