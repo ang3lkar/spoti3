@@ -2,27 +2,8 @@ import { downloadTrackList } from "./playlist.js";
 import { Progress } from "../utils/progress.js";
 import { consola } from "consola";
 import { storePlaylist, getPendingTracks } from "../store/index.js";
-import {
-  fetchAccessToken,
-  fetchPlaylistDetails,
-  fetchPlaylistTracks,
-} from "../gateway/spotify.js";
 import { extractPlaylistId } from "../utils/spotify.js";
-
-/**
- * Construct the playlist details and tracks using the Spotify API
- *
- * @param {*} playlistId
- * @returns {Playlist} { name: string, tracks: string[] }
- */
-export async function fetchPlaylist(playlistId) {
-  const accessToken = await fetchAccessToken();
-
-  const playlistDetails = await fetchPlaylistDetails({ accessToken, playlistId });
-  const tracks = await fetchPlaylistTracks({ accessToken, playlistId });
-
-  return { ...playlistDetails, tracks };
-}
+import { fetchPlaylist } from "../services/spotify.js";
 
 async function askToProceed(tracks, playlist) {
 	if (tracks.length === 0) {
