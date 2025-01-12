@@ -5,6 +5,22 @@ import {
   fetchPlaylistTracks,
 } from "../gateway/spotify.js";
 
+function enrichTrack(item) {
+	// spotify returns different structure for playlist and album tracks
+	const track = item.track || item;
+
+	const artists = track.artists
+		.map((artist) => artist.name)
+		.join(", ");
+
+	// Replace / with | to avoid creating folders when creating mp3 files
+	const name = track.name.replace(/\//g, "|");
+
+	const fullTitle = `${artists} - ${name}`;
+
+	return {...track, fullTitle};
+}
+
 /**
  * Construct the playlist details and tracks using the Spotify API
  *
@@ -20,16 +36,7 @@ export async function fetchPlaylist(spotifyId) {
 	const tracks = [];
 
 	for (const item of items) {
-		const artists = item.artists
-			.map((artist) => artist.name)
-			.join(", ");
-
-		// Replace / with | to avoid creating folders when creating mp3 files
-		const name = item.name.replace(/\//g, "|");
-
-		const fullTitle = `${artists} - ${name}`;
-
-		tracks.push({...item, fullTitle});
+		tracks.push(enrichTrack(item));
 	}
 
   return { ...playlistDetails, tracks };
