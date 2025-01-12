@@ -1,5 +1,6 @@
 import fs from "fs";
 import MP3Tag from "mp3tag.js";
+import { logger } from "../utils/logger.js";
 
 /**
  * A function to set the tags of an mp3 file.
@@ -9,6 +10,8 @@ import MP3Tag from "mp3tag.js";
  */
 export function setTags(file, tags = {}) {
   try {
+		logger.debug(`Setting tags for ${file}: `, tags);
+
     const buffer = fs.readFileSync(file);
 
     const mp3tag = new MP3Tag(buffer, true);
@@ -44,9 +47,9 @@ export function setTags(file, tags = {}) {
     // Handle error if there's any
     if (mp3tag.error !== "") throw new Error(mp3tag.error);
 
-    // Write the new buffer to file
     fs.writeFileSync(file, mp3tag.buffer);
   } catch (err) {
-    console.error(`Mp3Tag: ${err}`);
+		logger.error(err);
+    throw new Error(`Failed to set tags for ${file}: ${err.message}`);
   }
 }

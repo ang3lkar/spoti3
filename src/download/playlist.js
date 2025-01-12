@@ -1,3 +1,4 @@
+import { logger } from "../utils/logger.js";
 import { downloadTrack } from "./track.js";
 import { lineWithCheckmark, lineWithX } from "../store/helpers.js";
 import { QuotaExceededError } from "../errors.js";
@@ -44,7 +45,7 @@ export async function downloadTrackList({ playlist, tracks, progress, options })
 	for (const track of tracks) {
 		count += 1;
 		currentTrack = track;
-		console.log(`Downloading ${count}/${total} "${track.id}: ${track.fullTitle}"`);
+		logger.info(`Downloading ${count}/${total} "${track.id}: ${track.fullTitle}"`);
 
 		const tagOptions = {
 			title: track.fullTitle,
@@ -72,10 +73,10 @@ export async function downloadTrackList({ playlist, tracks, progress, options })
 			}
 		} catch (err) {
 			if (err instanceof QuotaExceededError) {
-				console.error(
+				logger.error(
 					"Error occurred while searching YouTube: Request failed with status code 403.",
 				);
-				console.error("Youtube daily quota exceeded. Exiting...");
+				logger.error("Youtube daily quota exceeded. Exiting...");
 			}
 
 			logger.error(err);

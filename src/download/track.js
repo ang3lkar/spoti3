@@ -21,6 +21,7 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
 		return { outcome: "SUCCESS" };
 	}
 
+	let trackFilename;
 	const playlistFolder = path.join(downloadsDir, playlist.name);
 
 	try {
@@ -34,7 +35,7 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
 
 		process.chdir(playlistFolder);
 
-		const trackFilename = `${playlistFolder}/${track.fullTitle}.mp3`;
+		trackFilename = `${playlistFolder}/${track.fullTitle}.mp3`;
 
 		logger.debug(`Downloading ${trackFilename}...`);
 
@@ -42,22 +43,27 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
 			mp3(track.fullTitle, videoId);
 		}
 
+	} catch (err) {
+		if (err instanceof QuotaExceededError) {
+			throw err;
+		}
+
+		logger.error(err);
+		return { outcome: "DOWNLOAD_ERROR", error: err };
+	}
+
+	try {
 		tagOptions = {
 			ordinal: tagOptions.ordinal,
 			title: track.name,
-			album: tagOptions.album || track.album.name,
+			album: tagOptions.album || track.album?.name || playlist.name,
 			artist: track.artists.map(a => a.name).join("& ")
 		};
 
 		setTags(trackFilename, tagOptions);
-
-		return { outcome: "SUCCESS", mp3File: trackFilename };
-	} catch (error) {
-		if (error instanceof QuotaExceededError) {
-			throw error;
-		}
-
-		logger.error("Error during track download:", error.message);
-		return { outcome: "DOWNLOAD_ERROR" };
+	} catch (err) {
+		logger.error(err.message);
 	}
+
+	return { outcome: "SUCCESS", mp3File: trackFilename };
 }
