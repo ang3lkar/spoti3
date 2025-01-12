@@ -3,7 +3,7 @@ import { lineWithCheckmark, lineWithX } from "../store/helpers.js";
 import { QuotaExceededError } from "../errors.js";
 import { consola } from "consola";
 
-export async function downloadTrackList({ tracks, progress, options }) {
+export async function downloadTrackList({ playlist, tracks, progress, options }) {
 	let count = 0;
 	let currentTrack;
 
@@ -17,7 +17,7 @@ export async function downloadTrackList({ tracks, progress, options }) {
 
 	let total = tracks.length;
 
-	consola.start("Downloading playlist...");
+	consola.start(`Downloading ${total} tracks from ${playlist.fullName}...`);
 
 	const succeededTracks = [];
 	const failedTracks = [];
@@ -32,7 +32,7 @@ export async function downloadTrackList({ tracks, progress, options }) {
 
 		// Write the rest of the tracks to the file
 		for (const track of pendingTracks) {
-			progress.submit(`${track}\n`);
+			progress.submit(`${track.id}: ${track.fullTitle}\n`);
 		}
 
 		progress.complete();
@@ -57,7 +57,7 @@ export async function downloadTrackList({ tracks, progress, options }) {
 		}
 
 		try {
-			const result = await downloadTrack({ track, tagOptions, downloadOptions });
+			const result = await downloadTrack({ playlist, track, tagOptions, downloadOptions });
 
 			const index = pendingTracks.indexOf(track);
 
@@ -65,10 +65,10 @@ export async function downloadTrackList({ tracks, progress, options }) {
 
 			if (result.outcome === "SUCCESS") {
 				succeededTracks.push(track);
-				progress.submit(lineWithCheckmark(track.fullTitle));
+				progress.submit(lineWithCheckmark(`${track.id}: ${track.fullTitle}`));
 			} else {
 				failedTracks.push(track);
-				progress.submit(lineWithX(track.fullTitle));
+				progress.submit(lineWithX(`${track.id}: ${track.fullTitle}`));
 			}
 		} catch (err) {
 			if (err instanceof QuotaExceededError) {
@@ -78,14 +78,14 @@ export async function downloadTrackList({ tracks, progress, options }) {
 				console.error("Youtube daily quota exceeded. Exiting...");
 			}
 
-			consola.error(err);
+			logger.error(err);
 
 			// bring current track back to pending to download next time
 			pendingTracks.push(track);
 
 			// Write the rest of the tracks to the file
 			for (const track of pendingTracks) {
-				progress.submit(`${track}\n`);
+				progress.submit(`${track.id}: ${track.fullTitle}\n`);
 			}
 		}
 	}

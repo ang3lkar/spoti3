@@ -1,4 +1,3 @@
-import "dotenv/config";
 import fs from "fs";
 import path from "path";
 import { titleToFriendlyName } from "../utils/basic.js";

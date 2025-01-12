@@ -1,4 +1,5 @@
 import axios from "axios";
+import { logger } from "../utils/logger.js";
 
 const tokenUrl = "https://accounts.spotify.com/api/token";
 
@@ -24,9 +25,14 @@ export async function fetchAccessToken() {
 
 	try {
 		const response = await axios(authOptions);
-		return response.data.access_token;
+
+		const result = response.data.access_token;
+
+		logger.debug("Access token fetched successfully");
+
+		return result;
 	} catch(err) {
-		// noop
+		logger.error(`Error fetching access token: ${err.message}`);
 	}
 }
 
@@ -36,18 +42,29 @@ export async function fetchAccessToken() {
  * @param {*} param0
  * @returns
  */
-export async function fetchPlaylistDetails({accessToken, playlistId}) {
-	let url = `https://api.spotify.com/v1/playlists/${playlistId}`;
+export async function fetchPlaylistDetails({accessToken, spotifyId}) {
+	const {type, value} = spotifyId;
 
-	const response = await axios.get(url, {
-		headers: {
-			Authorization: `Bearer ${accessToken}`,
-		},
-	});
+	logger.debug(`Fetching ${type} details`);
 
-	return {
-		...response.data
-	};
+	let url = `https://api.spotify.com/v1/${type}s/${value}`;
+
+	try {
+		const response = await axios.get(url, {
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+			},
+		});
+
+		logger.debug(`Fetched ${type} details`);
+
+		return {
+			...response.data
+		};
+	} catch(err) {
+		logger.error(`Error fetching playlist details: ${err.message}`);
+		throw err;
+	}
 }
 
 /**
@@ -56,9 +73,12 @@ export async function fetchPlaylistDetails({accessToken, playlistId}) {
  * @param {*} param0
  * @returns
  */
-export async function fetchPlaylistTracks({ accessToken, playlistId }) {
-	let tracks = [];
-	let url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+export async function fetchPlaylistTracks({ accessToken, spotifyId }) {
+	const {type, value} = spotifyId;
+
+	logger.debug(`Fetching ${type} tracks`);
+
+	let url = `https://api.spotify.com/v1/${type}s/${value}/tracks`;
 
 	const response = await axios.get(url, {
 		headers: {
@@ -66,20 +86,9 @@ export async function fetchPlaylistTracks({ accessToken, playlistId }) {
 		},
 	});
 
-	for (const item of response.data.items) {
-		const {track} = item;
+	const result = response.data.items;
 
-		const artists = track.artists
-			.map((artist) => artist.name)
-			.join(", ");
+	logger.debug(`Fetched ${result.length} tracks`);
 
-		// Replace / with | to avoid creating folders when creating mp3 files
-		const name = track.name.replace(/\//g, "|");
-
-		const fullTitle = `${artists} - ${name}`;
-
-		tracks.push({...item.track, fullTitle});
-	}
-
-	return tracks;
+	return result;
 }

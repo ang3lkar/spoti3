@@ -1,3 +1,4 @@
+import { logger } from "../utils/logger.js";
 import { DOWNLOADS_FOLDER, checkMark } from "../constants.js";
 import { QuotaExceededError } from "../errors.js";
 import { searchYouTube } from "../gateway/youtube.js";
@@ -9,7 +10,7 @@ import { setTags } from "../tag/index.js";
 
 const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
-export async function downloadTrack({ track, tagOptions, downloadOptions }) {
+export async function downloadTrack({ playlist, track, tagOptions, downloadOptions }) {
 	if (!track) {
 		console.error("Missing track");
 		return { outcome: "MISSING_TRACK" };
@@ -20,6 +21,8 @@ export async function downloadTrack({ track, tagOptions, downloadOptions }) {
 		return { outcome: "SUCCESS" };
 	}
 
+	const playlistFolder = path.join(downloadsDir, playlist.name);
+
 	try {
 		const searchResult = await searchYouTube(track.fullTitle);
 
@@ -29,13 +32,11 @@ export async function downloadTrack({ track, tagOptions, downloadOptions }) {
 
 		const videoId = searchResult.videoId;
 
-		if (!fs.existsSync(downloadsDir)) {
-			fs.mkdirSync(downloadsDir);
-		}
+		process.chdir(playlistFolder);
 
-		process.chdir(downloadsDir);
+		const trackFilename = `${playlistFolder}/${track.fullTitle}.mp3`;
 
-		const trackFilename = `${downloadsDir}/${track.fullTitle}.mp3`;
+		logger.debug(`Downloading ${trackFilename}...`);
 
 		if (!fs.existsSync(trackFilename)) {
 			mp3(track.fullTitle, videoId);
@@ -50,13 +51,13 @@ export async function downloadTrack({ track, tagOptions, downloadOptions }) {
 
 		setTags(trackFilename, tagOptions);
 
-		return { outcome: "SUCCESS", mp3File: `${downloadsDir}/${track}` };
+		return { outcome: "SUCCESS", mp3File: trackFilename };
 	} catch (error) {
 		if (error instanceof QuotaExceededError) {
 			throw error;
 		}
 
-		console.error("Error during track download:", error.message);
+		logger.error("Error during track download:", error.message);
 		return { outcome: "DOWNLOAD_ERROR" };
 	}
 }

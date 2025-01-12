@@ -1,17 +1,18 @@
+import { logger } from "../utils/logger.js";
 import { downloadTrackList } from "./playlist.js";
 import { Progress } from "../utils/progress.js";
-import { consola } from "consola";
 import { storePlaylist, getPendingTracks } from "../store/index.js";
-import { extractPlaylistId } from "../utils/spotify.js";
+import { extractSpotifyId } from "../utils/spotify.js";
 import { fetchPlaylist } from "../services/spotify.js";
+import { createDownloadFolder } from "../utils/file.js";
 
 async function askToProceed(tracks, playlist) {
 	if (tracks.length === 0) {
-		consola.info(`All tracks from ${playlist} playlist have been downloaded.`);
+		logger.info(`All tracks from ${playlist} playlist have been downloaded.`);
 		process.exit();
 	}
 
-  const proceed = await consola.prompt(
+  const proceed = await logger.prompt(
     `Download ${tracks.length} remaining tracks from '${playlist}' playlist?`,
     {
       type: "confirm",
@@ -19,16 +20,16 @@ async function askToProceed(tracks, playlist) {
   );
 
   if (!proceed) {
-    console.log("bye bye!");
+    logger.info("bye bye!");
     process.exit();
   }
 }
 
 export async function download({ playlistUrl, options }) {
 	try {
-		const playlistId = extractPlaylistId(playlistUrl);
+		const spotifyId = extractSpotifyId(playlistUrl);
 
-		const playlist = await fetchPlaylist(playlistId);
+		const playlist = await fetchPlaylist(spotifyId);
 
 		await storePlaylist(playlist, options);
 
@@ -38,16 +39,19 @@ export async function download({ playlistUrl, options }) {
 			await askToProceed(pendingTracks, playlist.name);
 		}
 
+		createDownloadFolder(playlist.name);
+
 		const progress = new Progress(playlist);
 
 		const album = options.album || playlist.name;
 		await downloadTrackList({
+			playlist,
 			tracks: pendingTracks,
 			progress,
 			album,
 			options
 		});
 	} catch(err) {
-		console.error(`ERROR: ${err.message}`);
+		logger.error(err);
 	}
 }

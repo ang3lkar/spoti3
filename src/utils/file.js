@@ -1,7 +1,20 @@
 import fs from "fs";
 import path from "path";
 
-import { PLAYLISTS_FOLDER } from "../constants.js";
+import { PLAYLISTS_FOLDER, DOWNLOADS_FOLDER } from "../constants.js";
+
+/**
+ * Create a folder with the given name in the playlists folder
+ *
+ * @param {*} name The name of the folder to create
+ */
+export function createDownloadFolder(name) {
+	const folder = path.join(process.cwd(), DOWNLOADS_FOLDER, name);
+
+	if (!fs.existsSync(folder)) {
+		fs.mkdirSync(folder);
+	}
+}
 
 /**
  * A function to get an array of strings from a file
