@@ -5,13 +5,17 @@ import {
   fetchPlaylistTracks,
 } from "../gateway/spotify.js";
 
+function getArtists(object) {
+	return object.artists
+		.map((artist) => artist.name)
+		.join(", ");
+}
+
 function enrichTrack(item) {
 	// spotify returns different structure for playlist and album tracks
 	const track = item.track || item;
 
-	const artists = track.artists
-		.map((artist) => artist.name)
-		.join(", ");
+	const artists = getArtists(track);
 
 	// Replace / with | to avoid creating folders when creating mp3 files
 	const name = track.name.replace(/\//g, "|");
@@ -33,11 +37,13 @@ export async function fetchPlaylist(spotifyId) {
   const playlistDetails = await fetchPlaylistDetails({ accessToken, spotifyId });
   const items = await fetchPlaylistTracks({ accessToken, spotifyId });
 
+	const folderName = spotifyId.type === 'album' ? `${getArtists(playlistDetails)} - ${playlistDetails.name}` : playlistDetails.name;
+
 	const tracks = [];
 
 	for (const item of items) {
 		tracks.push(enrichTrack(item));
 	}
 
-  return { ...playlistDetails, tracks };
+  return { ...playlistDetails, folderName, tracks };
 }

@@ -22,7 +22,7 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
 	}
 
 	let trackFilename;
-	const playlistFolder = path.join(downloadsDir, playlist.name);
+	const playlistFolder = path.join(downloadsDir, playlist.folderName);
 
 	try {
 		const searchResult = await searchYouTube(track.fullTitle);

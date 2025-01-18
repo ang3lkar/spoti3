@@ -39,7 +39,7 @@ export async function download({ playlistUrl, options }) {
 			await askToProceed(pendingTracks, playlist.name);
 		}
 
-		createDownloadFolder(playlist.name);
+		createDownloadFolder(playlist.folderName);
 
 		const progress = new Progress(playlist);
 
