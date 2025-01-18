@@ -7,5 +7,6 @@ export function mp3(filename, videoId) {
 		execSync(command, { stdio: "inherit" });
 	} catch (error) {
 		console.error("Error downloading track:", error.message);
+		throw error;
 	}
 }
