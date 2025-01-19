@@ -44,6 +44,7 @@ export async function download({ playlistUrl, options }) {
 		const progress = new Progress(playlist);
 
 		const album = options.album || playlist.name;
+
 		await downloadTrackList({
 			playlist,
 			tracks: pendingTracks,

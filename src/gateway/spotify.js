@@ -67,13 +67,23 @@ export async function fetchPlaylistDetails({accessToken, spotifyId}) {
 	}
 }
 
+export async function fetchTracks({ accessToken, spotifyId }) {
+	const {type} = spotifyId;
+
+	if (type === 'track') {
+		return fetchSingleTrack({ accessToken, spotifyId });
+	} else {
+		return fetchMultipleTracks({ accessToken, spotifyId });
+	}
+}
+
 /**
  * Fetch the tracks of a Spotify playlist
  *
  * @param {*} param0
  * @returns
  */
-export async function fetchPlaylistTracks({ accessToken, spotifyId }) {
+export async function fetchMultipleTracks({ accessToken, spotifyId }) {
 	const {type, value} = spotifyId;
 
 	logger.debug(`Fetching ${type} tracks`);
@@ -91,4 +101,24 @@ export async function fetchPlaylistTracks({ accessToken, spotifyId }) {
 	logger.debug(`Fetched ${result.length} tracks`);
 
 	return result;
+}
+
+export async function fetchSingleTrack({ accessToken, spotifyId }) {
+	const {value} = spotifyId;
+
+	logger.debug(`Fetching a single track`);
+
+	let url = `https://api.spotify.com/v1/tracks/${value}`;
+
+	const response = await axios.get(url, {
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+		},
+	});
+
+	const result = response.data;
+
+	logger.debug(`Fetched track`);
+
+	return [result];
 }

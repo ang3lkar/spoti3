@@ -18,7 +18,7 @@ export async function downloadTrackList({ playlist, tracks, progress, options })
 
 	let total = tracks.length;
 
-	consola.start(`Downloading ${total} tracks from "${playlist.name}"...`);
+	consola.start(`Downloading ${total} tracks from "${playlist.folderName}"...`);
 
 	const succeededTracks = [];
 	const failedTracks = [];

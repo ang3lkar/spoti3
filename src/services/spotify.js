@@ -2,7 +2,7 @@ import { logger } from "../utils/logger.js";
 import {
   fetchAccessToken,
   fetchPlaylistDetails,
-  fetchPlaylistTracks,
+  fetchTracks,
 } from "../gateway/spotify.js";
 
 function getArtists(object) {
@@ -25,6 +25,19 @@ function enrichTrack(item) {
 	return {...track, fullTitle};
 }
 
+function getFolderName({spotifyId, playlistDetails}) {
+	switch (spotifyId.type) {
+		case 'playlist':
+			return playlistDetails.name;
+		case 'album':
+			return `${getArtists(playlistDetails)} - ${playlistDetails.name}`;
+		case 'track':
+			return `Misc`;
+		default:
+			throw new Error(`Unknown Spotify ID type: ${spotifyId.type}`);
+	}
+}
+
 /**
  * Construct the playlist details and tracks using the Spotify API
  *
@@ -35,9 +48,9 @@ export async function fetchPlaylist(spotifyId) {
   const accessToken = await fetchAccessToken();
 
   const playlistDetails = await fetchPlaylistDetails({ accessToken, spotifyId });
-  const items = await fetchPlaylistTracks({ accessToken, spotifyId });
+  const items = await fetchTracks({ accessToken, spotifyId });
 
-	const folderName = spotifyId.type === 'album' ? `${getArtists(playlistDetails)} - ${playlistDetails.name}` : playlistDetails.name;
+	const folderName = getFolderName({spotifyId, playlistDetails});
 
 	const tracks = [];
 
