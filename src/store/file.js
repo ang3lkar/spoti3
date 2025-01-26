@@ -4,6 +4,7 @@ import { titleToFriendlyName } from "../utils/basic.js";
 import { PLAYLISTS_FOLDER } from "../constants.js";
 import { hasBeenAttempted } from "./helpers.js";
 import { getArrayFromFile } from "../utils/file.js";
+import { logger } from "../utils/logger.js";
 
 export function getPlaylistFileName(playlist) {
 	return `${PLAYLISTS_FOLDER}/${titleToFriendlyName(
@@ -13,7 +14,7 @@ export function getPlaylistFileName(playlist) {
 
 function saveToTextFileSync(data, filename) {
 	fs.writeFileSync(filename, data.map(t => `${t.id}: ${t.fullTitle}`).join("\n"));
-	console.log(`Playlist tracks saved to ${filename}`);
+	logger.info(`Playlist tracks saved to ${filename}`);
 }
 
 /**
@@ -28,12 +29,12 @@ export async function saveToFile({playlist, options}) {
 		const filename = getPlaylistFileName(playlist);
 
 		if (!options.force && fs.existsSync(filename)) {
-			console.log(`File ${filename} already exists. Skipping save.`);
+			logger.info(`File ${filename} already exists. Skipping save.`);
 			return { filename };
 		}
 
 		if (options.force) {
-			console.log("Force option enabled. Overwriting existing file.");
+			logger.info("Force option enabled. Overwriting existing file.");
 			fs.rmSync(filename, { force: true });
 		}
 

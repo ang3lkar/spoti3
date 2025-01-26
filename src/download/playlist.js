@@ -2,14 +2,13 @@ import { logger } from "../utils/logger.js";
 import { downloadTrack } from "./track.js";
 import { lineWithCheckmark, lineWithX } from "../store/helpers.js";
 import { QuotaExceededError } from "../errors.js";
-import { consola } from "consola";
 
 export async function downloadTrackList({ playlist, tracks, progress, options }) {
 	let count = 0;
 	let currentTrack;
 
 	if (options.mock) {
-		consola.warn(
+		logger.warn(
 			"Mock mode enabled. In this mode app will not search or download files to avoid reaching Youtube quotas.",
 		);
 	}
@@ -18,7 +17,7 @@ export async function downloadTrackList({ playlist, tracks, progress, options })
 
 	let total = tracks.length;
 
-	consola.start(`Downloading ${total} tracks from "${playlist.folderName}"...`);
+	logger.start(`Downloading ${total} tracks from "${playlist.folderName}"...`);
 
 	const succeededTracks = [];
 	const failedTracks = [];
@@ -26,7 +25,7 @@ export async function downloadTrackList({ playlist, tracks, progress, options })
 
 	// Handle Ctrl+C (SIGINT)
 	process.on("SIGINT", () => {
-		console.log("\nCaught interrupt signal (Ctrl+C), cleaning up...");
+		logger.info("\nCaught interrupt signal (Ctrl+C), cleaning up...");
 
 		// bring current track back to pending to download next time
 		pendingTracks.push(currentTrack);
