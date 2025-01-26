@@ -1,4 +1,6 @@
-import "dotenv/config";
+import { config } from 'dotenv';
+config({ path: '~/Repositories/mini-projects/spoti3/.env' });
+
 import { Command } from "commander";
 import { download } from "./download/index.js";
 import { saveToFile } from "./store/file.js";
