@@ -40,7 +40,7 @@ export function setTags(file, tags = {}) {
 			mp3tag.tags.v2.TALB = album;
     }
 
-		console.log(`Mp3Tag: Writing v2 tags: `, mp3tag.tags.v2);
+		logger.info(`Mp3Tag: Writing v2 tags: `, mp3tag.tags.v2);
 
     mp3tag.save();
 

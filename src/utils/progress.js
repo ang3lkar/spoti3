@@ -1,7 +1,7 @@
 import fs from "fs";
-import { getTmpFilePath, File } from "./file.js";
-import { consola } from "consola";
 import path from "path";
+import { logger } from "./logger.js";
+import { getTmpFilePath, File } from "./file.js";
 import { getPlaylistFileName } from "../store/file.js";
 
 class FileProgress {
@@ -24,7 +24,7 @@ class FileProgress {
 		fs.renameSync(this.tmpFilePath, this.playlistPath);
 
 		const results = fs.readFileSync(this.playlistPath).toString();
-		consola.box(results);
+		logger.box(results);
 	}
 }
 
