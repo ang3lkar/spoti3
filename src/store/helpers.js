@@ -1,15 +1,15 @@
 import { checkMark, failMark } from "../constants.js";
 
 function applyCheckmark(track) {
-	return track.includes(checkMark) ? "" : checkMark;
+	return track.includes(checkMark) ? " " : checkMark;
 }
 
 export function lineWithCheckmark(track) {
-	return `${track} ${applyCheckmark(track)}` + "\n";
+	return `${applyCheckmark(track)} ${track}` + "\n";
 }
 
 export function lineWithX(track) {
-	return `${track} ${failMark}` + "\n";
+	return `${failMark} ${track}` + "\n";
 }
 
 export function hasBeenAttempted(track) {
