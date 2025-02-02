@@ -11,7 +11,6 @@ async function askToProceed({pendingTracks, spotifyId, name}) {
 		const exitMessage = spotifyId.type === 'track' ?
 			`The track "${name}" has already been downloaded.` :
 			`All tracks from ${name} ${spotifyId.type} have already been downloaded.`;
-
 		logger.info(exitMessage);
 		process.exit();
 	}

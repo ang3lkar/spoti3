@@ -46,7 +46,7 @@ export async function saveToFile({playlist, options}) {
 
 		return { filename };
 	} catch (error) {
-		console.error("Error:", error.message);
+		logger.error("Error:", error.message);
 	}
 }
 

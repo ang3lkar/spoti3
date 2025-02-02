@@ -12,7 +12,7 @@ const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
 export async function downloadTrack({ playlist, track, tagOptions, downloadOptions }) {
 	if (!track) {
-		console.error("Missing track");
+		logger.error("Missing track");
 		return { outcome: "MISSING_TRACK" };
 	}
 
