@@ -80,25 +80,37 @@ export async function fetchTracks({ accessToken, spotifyId }) {
 /**
  * Fetch the tracks of a Spotify playlist
  *
+ * https://developer.spotify.com/documentation/web-api/reference/get-playlists-tracks
+ *
  * @param {*} param0
  * @returns
  */
-export async function fetchMultipleTracks({ accessToken, spotifyId }) {
+export async function fetchMultipleTracks({ accessToken, spotifyId, url }) {
 	const {type, value} = spotifyId;
+	const result = [];
 
 	logger.debug(`Fetching ${type} tracks`);
 
-	let url = `https://api.spotify.com/v1/${type}s/${value}/tracks`;
+	let tracksUrl = url || `https://api.spotify.com/v1/${type}s/${value}/tracks`;
 
-	const response = await axios.get(url, {
+	const response = await axios.get(tracksUrl, {
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 		},
 	});
 
-	const result = response.data.items;
+	const next = response.data.next;
 
-	logger.debug(`Fetched ${result.length} tracks`);
+	if (next) {
+		const nextTracks = await fetchMultipleTracks({ accessToken, spotifyId, url: next });
+		result.push(...response.data.items.concat(nextTracks));
+	} else {
+		result.push(...response.data.items);
+	}
+
+	if (!url) {
+		logger.debug(`Fetched ${result.length} tracks`);
+	}
 
 	return result;
 }
