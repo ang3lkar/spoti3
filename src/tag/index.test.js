@@ -5,9 +5,10 @@ import MP3Tag from 'mp3tag.js';
 import { setTags } from './index.js';
 
 describe('setTags', () => {
-	const audioPath = `${process.cwd()}/src/tag/Warhaus - Where the names are real.mp3`;
+	const artworkPath = `${process.cwd()}/src/tag/cover.jpg`;
+	const audioPath = `${process.cwd()}/src/tag/test.mp3`;
 
-	before(() => {
+	before(async () => {
 		const buffer = fs.readFileSync(audioPath);
 
 		const mp3tag = new MP3Tag(buffer, true);
@@ -18,6 +19,22 @@ describe('setTags', () => {
 		mp3tag.tags.artist = '';
 		mp3tag.tags.album = '';
 		mp3tag.tags.track = '';
+
+		await downloadImage('https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228', artworkPath);
+
+		// Read artwork's bytes
+		const artBuffer = fs.readFileSync(artworkPath)
+		const artBytes = new Uint8Array(artBuffer)
+
+		// Image metadata
+		mp3tag.tags.v2.APIC = [
+			{
+				format: 'image/jpeg',
+				type: 3,
+				description: 'Album image',
+				data: artBytes
+			}
+		]
 
 		mp3tag.save();
 
