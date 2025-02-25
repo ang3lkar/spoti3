@@ -10,7 +10,7 @@ import { logger } from "../utils/logger.js";
  */
 export function setTags(file, tags = {}) {
   try {
-		logger.debug(`Setting tags for ${file}: `, tags);
+    logger.debug(`Setting tags for ${file}: `, tags);
 
     const buffer = fs.readFileSync(file);
 
@@ -18,29 +18,40 @@ export function setTags(file, tags = {}) {
 
     mp3tag.read();
 
-    const { title, artist, ordinal, album } = tags;
+    const { title, artist, ordinal, album, artBytes } = tags;
 
     if (title) {
       mp3tag.tags.title = title;
-			mp3tag.tags.v2.TIT2 = title
+      mp3tag.tags.v2.TIT2 = title
     }
 
     if (artist) {
       mp3tag.tags.artist = artist;
-			mp3tag.tags.v2.TPE1 = artist;
+      mp3tag.tags.v2.TPE1 = artist;
     }
 
     if (ordinal) {
       mp3tag.tags.track = ordinal;
-			mp3tag.tags.v2.TRCK = ordinal.toString();
+      mp3tag.tags.v2.TRCK = ordinal.toString();
     }
 
     if (album) {
       mp3tag.tags.album = album;
-			mp3tag.tags.v2.TALB = album;
+      mp3tag.tags.v2.TALB = album;
     }
 
-		logger.info(`Mp3Tag: Writing v2 tags: `, mp3tag.tags.v2);
+    if (artBytes) {
+      mp3tag.tags.v2.APIC = [
+        {
+          format: 'image/jpeg',
+          type: 3,
+          description: 'Album image',
+          data: artBytes
+        }
+      ]
+    }
+
+    logger.info(`Mp3Tag: Writing v2 tags: `, mp3tag.tags.v2);
 
     mp3tag.save();
 
@@ -49,7 +60,7 @@ export function setTags(file, tags = {}) {
 
     fs.writeFileSync(file, mp3tag.buffer);
   } catch (err) {
-		logger.error(err);
+    logger.error(err);
     throw new Error(`Failed to set tags for ${file}: ${err.message}`);
   }
 }
