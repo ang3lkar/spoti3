@@ -56,10 +56,10 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
 	let artBytes;
 	try {
 		logger.debug(`Downloading image for ${trackFilename}...`);
-		const imageUrl = track.album.images[0].url;
+		const imageUrl = track.album ? track.album.images[0].url : playlist.images[0].url;
 		const imageId = imageUrl.split("/").pop();
 		const artworkPath = `${playlistFolder}/${imageId}.jpg`;
-		await downloadImage(track.album.images[0].url, artworkPath);
+		await downloadImage(imageUrl, artworkPath);
 		logger.debug(`${checkMark} Downloaded image for ${trackFilename}`);
 
 		const artBuffer = fs.readFileSync(artworkPath)
