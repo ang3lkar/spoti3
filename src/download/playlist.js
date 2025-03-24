@@ -75,7 +75,8 @@ export async function downloadTrackList({ playlist, tracks, progress, options })
 				logger.error(
 					"Error occurred while searching YouTube: Request failed with status code 403.",
 				);
-				logger.error("Youtube daily quota exceeded. Exiting...");
+				logger.error("Youtube daily quota exceeded. Try again tomorrow!");
+				process.exit(0);
 			}
 
 			logger.error(err);
