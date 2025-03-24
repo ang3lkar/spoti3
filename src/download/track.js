@@ -22,7 +22,7 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
     return { outcome: "SUCCESS" };
   }
 
-  let trackFilename;
+  let trackFilename, isDownloaded;
   const playlistFolder = path.join(downloadsDir, playlist.folderName);
 
   try {
@@ -40,7 +40,8 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
 
     logger.debug(`Downloading ${trackFilename}...`);
 
-    if (!fs.existsSync(trackFilename)) {
+		isDownloaded = fs.existsSync(trackFilename);
+    if (!isDownloaded) {
       mp3(track.fullTitle, videoId);
     }
 
@@ -52,6 +53,10 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
     logger.error(err);
     return { outcome: "DOWNLOAD_ERROR", error: err };
   }
+
+	if (isDownloaded) {
+		return { outcome: "SUCCESS", mp3File: trackFilename };
+	}
 
 	let artBytes;
 	try {
