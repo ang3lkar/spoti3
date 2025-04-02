@@ -8,7 +8,7 @@ export function extractSpotifyId(url) {
   const match = url.match(regex);
   if (match) {
     logger.debug(
-      `Extracted Spotify ID from spotify URL (type=${match[1]}) (spotifyId=${match[2]})`
+      `Extracted Spotify ID from spotify URL (type=${match[1]}) (spotifyId=${match[2]})`,
     );
 
     return { type: match[1], value: match[2] };
