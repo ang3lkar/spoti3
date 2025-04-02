@@ -9,11 +9,11 @@ import { PLAYLISTS_FOLDER, DOWNLOADS_FOLDER } from "../constants.js";
  * @param {*} name The name of the folder to create
  */
 export function createDownloadFolder(name) {
-	const folder = path.join(process.cwd(), DOWNLOADS_FOLDER, name);
+  const folder = path.join(process.cwd(), DOWNLOADS_FOLDER, name);
 
-	if (!fs.existsSync(folder)) {
-		fs.mkdirSync(folder);
-	}
+  if (!fs.existsSync(folder)) {
+    fs.mkdirSync(folder);
+  }
 }
 
 /**
@@ -23,23 +23,23 @@ export function createDownloadFolder(name) {
  * @returns An array of strings representing the lines in the file
  */
 export function getArrayFromFile(filePath) {
-	return fs.readFileSync(filePath, "utf-8").split("\n").filter(Boolean);
+  return fs.readFileSync(filePath, "utf-8").split("\n").filter(Boolean);
 }
 
 export function getTmpFilePath() {
-	return path.join(process.cwd(), PLAYLISTS_FOLDER, "tmp.txt");
+  return path.join(process.cwd(), PLAYLISTS_FOLDER, "tmp.txt");
 }
 
 export class File {
-	constructor(fileName) {
-		this.fileName = fileName;
-	}
+  constructor(fileName) {
+    this.fileName = fileName;
+  }
 
-	clear() {
-		fs.writeFileSync(this.fileName, "");
-	}
+  clear() {
+    fs.writeFileSync(this.fileName, "");
+  }
 
-	append(line) {
-		fs.writeFileSync(this.fileName, line, { flag: "a" });
-	}
+  append(line) {
+    fs.writeFileSync(this.fileName, line, { flag: "a" });
+  }
 }

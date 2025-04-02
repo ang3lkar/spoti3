@@ -11,7 +11,12 @@ import { downloadImage } from "../utils/http.js";
 
 const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
-export async function downloadTrack({ playlist, track, tagOptions, downloadOptions }) {
+export async function downloadTrack({
+  playlist,
+  track,
+  tagOptions,
+  downloadOptions,
+}) {
   if (!track) {
     logger.error("Missing track");
     return { outcome: "MISSING_TRACK" };
@@ -22,8 +27,16 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
     return { outcome: "SUCCESS" };
   }
 
-  let trackFilename, isDownloaded;
+  let isDownloaded;
   const playlistFolder = path.join(downloadsDir, playlist.folderName);
+
+  const trackFilename = `${playlistFolder}/${track.fullTitle}.mp3`;
+
+  isDownloaded = fs.existsSync(trackFilename);
+
+  if (isDownloaded) {
+    return { outcome: "SUCCESS", mp3File: trackFilename };
+  }
 
   try {
     const searchResult = await searchYouTube(track.fullTitle);
@@ -36,15 +49,9 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
 
     process.chdir(playlistFolder);
 
-    trackFilename = `${playlistFolder}/${track.fullTitle}.mp3`;
-
     logger.debug(`Downloading ${trackFilename}...`);
 
-		isDownloaded = fs.existsSync(trackFilename);
-    if (!isDownloaded) {
-      mp3(track.fullTitle, videoId);
-    }
-
+    mp3(track.fullTitle, videoId);
   } catch (err) {
     if (err instanceof QuotaExceededError) {
       throw err;
@@ -54,33 +61,31 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
     return { outcome: "DOWNLOAD_ERROR", error: err };
   }
 
-	if (isDownloaded) {
-		return { outcome: "SUCCESS", mp3File: trackFilename };
-	}
+  let artBytes;
+  try {
+    logger.debug(`Downloading image for ${trackFilename}...`);
+    const imageUrl = track.album
+      ? track.album.images[0].url
+      : playlist.images[0].url;
+    const imageId = imageUrl.split("/").pop();
+    const artworkPath = `${playlistFolder}/${imageId}.jpg`;
+    await downloadImage(imageUrl, artworkPath);
+    logger.debug(`${checkMark} Downloaded image for ${trackFilename}`);
 
-	let artBytes;
-	try {
-		logger.debug(`Downloading image for ${trackFilename}...`);
-		const imageUrl = track.album ? track.album.images[0].url : playlist.images[0].url;
-		const imageId = imageUrl.split("/").pop();
-		const artworkPath = `${playlistFolder}/${imageId}.jpg`;
-		await downloadImage(imageUrl, artworkPath);
-		logger.debug(`${checkMark} Downloaded image for ${trackFilename}`);
-
-		const artBuffer = fs.readFileSync(artworkPath)
-		artBytes = new Uint8Array(artBuffer)
-	} catch (err) {
-		logger.error(`Failed to download image for ${trackFilename}`);
-		logger.error(err.message);
-	}
+    const artBuffer = fs.readFileSync(artworkPath);
+    artBytes = new Uint8Array(artBuffer);
+  } catch (err) {
+    logger.error(`Failed to download image for ${trackFilename}`);
+    logger.error(err.message);
+  }
 
   try {
     tagOptions = {
       ordinal: tagOptions.ordinal,
       title: track.name,
       album: tagOptions.album || track.album?.name || playlist.name,
-      artist: track.artists.map(a => a.name).join("& "),
-      artBytes
+      artist: track.artists.map((a) => a.name).join("& "),
+      artBytes,
     };
 
     setTags(trackFilename, tagOptions);

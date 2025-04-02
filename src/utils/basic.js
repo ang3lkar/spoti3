@@ -1,9 +1,9 @@
 function removeEmojis(text) {
-	return text.replace(/[\u{1F600}-\u{1F6FF}]/gu, "");
+  return text.replace(/[\u{1F600}-\u{1F6FF}]/gu, "");
 }
 
 function removeSpecialCharacters(text) {
-	return text.replace(/[^\w\s]/gi, "");
+  return text.replace(/[^\w\s]/gi, "");
 }
 
 /**
@@ -13,17 +13,17 @@ function removeSpecialCharacters(text) {
  * @returns A string representing the friendly filename
  */
 export function titleToFriendlyName(playlist) {
-	const {id, name} = playlist;
+  const { id, name } = playlist;
 
-	let result = name;
+  let result = name;
 
-	result = removeEmojis(result);
-	result = removeSpecialCharacters(result);
-	result = result.replace(/\s/g, "-");
+  result = removeEmojis(result);
+  result = removeSpecialCharacters(result);
+  result = result.replace(/\s/g, "-");
 
-	result = `${result}-${id}`;
+  result = `${result}-${id}`;
 
-	return result;
+  return result;
 }
 
 /**
@@ -33,5 +33,5 @@ export function titleToFriendlyName(playlist) {
  * @returns
  */
 export function delay(ms) {
-	return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

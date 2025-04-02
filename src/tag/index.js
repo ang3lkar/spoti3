@@ -22,7 +22,7 @@ export function setTags(file, tags = {}) {
 
     if (title) {
       mp3tag.tags.title = title;
-      mp3tag.tags.v2.TIT2 = title
+      mp3tag.tags.v2.TIT2 = title;
     }
 
     if (artist) {
@@ -43,12 +43,12 @@ export function setTags(file, tags = {}) {
     if (artBytes) {
       mp3tag.tags.v2.APIC = [
         {
-          format: 'image/jpeg',
+          format: "image/jpeg",
           type: 3,
-          description: 'Album image',
-          data: artBytes
-        }
-      ]
+          description: "Album image",
+          data: artBytes,
+        },
+      ];
     }
 
     logger.info(`Mp3Tag: Writing v2 tags: `, mp3tag.tags.v2);

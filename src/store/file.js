@@ -7,14 +7,15 @@ import { getArrayFromFile } from "../utils/file.js";
 import { logger } from "../utils/logger.js";
 
 export function getPlaylistFileName(playlist) {
-	return `${PLAYLISTS_FOLDER}/${titleToFriendlyName(
-		playlist
-	)}.txt`;
+  return `${PLAYLISTS_FOLDER}/${titleToFriendlyName(playlist)}.txt`;
 }
 
 function saveToTextFileSync(data, filename) {
-	fs.writeFileSync(filename, data.map(t => `${t.id}: ${t.fullTitle}`).join("\n"));
-	logger.info(`Playlist tracks saved to ${filename}`);
+  fs.writeFileSync(
+    filename,
+    data.map((t) => `${t.id}: ${t.fullTitle}`).join("\n"),
+  );
+  logger.info(`Playlist tracks saved to ${filename}`);
 }
 
 /**
@@ -24,41 +25,41 @@ function saveToTextFileSync(data, filename) {
  * @param {Object} force Whether to ignore all progress and start from the beginning
  * @returns {Promise<string>} The filename where the playlist was saved
  */
-export async function saveToFile({playlist, options}) {
-	try {
-		const filename = getPlaylistFileName(playlist);
+export async function saveToFile({ playlist, options }) {
+  try {
+    const filename = getPlaylistFileName(playlist);
 
-		if (!options.force && fs.existsSync(filename)) {
-			logger.info(`File ${filename} already exists. Skipping save.`);
-			return { filename };
-		}
+    if (!options.force && fs.existsSync(filename)) {
+      logger.info(`File ${filename} already exists. Skipping save.`);
+      return { filename };
+    }
 
-		if (options.force) {
-			logger.info("Force option enabled. Overwriting existing file.");
-			fs.rmSync(filename, { force: true });
-		}
+    if (options.force) {
+      logger.info("Force option enabled. Overwriting existing file.");
+      fs.rmSync(filename, { force: true });
+    }
 
-		if (!fs.existsSync(PLAYLISTS_FOLDER)) {
-			fs.mkdirSync(PLAYLISTS_FOLDER);
-		}
+    if (!fs.existsSync(PLAYLISTS_FOLDER)) {
+      fs.mkdirSync(PLAYLISTS_FOLDER);
+    }
 
-		saveToTextFileSync(playlist.tracks, filename);
+    saveToTextFileSync(playlist.tracks, filename);
 
-		return { filename };
-	} catch (error) {
-		logger.error("Error:", error.message);
-	}
+    return { filename };
+  } catch (error) {
+    logger.error("Error:", error.message);
+  }
 }
 
 export async function getPendingTracksFromFile(playlist, options) {
-	const filePath = path.join(process.cwd(), getPlaylistFileName(playlist));
+  const filePath = path.join(process.cwd(), getPlaylistFileName(playlist));
 
-	const result = getArrayFromFile(filePath).filter(
-		(track) => options.force || !hasBeenAttempted(track)
-	).map(track => {
-		const trackId = track.split(':')[0];
-		return playlist.tracks.find(t => t.id === trackId);
-	});
+  const result = getArrayFromFile(filePath)
+    .filter((track) => options.force || !hasBeenAttempted(track))
+    .map((track) => {
+      const trackId = track.split(":")[0];
+      return playlist.tracks.find((t) => t.id === trackId);
+    });
 
-	return result;
+  return result;
 }
