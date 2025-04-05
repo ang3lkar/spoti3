@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 import { titleToFriendlyName } from "../utils/basic.js";
 import { PLAYLISTS_FOLDER } from "../constants.js";
-import { hasBeenAttempted } from "./helpers.js";
 import { getArrayFromFile } from "../utils/file.js";
 import { logger } from "../utils/logger.js";
 
@@ -13,7 +12,7 @@ export function getPlaylistFileName(playlist) {
 function saveToTextFileSync(data, filename) {
   fs.writeFileSync(
     filename,
-    data.map((t) => `${t.id}: ${t.fullTitle}`).join("\n"),
+    data.map((t) => `${t.id}: ${t.fullTitle}`).join("\n")
   );
   logger.info(`Playlist tracks saved to ${filename}`);
 }
@@ -54,12 +53,10 @@ export async function saveToFile({ playlist, options }) {
 export async function getPendingTracksFromFile(playlist, options) {
   const filePath = path.join(process.cwd(), getPlaylistFileName(playlist));
 
-  const result = getArrayFromFile(filePath)
-    .filter((track) => options.force || !hasBeenAttempted(track))
-    .map((track) => {
-      const trackId = track.split(":")[0];
-      return playlist.tracks.find((t) => t.id === trackId);
-    });
+  const result = getArrayFromFile(filePath).map((track) => {
+    const trackId = track.split(":")[0];
+    return playlist.tracks.find((t) => t.id === trackId);
+  });
 
   return result;
 }

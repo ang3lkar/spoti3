@@ -11,7 +11,3 @@ export function lineWithCheckmark(track) {
 export function lineWithX(track) {
   return `${failMark} ${track}` + "\n";
 }
-
-export function hasBeenAttempted(track) {
-  return track.includes(checkMark) || track.includes(failMark);
-}
