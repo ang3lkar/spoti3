@@ -30,6 +30,10 @@ export function getTmpFilePath() {
   return path.join(process.cwd(), PLAYLISTS_FOLDER, "tmp.txt");
 }
 
+export function getFileName(filePath) {
+  return path.basename(filePath);
+}
+
 export class File {
   constructor(fileName) {
     this.fileName = fileName;

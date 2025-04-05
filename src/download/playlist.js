@@ -14,7 +14,7 @@ export async function downloadTrackList({
 
   if (options.mock) {
     logger.warn(
-      "Mock mode enabled. In this mode app will not search or download files to avoid reaching Youtube quotas.",
+      "Mock mode enabled. In this mode app will not search or download files to avoid reaching Youtube quotas."
     );
   }
 
@@ -47,10 +47,12 @@ export async function downloadTrackList({
   });
 
   for (const track of tracks) {
+    logger.info("--------------------------------");
+
     count += 1;
     currentTrack = track;
     logger.info(
-      `Downloading ${count}/${total} "${track.id}: ${track.fullTitle}"`,
+      `Downloading ${count}/${total} "${track.id}: ${track.fullTitle}"`
     );
 
     const tagOptions = {
@@ -85,7 +87,7 @@ export async function downloadTrackList({
     } catch (err) {
       if (err instanceof QuotaExceededError) {
         logger.error(
-          "Error occurred while searching YouTube: Request failed with status code 403.",
+          "Error occurred while searching YouTube: Request failed with status code 403."
         );
         logger.error("Youtube daily quota exceeded. Try again tomorrow!");
         process.exit(0);

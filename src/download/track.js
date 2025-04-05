@@ -1,4 +1,4 @@
-import { logger } from "../utils/logger.js";
+import { logger, callSilently } from "../utils/logger.js";
 import { DOWNLOADS_FOLDER, checkMark } from "../constants.js";
 import { QuotaExceededError } from "../errors.js";
 import { searchYouTube } from "../gateway/youtube.js";
@@ -8,7 +8,7 @@ import { mp3 } from "../convert/index.js";
 import { delay } from "../utils/basic.js";
 import { setTags } from "../tag/index.js";
 import { downloadImage } from "../utils/http.js";
-
+import { getFileName } from "../utils/file.js";
 const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
 export async function downloadTrack({
@@ -49,9 +49,11 @@ export async function downloadTrack({
 
     process.chdir(playlistFolder);
 
-    logger.debug(`Downloading ${trackFilename}...`);
+    logger.debug(`Downloading ${getFileName(trackFilename)}...`);
 
     mp3(track.fullTitle, videoId);
+
+    logger.debug(`Downloaded ${getFileName(trackFilename)}`);
   } catch (err) {
     if (err instanceof QuotaExceededError) {
       throw err;
@@ -63,19 +65,22 @@ export async function downloadTrack({
 
   let artBytes;
   try {
-    logger.debug(`Downloading image for ${trackFilename}...`);
+    logger.debug(`Downloading image for ${getFileName(trackFilename)}...`);
     const imageUrl = track.album
       ? track.album.images[0].url
       : playlist.images[0].url;
     const imageId = imageUrl.split("/").pop();
     const artworkPath = `${playlistFolder}/${imageId}.jpg`;
     await downloadImage(imageUrl, artworkPath);
-    logger.debug(`${checkMark} Downloaded image for ${trackFilename}`);
+    logger.debug(`Downloaded image for ${getFileName(trackFilename)}`);
 
     const artBuffer = fs.readFileSync(artworkPath);
     artBytes = new Uint8Array(artBuffer);
+
+    // image loaded into memory, delete file
+    fs.unlinkSync(artworkPath);
   } catch (err) {
-    logger.error(`Failed to download image for ${trackFilename}`);
+    logger.error(`Failed to download image for ${getFileName(trackFilename)}`);
     logger.error(err.message);
   }
 
@@ -88,7 +93,7 @@ export async function downloadTrack({
       artBytes,
     };
 
-    setTags(trackFilename, tagOptions);
+    callSilently(setTags, trackFilename, tagOptions);
   } catch (err) {
     logger.error(err.message);
   }
