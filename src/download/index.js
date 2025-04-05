@@ -59,6 +59,6 @@ export async function download({ playlistUrl, options }) {
       options,
     });
   } catch (err) {
-    logger.error(err);
+    logger.error(err.stack);
   }
 }
