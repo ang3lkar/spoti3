@@ -76,6 +76,9 @@ export async function downloadTrack({
 
     const artBuffer = fs.readFileSync(artworkPath);
     artBytes = new Uint8Array(artBuffer);
+
+    // image loaded into memory, delete file
+    fs.unlinkSync(artworkPath);
   } catch (err) {
     logger.error(`Failed to download image for ${getFileName(trackFilename)}`);
     logger.error(err.message);
