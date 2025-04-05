@@ -72,4 +72,21 @@ class Logger {
 
 const logger = new Logger();
 
-export { logger };
+/**
+ * Call a function silently
+ *
+ * @param {*} fn
+ * @param  {...any} args
+ * @returns
+ */
+function callSilently(fn, ...args) {
+  const originalLog = console.log;
+  console.log = () => {}; // Mute logs
+  try {
+    return fn(...args);
+  } finally {
+    console.log = originalLog; // Restore logs
+  }
+}
+
+export { logger, callSilently };
