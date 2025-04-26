@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 import { titleToFriendlyName } from "../utils/basic.js";
 import { app } from "../config/index.js";
-import { getArrayFromFile } from "../utils/file.js";
 import { logger } from "../utils/logger.js";
 
 const { PLAYLISTS } = app.FOLDERS;
