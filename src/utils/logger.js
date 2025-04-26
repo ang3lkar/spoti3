@@ -1,20 +1,12 @@
 import readline from "readline";
 import chalk from "chalk";
 import { createConsola } from "consola";
+import { app } from "../config/index.js";
 
-const LEVELS = {
-  fatal: 0,
-  error: 1,
-  warn: 2,
-  info: 3,
-  debug: 4,
-  trace: 5,
-  silent: -999,
-  verbose: 999,
-};
+const { LEVELS, LEVEL } = app.LOGGING;
 
 const baseLogger = createConsola({
-  level: LEVELS[process.env.LOG_LEVEL] || LEVELS["info"],
+  level: LEVELS[LEVEL] || LEVELS["info"],
   fancy: true,
   formatOptins: {
     columns: 80,

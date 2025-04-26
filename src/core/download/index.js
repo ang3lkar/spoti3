@@ -1,10 +1,8 @@
-import { logger } from "../utils/logger.js";
+import { logger } from "../../utils/logger.js";
 import { downloadTrackList } from "./playlist.js";
-import { Progress } from "../utils/progress.js";
-import { storePlaylist, getPendingTracks } from "../store/index.js";
-import { extractSpotifyId } from "../utils/spotify.js";
-import { fetchPlaylist } from "../services/spotify.js";
-import { createDownloadFolder } from "../utils/file.js";
+import { extractSpotifyId } from "../../utils/spotify.js";
+import { fetchPlaylist } from "../../services/spotify.js";
+import { createDownloadFolder } from "../../utils/file.js";
 
 async function askToProceed({ pendingTracks, spotifyId, name }) {
   if (pendingTracks.length === 0) {
@@ -37,28 +35,21 @@ export async function download({ playlistUrl, options }) {
 
     const playlist = await fetchPlaylist(spotifyId);
 
-    await storePlaylist(playlist, options);
-
-    const pendingTracks = await getPendingTracks(playlist, options);
-
     if (!options.force) {
       await askToProceed({ pendingTracks, spotifyId, name: playlist.name });
     }
 
-    createDownloadFolder(playlist.folderName);
-
-    const progress = new Progress(playlist);
-
     const album = options.album || playlist.name;
+
+    createDownloadFolder(playlist.folderName);
 
     await downloadTrackList({
       playlist,
-      tracks: pendingTracks,
-      progress,
+      tracks: playlist.tracks,
       album,
       options,
     });
   } catch (err) {
-    logger.error(err);
+    logger.error(err.stack);
   }
 }

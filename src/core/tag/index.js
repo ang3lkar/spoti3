@@ -1,7 +1,7 @@
 import fs from "fs";
 import MP3Tag from "mp3tag.js";
-import { logger } from "../utils/logger.js";
-import { getFileName } from "../utils/file.js";
+import { logger } from "../../utils/logger.js";
+import { getFileName } from "../../utils/file.js";
 /**
  * A function to set the tags of an mp3 file.
  *

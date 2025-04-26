@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import { logger } from "../utils/logger.js";
+import { logger } from "../../utils/logger.js";
 
 // Function to download a track using yt-dlp
 export function mp3(filename, videoId) {
