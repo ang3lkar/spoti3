@@ -11,6 +11,21 @@ import { downloadImage } from "../utils/http.js";
 import { getFileName } from "../utils/file.js";
 const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
+/**
+ * Get the search term for a track.
+ *
+ * @param {*} track
+ * @param {*} playlist
+ * @returns
+ */
+function getSearchTerm(track, playlist) {
+  // If album is a live one, concatenate the album and track name to enforce the
+  // specific version of the track instead of the original.
+  return playlist.album_type === "album"
+    ? `${track.fullTitle} - ${playlist.name}`
+    : track.fullTitle;
+}
+
 async function downloadArtwork(track, playlist, playlistFolder, trackFilename) {
   let artBytes;
   try {
@@ -65,7 +80,7 @@ export async function downloadTrack({
   }
 
   try {
-    const searchResult = await searchYouTube(track.fullTitle);
+    const searchResult = await searchYouTube(getSearchTerm(track, playlist));
 
     if (!searchResult) {
       return { outcome: "NO_VIDEO_FOUND" };
