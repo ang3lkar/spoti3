@@ -16,3 +16,29 @@ export function extractSpotifyId(url) {
     throw new Error("Invalid Spotify URL");
   }
 }
+
+/**
+ * Get the search term for a track.
+ *
+ * @param {*} track
+ * @param {*} playlist
+ * @returns
+ */
+export function getSearchTerm(track, playlist) {
+  // If album is a live one, concatenate the album and track name to enforce the
+  // specific version of the track instead of the original.
+  return playlist.album_type === "album"
+    ? `${track.fullTitle} / ${playlist.name}`
+    : track.fullTitle;
+}
+
+/**
+ * Get the image URL for a track
+ *
+ * @param {*} track
+ * @param {*} playlist
+ * @returns
+ */
+export function getTrackImageUrl(track, playlist) {
+  return track.album ? track.album.images[0].url : playlist.images[0].url;
+}

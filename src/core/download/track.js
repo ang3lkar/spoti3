@@ -1,54 +1,36 @@
+import fs from "fs";
+import path from "path";
 import { logger, callSilently } from "../../utils/logger.js";
 import { app } from "../../config/index.js";
 import { QuotaExceededError } from "../../core/errors.js";
 import { searchYouTube } from "../../api/youtube/youtube.js";
-import fs from "fs";
-import path from "path";
+import { downloadImageToMemory } from "../../utils/basic.js";
 import { mp3 } from "../convert/index.js";
 import { delay } from "../../utils/basic.js";
 import { setTags } from "../tag/index.js";
-import { downloadImage } from "../../utils/http.js";
 import { getFileName } from "../../utils/file.js";
+import { getTrackImageUrl, getSearchTerm } from "../../utils/spotify.js";
 
 const { DOWNLOADS } = app.FOLDERS;
-const { CHECK_MARK } = app.SYMBOLS;
 
 const downloadsDir = path.join(process.cwd(), DOWNLOADS);
 
 /**
- * Get the search term for a track.
+ * Downloads the artwork for a track
  *
  * @param {*} track
  * @param {*} playlist
- * @returns
+ * @param {*} playlistFolder
  */
-function getSearchTerm(track, playlist) {
-  // If album is a live one, concatenate the album and track name to enforce the
-  // specific version of the track instead of the original.
-  return playlist.album_type === "album"
-    ? `${track.fullTitle} / ${playlist.name}`
-    : track.fullTitle;
-}
-
 async function downloadArtwork(track, playlist, playlistFolder, trackFilename) {
   let artBytes;
   try {
     logger.debug(`Downloading image for ${getFileName(trackFilename)}...`);
 
-    const imageUrl = track.album
-      ? track.album.images[0].url
-      : playlist.images[0].url;
-    const imageId = imageUrl.split("/").pop();
-    const artworkPath = `${playlistFolder}/${imageId}.jpg`;
-    await downloadImage(imageUrl, artworkPath);
+    const imageUrl = getTrackImageUrl(track, playlist);
 
-    logger.debug(`Downloaded image for ${getFileName(trackFilename)}`);
-
-    const artBuffer = fs.readFileSync(artworkPath);
+    const artBuffer = await downloadImageToMemory(imageUrl);
     artBytes = new Uint8Array(artBuffer);
-
-    // image loaded into memory, delete file
-    fs.unlinkSync(artworkPath);
   } catch (err) {
     logger.error(`Failed to download image for ${getFileName(trackFilename)}`);
     logger.error(err.message);
@@ -79,7 +61,7 @@ export async function downloadTrack({
 
   isDownloaded = fs.existsSync(trackFilename);
 
-  if (isDownloaded) {
+  if (isDownloaded && !downloadOptions.force) {
     return { outcome: "SUCCESS", mp3File: trackFilename };
   }
 

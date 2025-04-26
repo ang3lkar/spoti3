@@ -1,3 +1,5 @@
+import https from "node:https";
+
 function removeEmojis(text) {
   return text.replace(/[\u{1F600}-\u{1F6FF}]/gu, "");
 }
@@ -23,6 +25,9 @@ export function titleToFriendlyName(playlist) {
 
   result = `${result}-${id}`;
 
+  // if more than one dash, replace with a single dash
+  result = result.replace(/-+/g, "-");
+
   return result;
 }
 
@@ -34,4 +39,23 @@ export function titleToFriendlyName(playlist) {
  */
 export function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Downloads an image from a URL directly to memory
+ *
+ * @param {string} url The URL of the image to download
+ * @returns {Promise<Buffer>} A buffer containing the image data
+ */
+export async function downloadImageToMemory(url) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    https
+      .get(url, (response) => {
+        response.on("data", (chunk) => chunks.push(chunk));
+        response.on("end", () => resolve(Buffer.concat(chunks)));
+        response.on("error", reject);
+      })
+      .on("error", reject);
+  });
 }
