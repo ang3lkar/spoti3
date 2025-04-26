@@ -1,0 +1,13 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Coding pattern preferences
+
+- Always prefer simple solutions
+- Avoid duplication whenever possible, which means checking for other areas of the codebase that might already have similar code and functionality
+- Keep the codebase very clean and organized
+- Avoid having files over 300 lines of code, refactor accordingly to keep size small
+- Do not use packages that are not installed already in the project. Always rely on the existing ones
+- If there is a folder with tests, add new testing there instead of creating new files
