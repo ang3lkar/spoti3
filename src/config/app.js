@@ -13,7 +13,7 @@ export const SYMBOLS = {
 };
 
 export const LOGGING = {
-  LEVEL: process.env.LOG_LEVEL || "info",
+  LEVEL: process.env.LOG_LEVEL || "debug",
   LEVELS: {
     error: 0,
     warn: 1,
