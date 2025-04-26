@@ -1,10 +1,10 @@
-import { logger } from "../utils/logger.js";
+import { logger } from "../../utils/logger.js";
 import { downloadTrackList } from "./playlist.js";
-import { Progress } from "../utils/progress.js";
-import { storePlaylist, getPendingTracks } from "../store/index.js";
-import { extractSpotifyId } from "../utils/spotify.js";
-import { fetchPlaylist } from "../services/spotify.js";
-import { createDownloadFolder } from "../utils/file.js";
+import { Progress } from "../../utils/progress.js";
+import { storePlaylist, getPendingTracks } from "../../store/index.js";
+import { extractSpotifyId } from "../../utils/spotify.js";
+import { fetchPlaylist } from "../../services/spotify.js";
+import { createDownloadFolder } from "../../utils/file.js";
 
 async function askToProceed({ pendingTracks, spotifyId, name }) {
   if (pendingTracks.length === 0) {

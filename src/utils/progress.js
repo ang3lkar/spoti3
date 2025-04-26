@@ -8,7 +8,7 @@ class FileProgress {
   constructor(playlist) {
     const playlistFilePath = path.join(
       process.cwd(),
-      getPlaylistFileName(playlist),
+      getPlaylistFileName(playlist)
     );
     this.tmpFilePath = getTmpFilePath();
     this.playlistPath = playlistFilePath;

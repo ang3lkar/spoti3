@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { titleToFriendlyName } from "../utils/basic.js";
-import { PLAYLISTS_FOLDER } from "../constants.js";
+import { PLAYLISTS_FOLDER } from "../config/constants.js";
 import { getArrayFromFile } from "../utils/file.js";
 import { logger } from "../utils/logger.js";
 

@@ -1,14 +1,14 @@
-import { logger, callSilently } from "../utils/logger.js";
-import { DOWNLOADS_FOLDER, checkMark } from "../constants.js";
+import { logger, callSilently } from "../../utils/logger.js";
+import { DOWNLOADS_FOLDER, checkMark } from "../../config/constants.js";
 import { QuotaExceededError } from "../errors.js";
-import { searchYouTube } from "../gateway/youtube.js";
+import { searchYouTube } from "../../api/youtube/youtube.js";
 import fs from "fs";
 import path from "path";
 import { mp3 } from "../convert/index.js";
-import { delay } from "../utils/basic.js";
+import { delay } from "../../utils/basic.js";
 import { setTags } from "../tag/index.js";
-import { downloadImage } from "../utils/http.js";
-import { getFileName } from "../utils/file.js";
+import { downloadImage } from "../../utils/http.js";
+import { getFileName } from "../../utils/file.js";
 const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
 /**
@@ -22,7 +22,7 @@ function getSearchTerm(track, playlist) {
   // If album is a live one, concatenate the album and track name to enforce the
   // specific version of the track instead of the original.
   return playlist.album_type === "album"
-    ? `${track.fullTitle} - ${playlist.name}`
+    ? `${track.fullTitle} / ${playlist.name}`
     : track.fullTitle;
 }
 
@@ -83,6 +83,7 @@ export async function downloadTrack({
     const searchResult = await searchYouTube(getSearchTerm(track, playlist));
 
     if (!searchResult) {
+      logger.error(`No video found for ${getSearchTerm(track, playlist)}`);
       return { outcome: "NO_VIDEO_FOUND" };
     }
 

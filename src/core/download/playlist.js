@@ -1,6 +1,6 @@
-import { logger } from "../utils/logger.js";
+import { logger } from "../../utils/logger.js";
 import { downloadTrack } from "./track.js";
-import { lineWithCheckmark, lineWithX } from "../store/helpers.js";
+import { lineWithCheckmark, lineWithX } from "../../store/helpers.js";
 import { QuotaExceededError } from "../errors.js";
 
 export async function downloadTrackList({
@@ -48,6 +48,11 @@ export async function downloadTrackList({
 
   for (const track of tracks) {
     logger.info("--------------------------------");
+
+    if (track === undefined) {
+      logger.info("Track is undefined");
+      continue;
+    }
 
     count += 1;
     currentTrack = track;

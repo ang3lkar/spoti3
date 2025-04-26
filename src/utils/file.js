@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
+import { app } from "../config/index.js";
 
-import { PLAYLISTS_FOLDER, DOWNLOADS_FOLDER } from "../constants.js";
+const { DOWNLOADS, PLAYLISTS } = app.FOLDERS;
 
 /**
  * Create a folder with the given name in the playlists folder
@@ -9,7 +10,7 @@ import { PLAYLISTS_FOLDER, DOWNLOADS_FOLDER } from "../constants.js";
  * @param {*} name The name of the folder to create
  */
 export function createDownloadFolder(name) {
-  const folder = path.join(process.cwd(), DOWNLOADS_FOLDER, name);
+  const folder = path.join(process.cwd(), DOWNLOADS, name);
 
   if (!fs.existsSync(folder)) {
     fs.mkdirSync(folder);
@@ -27,7 +28,7 @@ export function getArrayFromFile(filePath) {
 }
 
 export function getTmpFilePath() {
-  return path.join(process.cwd(), PLAYLISTS_FOLDER, "tmp.txt");
+  return path.join(process.cwd(), PLAYLISTS, "tmp.txt");
 }
 
 export function getFileName(filePath) {

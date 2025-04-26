@@ -1,10 +1,12 @@
 import "dotenv/config";
 import axios from "axios";
-import { QuotaExceededError } from "../errors.js";
+import { QuotaExceededError } from "../../core/errors.js";
+import { logger } from "../../utils/logger.js";
+import { api } from "../../config/index.js";
+
+const { API_KEY, SEARCH_URL, SEARCH_PARAMS } = api.YOUTUBE;
 
 const url = "https://www.googleapis.com/youtube/v3/search";
-
-const API_KEY = process.env.YOUTUBE_API_KEY;
 
 const searchParams = {
   part: "snippet",
@@ -16,6 +18,8 @@ const searchParams = {
 
 // Function to search for a video on YouTube
 export async function searchYouTube(query) {
+  logger.debug(`Searching YouTube for ${query}`);
+
   try {
     const response = await axios.get(url, {
       params: {

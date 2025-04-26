@@ -1,7 +1,9 @@
-import { checkMark, failMark } from "../constants.js";
+import { app } from "../config/index.js";
+
+const { CHECK_MARK, FAIL_MARK } = app.SYMBOLS;
 
 function applyCheckmark(track) {
-  return track.includes(checkMark) ? " " : checkMark;
+  return track.includes(CHECK_MARK) ? " " : CHECK_MARK;
 }
 
 export function lineWithCheckmark(track) {
@@ -9,5 +11,5 @@ export function lineWithCheckmark(track) {
 }
 
 export function lineWithX(track) {
-  return `${failMark} ${track}` + "\n";
+  return `${FAIL_MARK} ${track}` + "\n";
 }

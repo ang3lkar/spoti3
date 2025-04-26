@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Command } from "commander";
-import { download } from "./download/index.js";
-import { saveToFile } from "./store/file.js";
+import { download } from "../core/download/index.js";
+import { saveToFile } from "../store/file.js";
 
 const program = new Command();
 
@@ -25,7 +25,7 @@ program
   .option("-m, --mock", "do not download the files")
   .option(
     "-a, --album-tag",
-    "set album name in mp3 files, will override default album name",
+    "set album name in mp3 files, will override default album name"
   )
   .option("-f, --force", "force download of all tracks")
   .action(async (playlistUrl, options) => {

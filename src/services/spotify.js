@@ -3,7 +3,7 @@ import {
   fetchAccessToken,
   fetchPlaylistDetails,
   fetchTracks,
-} from "../gateway/spotify.js";
+} from "../api/spotify/spotify.js";
 
 function getArtists(object) {
   return object.artists.map((artist) => artist.name).join(", ");

@@ -1,10 +1,8 @@
 import axios from "axios";
-import { logger } from "../utils/logger.js";
+import { logger } from "../../utils/logger.js";
+import { api } from "../../config/index.js";
 
-const tokenUrl = "https://accounts.spotify.com/api/token";
-
-const clientId = process.env.SPOTIFY_CLIENT_ID;
-const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+const { CLIENT_ID, CLIENT_SECRET, TOKEN_URL, API_BASE_URL } = api.SPOTIFY;
 
 /**
  * Get an temporary access token from Spotify
@@ -17,10 +15,10 @@ export async function fetchAccessToken() {
       "Content-Type": "application/x-www-form-urlencoded",
       Authorization:
         "Basic " +
-        Buffer.from(`${clientId}:${clientSecret}`).toString("base64"),
+        Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64"),
     },
     data: "grant_type=client_credentials", // Manually encoded body
-    url: tokenUrl,
+    url: TOKEN_URL,
   };
 
   try {
