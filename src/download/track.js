@@ -11,6 +11,32 @@ import { downloadImage } from "../utils/http.js";
 import { getFileName } from "../utils/file.js";
 const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
 
+async function downloadArtwork(track, playlist, playlistFolder, trackFilename) {
+  let artBytes;
+  try {
+    logger.debug(`Downloading image for ${getFileName(trackFilename)}...`);
+
+    const imageUrl = track.album
+      ? track.album.images[0].url
+      : playlist.images[0].url;
+    const imageId = imageUrl.split("/").pop();
+    const artworkPath = `${playlistFolder}/${imageId}.jpg`;
+    await downloadImage(imageUrl, artworkPath);
+
+    logger.debug(`Downloaded image for ${getFileName(trackFilename)}`);
+
+    const artBuffer = fs.readFileSync(artworkPath);
+    artBytes = new Uint8Array(artBuffer);
+
+    // image loaded into memory, delete file
+    fs.unlinkSync(artworkPath);
+  } catch (err) {
+    logger.error(`Failed to download image for ${getFileName(trackFilename)}`);
+    logger.error(err.message);
+  }
+  return artBytes;
+}
+
 export async function downloadTrack({
   playlist,
   track,
@@ -63,26 +89,12 @@ export async function downloadTrack({
     return { outcome: "DOWNLOAD_ERROR", error: err };
   }
 
-  let artBytes;
-  try {
-    logger.debug(`Downloading image for ${getFileName(trackFilename)}...`);
-    const imageUrl = track.album
-      ? track.album.images[0].url
-      : playlist.images[0].url;
-    const imageId = imageUrl.split("/").pop();
-    const artworkPath = `${playlistFolder}/${imageId}.jpg`;
-    await downloadImage(imageUrl, artworkPath);
-    logger.debug(`Downloaded image for ${getFileName(trackFilename)}`);
-
-    const artBuffer = fs.readFileSync(artworkPath);
-    artBytes = new Uint8Array(artBuffer);
-
-    // image loaded into memory, delete file
-    fs.unlinkSync(artworkPath);
-  } catch (err) {
-    logger.error(`Failed to download image for ${getFileName(trackFilename)}`);
-    logger.error(err.message);
-  }
+  const artBytes = await downloadArtwork(
+    track,
+    playlist,
+    playlistFolder,
+    trackFilename
+  );
 
   try {
     tagOptions = {
