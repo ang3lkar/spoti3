@@ -71,13 +71,11 @@ export async function downloadTrack({
       return { outcome: "NO_VIDEO_FOUND" };
     }
 
-    const videoId = searchResult.videoId;
-
     process.chdir(playlistFolder);
 
     logger.debug(`Downloading ${getFileName(trackFilename)}...`);
 
-    mp3(track.fullTitle, videoId);
+    mp3(track.fullTitle, searchResult.videoId);
 
     logger.debug(`Downloaded ${getFileName(trackFilename)}`);
   } catch (err) {
