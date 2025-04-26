@@ -99,7 +99,7 @@ export async function downloadTrack({
       ordinal: tagOptions.ordinal,
       title: track.name,
       album: tagOptions.album || track.album?.name || playlist.name,
-      artist: track.artists.map((a) => a.name).join("& "),
+      artist: track.artists.map((a) => a.name).join(" & "),
       artBytes,
     };
 
