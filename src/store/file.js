@@ -1,12 +1,18 @@
 import fs from "fs";
 import path from "path";
 import { titleToFriendlyName } from "../utils/basic.js";
-import { PLAYLISTS_FOLDER } from "../config/constants.js";
+import { app } from "../config/index.js";
 import { getArrayFromFile } from "../utils/file.js";
 import { logger } from "../utils/logger.js";
 
+const { PLAYLISTS } = app.FOLDERS;
+
 export function getPlaylistFileName(playlist) {
-  return `${PLAYLISTS_FOLDER}/${titleToFriendlyName(playlist)}.txt`;
+  return path.join(
+    process.cwd(),
+    PLAYLISTS,
+    `${titleToFriendlyName(playlist)}.txt`
+  );
 }
 
 function saveToTextFileSync(data, filename) {
@@ -38,8 +44,9 @@ export async function saveToFile({ playlist, options }) {
       fs.rmSync(filename, { force: true });
     }
 
-    if (!fs.existsSync(PLAYLISTS_FOLDER)) {
-      fs.mkdirSync(PLAYLISTS_FOLDER);
+    const playlistsFolder = path.join(process.cwd(), PLAYLISTS);
+    if (!fs.existsSync(playlistsFolder)) {
+      fs.mkdirSync(playlistsFolder);
     }
 
     saveToTextFileSync(playlist.tracks, filename);
@@ -48,15 +55,4 @@ export async function saveToFile({ playlist, options }) {
   } catch (error) {
     logger.error("Error:", error.message);
   }
-}
-
-export async function getPendingTracksFromFile(playlist, options) {
-  const filePath = path.join(process.cwd(), getPlaylistFileName(playlist));
-
-  const result = getArrayFromFile(filePath).map((track) => {
-    const trackId = track.split(":")[0];
-    return playlist.tracks.find((t) => t.id === trackId);
-  });
-
-  return result;
 }

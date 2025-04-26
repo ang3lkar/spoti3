@@ -1,4 +1,4 @@
-import { logger } from "./logger.js";
+import { logger } from "../utils/logger.js";
 
 export function extractSpotifyId(url) {
   logger.debug("Extracting Spotify ID from spotify URL");

@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { app } from "../config/index.js";
 
-const { DOWNLOADS, PLAYLISTS } = app.FOLDERS;
+const { DOWNLOADS } = app.FOLDERS;
 
 /**
  * Create a folder with the given name in the playlists folder
@@ -27,24 +27,6 @@ export function getArrayFromFile(filePath) {
   return fs.readFileSync(filePath, "utf-8").split("\n").filter(Boolean);
 }
 
-export function getTmpFilePath() {
-  return path.join(process.cwd(), PLAYLISTS, "tmp.txt");
-}
-
 export function getFileName(filePath) {
   return path.basename(filePath);
-}
-
-export class File {
-  constructor(fileName) {
-    this.fileName = fileName;
-  }
-
-  clear() {
-    fs.writeFileSync(this.fileName, "");
-  }
-
-  append(line) {
-    fs.writeFileSync(this.fileName, line, { flag: "a" });
-  }
 }

@@ -1,6 +1,6 @@
 import { logger, callSilently } from "../../utils/logger.js";
-import { DOWNLOADS_FOLDER, checkMark } from "../../config/constants.js";
-import { QuotaExceededError } from "../errors.js";
+import { app } from "../../config/index.js";
+import { QuotaExceededError } from "../../core/errors.js";
 import { searchYouTube } from "../../api/youtube/youtube.js";
 import fs from "fs";
 import path from "path";
@@ -9,7 +9,11 @@ import { delay } from "../../utils/basic.js";
 import { setTags } from "../tag/index.js";
 import { downloadImage } from "../../utils/http.js";
 import { getFileName } from "../../utils/file.js";
-const downloadsDir = path.join(process.cwd(), DOWNLOADS_FOLDER);
+
+const { DOWNLOADS } = app.FOLDERS;
+const { CHECK_MARK } = app.SYMBOLS;
+
+const downloadsDir = path.join(process.cwd(), DOWNLOADS);
 
 /**
  * Get the search term for a track.

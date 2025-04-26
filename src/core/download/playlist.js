@@ -1,14 +1,9 @@
 import { logger } from "../../utils/logger.js";
 import { downloadTrack } from "./track.js";
 import { lineWithCheckmark, lineWithX } from "../../store/helpers.js";
-import { QuotaExceededError } from "../errors.js";
+import { QuotaExceededError } from "../../core/errors.js";
 
-export async function downloadTrackList({
-  playlist,
-  tracks,
-  progress,
-  options,
-}) {
+export async function downloadTrackList({ playlist, tracks, options }) {
   let count = 0;
   let currentTrack;
 
@@ -17,8 +12,6 @@ export async function downloadTrackList({
       "Mock mode enabled. In this mode app will not search or download files to avoid reaching Youtube quotas."
     );
   }
-
-  progress.start();
 
   let total = tracks.length;
 
@@ -34,13 +27,6 @@ export async function downloadTrackList({
 
     // bring current track back to pending to download next time
     pendingTracks.push(currentTrack);
-
-    // Write the rest of the tracks to the file
-    for (const track of pendingTracks) {
-      progress.submit(`${track.id}: ${track.fullTitle}\n`);
-    }
-
-    progress.complete();
 
     // After cleanup, exit the process
     process.exit();
@@ -84,10 +70,10 @@ export async function downloadTrackList({
 
       if (result.outcome === "SUCCESS") {
         succeededTracks.push(track);
-        progress.submit(lineWithCheckmark(`${track.id}: ${track.fullTitle}`));
+        logger.info(lineWithCheckmark(`${track.id}: ${track.fullTitle}`));
       } else {
         failedTracks.push(track);
-        progress.submit(lineWithX(`${track.id}: ${track.fullTitle}`));
+        logger.info(lineWithX(`${track.id}: ${track.fullTitle}`));
       }
     } catch (err) {
       if (err instanceof QuotaExceededError) {
@@ -99,18 +85,8 @@ export async function downloadTrackList({
       }
 
       logger.error(err);
-
-      // bring current track back to pending to download next time
-      pendingTracks.push(track);
-
-      // Write the rest of the tracks to the file
-      for (const track of pendingTracks) {
-        progress.submit(`${track.id}: ${track.fullTitle}\n`);
-      }
     }
   }
-
-  progress.complete();
 
   process.exit();
 }
