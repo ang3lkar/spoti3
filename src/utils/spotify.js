@@ -1,5 +1,18 @@
 import { logger } from "../utils/logger.js";
 
+/**
+ * Get a comma-separated string of artist names from a Spotify object
+ *
+ * @param {*} object A Spotify object containing an artists array
+ * @returns {string} A comma-separated string of artist names
+ */
+export function getArtists(object) {
+  if (!object?.artists) {
+    return "";
+  }
+  return object.artists.map((artist) => artist.name).join(", ");
+}
+
 export function extractSpotifyId(url) {
   logger.debug("Extracting Spotify ID from spotify URL");
 

@@ -1,13 +1,5 @@
-import { logger } from "../utils/logger.js";
-import {
-  fetchAccessToken,
-  fetchPlaylistDetails,
-  fetchTracks,
-} from "../api/spotify/spotify.js";
-
-function getArtists(object) {
-  return object.artists.map((artist) => artist.name).join(", ");
-}
+import * as spotifyApi from "../api/spotify/spotify.js";
+import { getArtists } from "../utils/spotify.js";
 
 function enrichTrack(item) {
   // spotify returns different structure for playlist and album tracks
@@ -42,22 +34,24 @@ function getFolderName({ spotifyId, playlistDetails }) {
  * @param {*} spotifyId
  * @returns {Playlist} { name: string, tracks: string[] }
  */
-export async function fetchPlaylist(spotifyId) {
-  const accessToken = await fetchAccessToken();
+export async function fetchPlaylist(spotifyId, options = { spotifyApi }) {
+  const accessToken = await options.spotifyApi.fetchAccessToken();
 
-  const playlistDetails = await fetchPlaylistDetails({
+  const playlistDetails = await options.spotifyApi.fetchPlaylistDetails({
     accessToken,
     spotifyId,
   });
-  const items = await fetchTracks({ accessToken, spotifyId });
 
-  const folderName = getFolderName({ spotifyId, playlistDetails });
+  const items = await options.spotifyApi.fetchTracks({
+    accessToken,
+    spotifyId,
+  });
 
   const tracks = [];
-
   for (const item of items) {
     tracks.push(enrichTrack(item));
   }
 
+  const folderName = getFolderName({ spotifyId, playlistDetails });
   return { ...playlistDetails, folderName, tracks };
 }

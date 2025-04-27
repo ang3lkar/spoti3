@@ -4,6 +4,7 @@ import {
   extractSpotifyId,
   getSearchTerm,
   getTrackImageUrl,
+  getArtists,
 } from "../spotify.js";
 
 describe("spotify.js utilities", () => {
@@ -104,6 +105,46 @@ describe("spotify.js utilities", () => {
 
       const result = getTrackImageUrl(track, playlist);
       assert.strictEqual(result, "https://playlist-image.com");
+    });
+  });
+
+  describe("getArtists", () => {
+    it("should return single artist name", () => {
+      const track = {
+        artists: [{ name: "Queen" }],
+      };
+
+      const result = getArtists(track);
+      assert.strictEqual(result, "Queen");
+    });
+
+    it("should return comma-separated list of multiple artists", () => {
+      const track = {
+        artists: [
+          { name: "Queen" },
+          { name: "David Bowie" },
+          { name: "Annie Lennox" },
+        ],
+      };
+
+      const result = getArtists(track);
+      assert.strictEqual(result, "Queen, David Bowie, Annie Lennox");
+    });
+
+    it("should handle empty artists array", () => {
+      const track = {
+        artists: [],
+      };
+
+      const result = getArtists(track);
+      assert.strictEqual(result, "");
+    });
+
+    it("should handle missing artists property", () => {
+      const track = {};
+
+      const result = getArtists(track);
+      assert.strictEqual(result, "");
     });
   });
 });
