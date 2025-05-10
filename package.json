@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "start": "node src/cli/index.js mp3"
+    "start": "node src/cli/index.js mp3",
+    "debug": "node --inspect src/cli/index.js mp3"
   },
   "keywords": [],
   "author": "",
