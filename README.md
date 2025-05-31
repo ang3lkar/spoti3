@@ -1,5 +1,7 @@
 # Spoti3
 
+[![Tests](https://github.com/ang3lkar/spoti3/workflows/Run%20Tests/badge.svg)](https://github.com/ang3lkar/spoti3/actions)
+
 This is a simple script that allows you to download songs from Spotify to mp3 format.
 
 It combines several APIs to achieve this:
