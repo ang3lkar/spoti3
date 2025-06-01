@@ -64,11 +64,15 @@ YOUTUBE_API_KEY=your_youtube_api_key
 
 ```bash
 # Download playlist to MP3
-spoti3 mp3 <spotify_playlist_url>
+npm run start <spotify_playlist_url>
+npm run start <spotify_album_url>
+npm run start <spotify_track_url>
 
 # Example
-spoti3 mp3 https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M
+npm run start https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M
 ```
+
+**Note**: playlists made by Spotify are not always available to download.
 
 ### Advanced Options
 
