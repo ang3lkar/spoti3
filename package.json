@@ -1,17 +1,40 @@
 {
   "name": "spoti3",
   "version": "1.6.7",
+  "description": "A simple CLI tool to download songs from Spotify playlists to MP3 format using YouTube",
   "main": "index.js",
   "type": "module",
+  "bin": {
+    "spoti3": "./src/cli/index.js"
+  },
   "scripts": {
     "test": "node --test",
     "start": "node src/cli/index.js mp3",
     "debug": "node --inspect src/cli/index.js mp3"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "spotify",
+    "playlist",
+    "download",
+    "mp3",
+    "youtube",
+    "music",
+    "cli",
+    "downloader"
+  ],
+  "author": "Angelos Karagiozidis",
   "license": "ISC",
-  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ang3lkar/spoti3.git"
+  },
+  "homepage": "https://github.com/ang3lkar/spoti3",
+  "bugs": {
+    "url": "https://github.com/ang3lkar/spoti3/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "axios": "1.7.4",
     "chalk": "5.4.1",
