@@ -1,7 +1,7 @@
 import { logger } from "../../utils/logger.js";
 import { downloadTrackList } from "./playlist.js";
 
-import { fetchPlaylist } from "../../services/spotify.js";
+import { fetchPlaylist } from "../../services/index.js";
 import { createDownloadFolder } from "../../utils/file.js";
 
 const validateUrl = (url) => {
