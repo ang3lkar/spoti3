@@ -4,9 +4,17 @@ import { extractSpotifyId } from "../../utils/spotify.js";
 import { fetchPlaylist } from "../../services/spotify.js";
 import { createDownloadFolder } from "../../utils/file.js";
 
-export async function download({ playlistUrl, options }) {
+const validateUrl = (url) => {
+  if (!url.includes("spotify.com")) {
+    throw new Error("Invalid Spotify URL");
+  }
+};
+
+export async function download({ url, options }) {
   try {
-    const spotifyId = extractSpotifyId(playlistUrl);
+    validateUrl(url);
+
+    const spotifyId = extractSpotifyId(url);
 
     const playlist = await fetchPlaylist(spotifyId);
     const album = options.album || playlist.name;

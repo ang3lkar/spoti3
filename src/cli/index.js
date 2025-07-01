@@ -21,15 +21,15 @@ program
 program
   .command("mp3")
   .description("Downloads a tracklist into mp3 files from YouTube")
-  .argument("<playlistUrl>", "the Spotify playlist URL")
+  .argument("<url>", "the Spotify playlist/track URL")
   .option("-m, --mock", "do not download the files")
   .option(
     "-a, --album-tag",
     "set album name in mp3 files, will override default album name"
   )
   .option("-f, --force", "force download of all tracks")
-  .action(async (playlistUrl, options) => {
-    await download({ playlistUrl, options });
+  .action(async (url, options) => {
+    await download({ url, options });
   });
 
 program.parse();
