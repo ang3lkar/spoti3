@@ -14,9 +14,7 @@ export async function download({ url, options }) {
   try {
     validateUrl(url);
 
-    const spotifyId = extractSpotifyId(url);
-
-    const playlist = await fetchPlaylist(spotifyId);
+    const playlist = await fetchPlaylist(extractSpotifyId(url));
     const album = options.album || playlist.name;
 
     createDownloadFolder(playlist.folderName);
