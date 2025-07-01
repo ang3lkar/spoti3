@@ -5,16 +5,18 @@ import { fetchPlaylist } from "../../services/spotify.js";
 import { createDownloadFolder } from "../../utils/file.js";
 
 const validateUrl = (url) => {
-  if (!url.includes("spotify.com")) {
-    throw new Error("Invalid Spotify URL");
+  if (url.includes("spotify.com")) {
+    return { value: url, source: "spotify" };
   }
+
+  throw new Error("Invalid URL");
 };
 
 export async function download({ url, options }) {
   try {
-    validateUrl(url);
+    const { value, source } = validateUrl(url);
 
-    const playlist = await fetchPlaylist(url);
+    const playlist = await fetchPlaylist(value, { source });
     const album = options.album || playlist.name;
 
     createDownloadFolder(playlist.folderName);
