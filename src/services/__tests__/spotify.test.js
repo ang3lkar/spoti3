@@ -5,7 +5,7 @@ import { fetchPlaylist } from "../spotify.js";
 describe("spotify.js services", () => {
   describe("fetchPlaylist", () => {
     it("should fetch and format playlist data", async () => {
-      const mockSpotifyId = { type: "playlist", value: "123" };
+      const url = "https://open.spotify.com/playlist/123";
       const mockPlaylistDetails = {
         name: "My Awesome Playlist",
         artists: [{ name: "Various Artists" }],
@@ -31,7 +31,7 @@ describe("spotify.js services", () => {
         fetchTracks: mock.fn(() => mockTracks),
       };
 
-      const result = await fetchPlaylist(mockSpotifyId, {
+      const result = await fetchPlaylist(url, {
         spotifyApi: mockedApi,
       });
 
@@ -53,7 +53,7 @@ describe("spotify.js services", () => {
 
     it("should handle album type correctly", async () => {
       const mockAccessToken = "mock-token";
-      const mockSpotifyId = { type: "album", value: "456" };
+      const url = "https://open.spotify.com/album/456";
       const mockAlbumDetails = {
         name: "Greatest Hits",
         artists: [{ name: "Queen" }],
@@ -75,7 +75,7 @@ describe("spotify.js services", () => {
         fetchTracks: mock.fn(() => mockTracks),
       };
 
-      const result = await fetchPlaylist(mockSpotifyId, {
+      const result = await fetchPlaylist(url, {
         spotifyApi: mockedApi,
       });
 
@@ -95,7 +95,7 @@ describe("spotify.js services", () => {
 
     it("should handle track type correctly", async () => {
       const mockAccessToken = "mock-token";
-      const mockSpotifyId = { type: "track", value: "789" };
+      const url = "https://open.spotify.com/track/789";
       const mockTrackDetails = {
         name: "Under Pressure",
         artists: [{ name: "Queen" }, { name: "David Bowie" }],
@@ -108,7 +108,7 @@ describe("spotify.js services", () => {
         fetchTracks: mock.fn(() => mockTracks),
       };
 
-      const result = await fetchPlaylist(mockSpotifyId, {
+      const result = await fetchPlaylist(url, {
         spotifyApi: mockedApi,
       });
 
@@ -123,7 +123,7 @@ describe("spotify.js services", () => {
     });
 
     it("should handle API errors", async () => {
-      const mockSpotifyId = { type: "playlist", value: "error" };
+      const url = "https://open.spotify.com/playlist/error";
       const mockError = new Error("API Error");
 
       const mockedApi = {
@@ -132,14 +132,14 @@ describe("spotify.js services", () => {
 
       // Verify that the error is propagated
       await assert.rejects(
-        () => fetchPlaylist(mockSpotifyId, { spotifyApi: mockedApi }),
+        () => fetchPlaylist(url, { spotifyApi: mockedApi }),
         mockError
       );
     });
 
     it("should throw error for unknown Spotify ID type", async () => {
       const mockAccessToken = "mock-token";
-      const mockSpotifyId = { type: "unknown", value: "123" };
+      const url = "https://open.spotify.com/unknown/123";
       const mockDetails = { name: "Test" };
 
       const mockedApi = {
@@ -150,8 +150,8 @@ describe("spotify.js services", () => {
 
       // Verify that the error is thrown
       await assert.rejects(
-        () => fetchPlaylist(mockSpotifyId, { spotifyApi: mockedApi }),
-        /Unknown Spotify ID type: unknown/
+        () => fetchPlaylist(url, { spotifyApi: mockedApi }),
+        /Invalid Spotify URL/
       );
     });
   });

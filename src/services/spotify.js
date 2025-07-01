@@ -1,6 +1,7 @@
 import * as spotifyApi from "../api/spotify/spotify.js";
 import { getArtists } from "../utils/spotify.js";
 import { getOrdinalString } from "../utils/basic.js";
+import { extractSpotifyId } from "../utils/spotify.js";
 
 function shouldPrefixWithOrdinal(type) {
   return type === "album" || type === "playlist";
@@ -43,8 +44,10 @@ function getFolderName({ spotifyId, playlistDetails }) {
  * @param {*} spotifyId
  * @returns {Playlist} { name: string, tracks: string[] }
  */
-export async function fetchPlaylist(spotifyId, options = { spotifyApi }) {
+export async function fetchPlaylist(url, options = { spotifyApi }) {
   const accessToken = await options.spotifyApi.fetchAccessToken();
+
+  const spotifyId = extractSpotifyId(url);
 
   const playlistDetails = await options.spotifyApi.fetchPlaylistDetails({
     accessToken,

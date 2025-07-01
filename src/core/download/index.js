@@ -1,6 +1,6 @@
 import { logger } from "../../utils/logger.js";
 import { downloadTrackList } from "./playlist.js";
-import { extractSpotifyId } from "../../utils/spotify.js";
+
 import { fetchPlaylist } from "../../services/spotify.js";
 import { createDownloadFolder } from "../../utils/file.js";
 
@@ -14,7 +14,7 @@ export async function download({ url, options }) {
   try {
     validateUrl(url);
 
-    const playlist = await fetchPlaylist(extractSpotifyId(url));
+    const playlist = await fetchPlaylist(url);
     const album = options.album || playlist.name;
 
     createDownloadFolder(playlist.folderName);
