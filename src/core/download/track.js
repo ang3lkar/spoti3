@@ -10,6 +10,10 @@ import { delay } from "../../utils/basic.js";
 import { setTags } from "../tag/index.js";
 import { getFileName } from "../../utils/file.js";
 import { getTrackImageUrl, getSearchTerm } from "../../utils/spotify.js";
+import {
+  getYouTubeSearchTerm,
+  getYouTubeTrackImageUrl,
+} from "../../utils/youtube.js";
 
 const { DOWNLOADS } = app.FOLDERS;
 
@@ -27,7 +31,21 @@ async function downloadArtwork(track, playlist, playlistFolder, trackFilename) {
   try {
     logger.debug(`Downloading image for ${getFileName(trackFilename)}...`);
 
-    const imageUrl = getTrackImageUrl(track, playlist);
+    let imageUrl;
+
+    // Check if this is a YouTube track or Spotify track
+    if (track.videoId) {
+      // YouTube track
+      imageUrl = getYouTubeTrackImageUrl(track, playlist);
+    } else {
+      // Spotify track
+      imageUrl = getTrackImageUrl(track, playlist);
+    }
+
+    if (!imageUrl) {
+      logger.debug(`No image URL available for ${getFileName(trackFilename)}`);
+      return null;
+    }
 
     const artBuffer = await downloadImageToMemory(imageUrl);
     artBytes = new Uint8Array(artBuffer);
@@ -66,18 +84,30 @@ export async function downloadTrack({
   }
 
   try {
-    const searchResult = await searchYouTube(getSearchTerm(track, playlist));
+    let videoId;
 
-    if (!searchResult) {
-      logger.error(`No video found for ${getSearchTerm(track, playlist)}`);
-      return { outcome: "NO_VIDEO_FOUND" };
+    // Check if this is a YouTube track (has videoId) or Spotify track (needs search)
+    if (track.videoId) {
+      // YouTube track - use existing video ID
+      videoId = track.videoId;
+      logger.debug(`Using existing video ID: ${videoId}`);
+    } else {
+      // Spotify track - search YouTube
+      const searchResult = await searchYouTube(getSearchTerm(track, playlist));
+
+      if (!searchResult) {
+        logger.error(`No video found for ${getSearchTerm(track, playlist)}`);
+        return { outcome: "NO_VIDEO_FOUND" };
+      }
+
+      videoId = searchResult.videoId;
     }
 
     process.chdir(playlistFolder);
 
     logger.debug(`Downloading ${getFileName(trackFilename)}...`);
 
-    mp3(track.fullTitle, searchResult.videoId);
+    mp3(track.fullTitle, videoId);
 
     logger.debug(`Downloaded ${getFileName(trackFilename)}`);
   } catch (err) {
@@ -97,11 +127,24 @@ export async function downloadTrack({
   );
 
   try {
+    // Handle different track structures for Spotify vs YouTube
+    let title, artist;
+
+    if (track.videoId) {
+      // YouTube track
+      title = track.title;
+      artist = track.channelTitle;
+    } else {
+      // Spotify track
+      title = track.name;
+      artist = track.artists.map((a) => a.name).join(" & ");
+    }
+
     tagOptions = {
       ordinal: tagOptions.ordinal,
-      title: track.name,
+      title: title,
       album: tagOptions.album || track.album?.name || playlist.name,
-      artist: track.artists.map((a) => a.name).join(" & "),
+      artist: artist,
       artBytes,
     };
 

@@ -108,6 +108,7 @@ export function getYouTubeTrackImageUrl(track, playlist) {
 
 /**
  * Enrich a YouTube track with additional information
+ * such as fullTitle.
  *
  * @param {object} item YouTube playlist item
  * @returns {object} Enriched track object
