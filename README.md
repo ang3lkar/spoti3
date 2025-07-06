@@ -1,6 +1,6 @@
 # Spoti3
 
-[![Tests](https://github.com/ang3lkar/spoti3/workflows/Run%20Tests/badge.svg)](https://github.com/ang3lkar/spoti3/actions) [![Version](https://img.shields.io/github/package-json/v/ang3lkar/spotify-playlist-extraction)](https://github.com/ang3lkar/spotify-playlist-extraction) [![License](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE)
+[![Tests](https://github.com/ang3lkar/spoti3/workflows/Run%20Tests/badge.svg)](https://github.com/ang3lkar/spoti3/actions) [![Version](https://img.shields.io/github/package-json/v/ang3lkar/spoti3)](https://github.com/ang3lkar/spoti3) [![License](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE)
 
 > A simple CLI tool to download songs from Spotify playlists to MP3 format using YouTube
 
