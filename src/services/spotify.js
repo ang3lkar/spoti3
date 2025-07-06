@@ -1,7 +1,7 @@
 import * as spotifyApi from "../api/spotify/spotify.js";
 import { getArtists } from "../utils/spotify.js";
 
-function enrichTrack(item) {
+function enrichTrack(item, ordinal) {
   // spotify returns different structure for playlist and album tracks
   const track = item.track || item;
 
@@ -10,7 +10,7 @@ function enrichTrack(item) {
   // Replace / with | to avoid creating folders when creating mp3 files
   const name = track.name.replace(/\//g, "|");
 
-  const fullTitle = `${artists} - ${name}`;
+  const fullTitle = `${ordinal + 1}. ${artists} - ${name}`;
 
   return { ...track, fullTitle };
 }
@@ -48,8 +48,8 @@ export async function fetchPlaylist(spotifyId, options = { spotifyApi }) {
   });
 
   const tracks = [];
-  for (const item of items) {
-    tracks.push(enrichTrack(item));
+  for (let i = 0; i < items.length; i++) {
+    tracks.push(enrichTrack(items[i], i));
   }
 
   const folderName = getFolderName({ spotifyId, playlistDetails });
