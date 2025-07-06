@@ -39,10 +39,10 @@ describe("spotify.js services", () => {
       assert.strictEqual(result.name, "My Awesome Playlist");
       assert.strictEqual(result.folderName, "My Awesome Playlist");
       assert.strictEqual(result.tracks.length, 2);
-      assert.strictEqual(result.tracks[0].fullTitle, "Artist 1 - Track 1");
+      assert.strictEqual(result.tracks[0].fullTitle, "1. Artist 1 - Track 1");
       assert.strictEqual(
         result.tracks[1].fullTitle,
-        "Artist 2, Artist 3 - Track 2"
+        "2. Artist 2, Artist 3 - Track 2"
       );
 
       // Verify that the mocks were called correctly
@@ -85,11 +85,11 @@ describe("spotify.js services", () => {
       assert.strictEqual(result.tracks.length, 2);
       assert.strictEqual(
         result.tracks[0].fullTitle,
-        "Queen - Bohemian Rhapsody"
+        "1. Queen - Bohemian Rhapsody"
       );
       assert.strictEqual(
         result.tracks[1].fullTitle,
-        "Queen - We Will Rock You"
+        "2. Queen - We Will Rock You"
       );
     });
 
@@ -118,7 +118,7 @@ describe("spotify.js services", () => {
       assert.strictEqual(result.tracks.length, 1);
       assert.strictEqual(
         result.tracks[0].fullTitle,
-        "Queen, David Bowie - Under Pressure"
+        "1. Queen, David Bowie - Under Pressure"
       );
     });
 
