@@ -1,7 +1,11 @@
 import * as spotifyApi from "../api/spotify/spotify.js";
 import { getArtists } from "../utils/spotify.js";
 
-function enrichTrack(item, ordinal) {
+function shouldPrefixWithOrdinal(type) {
+  return type === "album" || type === "playlist";
+}
+
+function enrichTrack({ item, ordinal, type }) {
   // spotify returns different structure for playlist and album tracks
   const track = item.track || item;
 
@@ -10,7 +14,8 @@ function enrichTrack(item, ordinal) {
   // Replace / with | to avoid creating folders when creating mp3 files
   const name = track.name.replace(/\//g, "|");
 
-  const fullTitle = `${ordinal + 1}. ${artists} - ${name}`;
+  const prefix = shouldPrefixWithOrdinal(type) ? `${ordinal + 1}. ` : "";
+  const fullTitle = `${prefix}${artists} - ${name}`;
 
   return { ...track, fullTitle };
 }
@@ -49,7 +54,9 @@ export async function fetchPlaylist(spotifyId, options = { spotifyApi }) {
 
   const tracks = [];
   for (let i = 0; i < items.length; i++) {
-    tracks.push(enrichTrack(items[i], i));
+    tracks.push(
+      enrichTrack({ item: items[i], ordinal: i, type: spotifyId.type })
+    );
   }
 
   const folderName = getFolderName({ spotifyId, playlistDetails });

@@ -118,7 +118,7 @@ describe("spotify.js services", () => {
       assert.strictEqual(result.tracks.length, 1);
       assert.strictEqual(
         result.tracks[0].fullTitle,
-        "1. Queen, David Bowie - Under Pressure"
+        "Queen, David Bowie - Under Pressure"
       );
     });
 
