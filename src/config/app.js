@@ -13,11 +13,13 @@ export const SYMBOLS = {
 };
 
 export const LOGGING = {
-  LEVEL: process.env.LOG_LEVEL || "debug",
   LEVELS: {
     error: 0,
     warn: 1,
-    info: 2,
-    debug: 3,
+    info: 3,
+    debug: 4,
+    trace: 5,
+    silent: -999,
+    verbose: 999,
   },
 };
