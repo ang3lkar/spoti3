@@ -1,7 +1,12 @@
 import { describe, it, mock } from "node:test";
 import assert from "node:assert";
 import https from "node:https";
-import { titleToFriendlyName, delay, downloadImageToMemory } from "../basic.js";
+import {
+  titleToFriendlyName,
+  delay,
+  downloadImageToMemory,
+  getOrdinalString,
+} from "../basic.js";
 
 describe("basic.js utilities", () => {
   describe("titleToFriendlyName", () => {
@@ -127,6 +132,15 @@ describe("basic.js utilities", () => {
         mockError,
         "Function should reject with the network error"
       );
+    });
+  });
+
+  describe("getOrdinalString", () => {
+    it("should return a zero-padded ordinal string", () => {
+      assert.strictEqual(getOrdinalString(0, 1), "0");
+      assert.strictEqual(getOrdinalString(1, 2), "1");
+      assert.strictEqual(getOrdinalString(2, 3), "2");
+      assert.strictEqual(getOrdinalString(9, 10), "09");
     });
   });
 });
