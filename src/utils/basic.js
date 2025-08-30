@@ -59,3 +59,9 @@ export async function downloadImageToMemory(url) {
       .on("error", reject);
   });
 }
+
+export function getOrdinalString(ordinal, totalLength) {
+  const totalDigits = totalLength.toString().length;
+  const ordinalString = ordinal.toString().padStart(totalDigits, "0");
+  return ordinalString;
+}
