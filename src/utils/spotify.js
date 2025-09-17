@@ -41,8 +41,8 @@ export function getSearchTerm(track, playlist) {
   // If album is a live one, concatenate the album and track name to enforce the
   // specific version of the track instead of the original.
   return playlist.album_type === "album"
-    ? `${track.fullTitle} / ${playlist.name}`
-    : track.fullTitle;
+    ? `${track.searchTitle} - ${playlist.name}`
+    : track.searchTitle;
 }
 
 /**
