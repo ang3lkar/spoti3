@@ -19,8 +19,9 @@ function enrichTrack({ item, ordinal, totalLength, type }) {
     ? `${getOrdinalString(ordinal + 1, totalLength)}. `
     : "";
   const fullTitle = `${prefix}${artists} - ${name}`;
+  const searchTitle = `${artists} ${name}`; // used for searching on YouTube
 
-  return { ...track, fullTitle };
+  return { ...track, fullTitle, searchTitle };
 }
 
 function getFolderName({ spotifyId, playlistDetails }) {

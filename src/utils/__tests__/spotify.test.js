@@ -55,7 +55,8 @@ describe("spotify.js utilities", () => {
   describe("getSearchTerm", () => {
     it("should return track title for non-album playlist", () => {
       const track = {
-        fullTitle: "Bohemian Rhapsody",
+        fullTitle: "01. Bohemian Rhapsody",
+        searchTitle: "Bohemian Rhapsody",
       };
       const playlist = {
         album_type: "playlist",
@@ -68,7 +69,8 @@ describe("spotify.js utilities", () => {
 
     it("should concatenate track title and album name for album type", () => {
       const track = {
-        fullTitle: "Bohemian Rhapsody",
+        fullTitle: "01. Bohemian Rhapsody",
+        searchTitle: "Bohemian Rhapsody",
       };
       const playlist = {
         album_type: "album",
@@ -76,7 +78,7 @@ describe("spotify.js utilities", () => {
       };
 
       const result = getSearchTerm(track, playlist);
-      assert.strictEqual(result, "Bohemian Rhapsody / A Night at the Opera");
+      assert.strictEqual(result, "Bohemian Rhapsody - A Night at the Opera");
     });
   });
 
