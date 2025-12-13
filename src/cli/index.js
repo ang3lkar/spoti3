@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Command } from "commander";
-import { download } from "../core/download/index.js";
+import { download } from "../domain/download/index.js";
 import { saveToFile } from "../store/file.js";
 
 const program = new Command();

@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { logger, callSilently } from "../../utils/logger.js";
 import { app } from "../../config/index.js";
-import { QuotaExceededError } from "../../core/errors.js";
+import { QuotaExceededError } from "../errors.js";
 import { searchYouTube } from "../../api/youtube/youtube.js";
 import { downloadImageToMemory } from "../../utils/basic.js";
 import { mp3 } from "../convert/index.js";

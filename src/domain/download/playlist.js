@@ -1,7 +1,7 @@
 import { logger } from "../../utils/logger.js";
 import { downloadTrack } from "./track.js";
 import { lineWithCheckmark, lineWithX } from "../../store/helpers.js";
-import { QuotaExceededError } from "../../core/errors.js";
+import { QuotaExceededError } from "../errors.js";
 
 export async function downloadTrackList({ playlist, tracks, options }) {
   let count = 0;

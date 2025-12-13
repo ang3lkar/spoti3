@@ -1,6 +1,6 @@
 import "dotenv/config";
 import axios from "axios";
-import { QuotaExceededError } from "../../core/errors.js";
+import { QuotaExceededError } from "../../domain/errors.js";
 import { logger } from "../../utils/logger.js";
 import { api } from "../../config/index.js";
 
