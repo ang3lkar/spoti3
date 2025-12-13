@@ -1,14 +1,14 @@
-import * as youtubeApi from "../api/youtube/youtube.js";
-import { extractYouTubeId, enrichYouTubeTrack } from "../utils/youtube.js";
+import * as youtubeApi from "../../api/youtube/index.js";
+import { extractYouTubeId, enrichYouTubeTrack } from "./utils.js";
 
 function getFolderName({ youtubeId, playlistDetails }) {
-  const type = Object.keys(youtubeId)[0];
+  const { type } = youtubeId;
 
   switch (type) {
     case "playlist":
       return playlistDetails.name;
     case "video":
-      return `${playlistDetails.channelTitle} - ${playlistDetails.name}`;
+      return playlistDetails.name;
     case "channel":
       return `Channel: ${playlistDetails.channelTitle}`;
     default:
@@ -26,16 +26,12 @@ function getFolderName({ youtubeId, playlistDetails }) {
 export async function fetchPlaylist(url, options = { youtubeApi, source }) {
   const youtubeId = extractYouTubeId(url);
 
-  const playlistDetails = await options.youtubeApi.fetchPlaylistDetails({
-    youtubeId: youtubeId.playlist,
-  });
-
-  const items = await options.youtubeApi.fetchTracks({
-    youtubeId: youtubeId.playlist,
+  const playlistDetails = await youtubeApi.fetchPlaylistDetails({
+    youtubeId,
   });
 
   const tracks = [];
-  for (const item of items) {
+  for (const item of playlistDetails.tracks) {
     tracks.push(enrichYouTubeTrack(item));
   }
 

@@ -7,12 +7,6 @@ export async function downloadTrackList({ playlist, tracks, options }) {
   let count = 0;
   let currentTrack;
 
-  if (options.mock) {
-    logger.warn(
-      "Mock mode enabled. In this mode app will not search or download files to avoid reaching Youtube quotas."
-    );
-  }
-
   let total = tracks.length;
 
   logger.start(`Downloading ${total} tracks from "${playlist.folderName}"...`);

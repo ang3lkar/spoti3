@@ -1,5 +1,5 @@
-import { fetchPlaylist as fetchSpotifyPlaylist } from "./spotify.js";
-import { fetchPlaylist as fetchYouTubePlaylist } from "./youtube.js";
+import { fetchPlaylist as fetchSpotifyPlaylist } from "./spotify/index.js";
+import { fetchPlaylist as fetchYouTubePlaylist } from "./youtube/index.js";
 
 const fetchPlaylist = async (url, options) => {
   if (options.source === "spotify") {

@@ -1,4 +1,6 @@
-import { logger } from "./logger.js";
+import { logger } from "../../utils/logger.js";
+import * as MetadataFilter from "metadata-filter";
+import getArtistTitle from "get-artist-title";
 
 /**
  * Extract YouTube playlist ID from a YouTube URL
@@ -17,28 +19,32 @@ export function extractYouTubeId(url) {
   const v = queryParams.get("v");
   const channel = queryParams.get("channel");
 
-  const result = {};
+  const result = { type: null, value: null };
 
   if (list) {
     logger.debug(`Extracted YouTube playlist ID: ${list}`);
-    result["playlist"] = list;
+    result.type = "playlist";
+    result.value = list;
   }
 
   if (v) {
     logger.debug(`Extracted YouTube video ID: ${v}`);
-    result["video"] = v;
+    result.type = "video";
+    result.value = v;
   }
 
   if (channel) {
     logger.debug(`Extracted YouTube channel ID: ${channel}`);
-    result["channel"] = channel;
+    result.type = "channel";
+    result.value = channel;
   }
 
   // also check short-url form
   if (parsedUrl.host.includes("youtu.be")) {
     const value = parsedUrl.pathname.split("/")[1];
     logger.debug(`Extracted YouTube video ID: ${value}`);
-    result["video"] = parsedUrl.pathname.split("/")[1];
+    result.type = "video";
+    result.value = parsedUrl.pathname.split("/")[1];
   }
 
   if (Object.keys(result).length === 0) {
@@ -114,20 +120,33 @@ export function getYouTubeTrackImageUrl(track, playlist) {
  * @returns {object} Enriched track object
  */
 export function enrichYouTubeTrack(item) {
-  const snippet = item.snippet;
+  const { snippet } = item;
+  const rawTitle = snippet.title;
 
-  // Replace / with | to avoid creating folders when creating mp3 files
-  const title = snippet.title.replace(/\//g, "|");
   const channelName = getChannelName(item);
 
-  const fullTitle = channelName ? `${channelName} - ${title}` : title;
+  const [rawArtist, _] = rawTitle.includes(" - ")
+    ? rawTitle.split(" - ")
+    : [null, rawTitle];
+
+  const cleanTitle = MetadataFilter.youtube(rawTitle);
+  const [artist0, title] = getArtistTitle(cleanTitle, {
+    defaultArtist: rawArtist || channelName,
+  });
+
+  const artist = artist0.includes("Topic")
+    ? artist0.replace(" - Topic", "").trim()
+    : artist0;
+
+  const fullTitle = artist ? `${artist} - ${title}` : title;
 
   return {
     ...item,
     fullTitle,
+    artist,
     title,
     channelTitle: channelName,
-    videoId: item.contentDetails?.videoId || item.id?.videoId,
+    videoId: item.id,
     publishedAt: snippet.publishedAt,
     thumbnails: snippet.thumbnails,
   };

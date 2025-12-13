@@ -3,17 +3,20 @@ import path from "path";
 import { logger, callSilently } from "../../utils/logger.js";
 import { app } from "../../config/index.js";
 import { QuotaExceededError } from "../errors.js";
-import { searchYouTube } from "../../api/youtube/youtube.js";
+import { searchYouTube } from "../../api/youtube/index.js";
 import { downloadImageToMemory } from "../../utils/basic.js";
 import { mp3 } from "../convert/index.js";
 import { delay } from "../../utils/basic.js";
 import { setTags } from "../tag/index.js";
 import { getFileName } from "../../utils/file.js";
-import { getTrackImageUrl, getSearchTerm } from "../../utils/spotify.js";
+import {
+  getTrackImageUrl,
+  getSearchTerm,
+} from "../../services/spotify/utils.js";
 import {
   getYouTubeSearchTerm,
   getYouTubeTrackImageUrl,
-} from "../../utils/youtube.js";
+} from "../../services/youtube/utils.js";
 
 const { DOWNLOADS } = app.FOLDERS;
 
@@ -67,11 +70,6 @@ export async function downloadTrack({
     return { outcome: "MISSING_TRACK" };
   }
 
-  if (downloadOptions.mock) {
-    await delay(300);
-    return { outcome: "SUCCESS" };
-  }
-
   let isDownloaded;
   const playlistFolder = path.join(downloadsDir, playlist.folderName);
 
@@ -107,6 +105,12 @@ export async function downloadTrack({
 
     logger.debug(`Downloading ${getFileName(trackFilename)}...`);
 
+    if (process.env.MOCK_DOWNLOAD === "yes" || downloadOptions.mock) {
+      await delay(300);
+      logger.debug(`Mocked download of ${getFileName(trackFilename)}`);
+      return { outcome: "SUCCESS", mp3File: trackFilename };
+    }
+
     mp3(track.fullTitle, videoId);
 
     logger.debug(`Downloaded ${getFileName(trackFilename)}`);
@@ -133,7 +137,7 @@ export async function downloadTrack({
     if (track.videoId) {
       // YouTube track
       title = track.title;
-      artist = track.channelTitle;
+      artist = track.artist;
     } else {
       // Spotify track
       title = track.name;

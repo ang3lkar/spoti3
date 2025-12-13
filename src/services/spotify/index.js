@@ -1,7 +1,7 @@
-import * as spotifyApi from "../api/spotify/spotify.js";
-import { getArtists } from "../utils/spotify.js";
-import { getOrdinalString } from "../utils/basic.js";
-import { extractSpotifyId } from "../utils/spotify.js";
+import * as spotifyApi from "../../api/spotify/index.js";
+import { getArtists } from "./utils.js";
+import { getOrdinalString } from "../../utils/basic.js";
+import { extractSpotifyId } from "./utils.js";
 
 function shouldPrefixWithOrdinal(type) {
   return type === "album" || type === "playlist";

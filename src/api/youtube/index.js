@@ -54,7 +54,7 @@ export async function searchYouTube(query) {
  * @param {object} param0 { youtubeId }
  * @returns {object} Playlist details
  */
-export async function fetchPlaylistDetails({ youtubeId }) {
+export async function fetchPlaylistDetails({ youtubeId } = {}) {
   const { type, value } = youtubeId;
 
   logger.debug(`Fetching YouTube ${type} details`);
@@ -69,7 +69,8 @@ export async function fetchPlaylistDetails({ youtubeId }) {
         },
       });
 
-      const playlist = response.data.items[0];
+      const items = response.data.items;
+
       if (!playlist) {
         throw new Error("Playlist not found");
       }
@@ -84,6 +85,7 @@ export async function fetchPlaylistDetails({ youtubeId }) {
         thumbnails: playlist.snippet.thumbnails,
         itemCount: playlist.contentDetails.itemCount,
         playlistId: playlist.id,
+        items,
       };
     } catch (err) {
       logger.error(`Error fetching playlist details: ${err.message}`);
@@ -103,21 +105,21 @@ export async function fetchPlaylistDetails({ youtubeId }) {
         }
       );
 
-      const video = response.data.items[0];
-      if (!video) {
-        throw new Error("Video not found");
-      }
+      const items = response.data.items;
+
+      const video = items[0];
 
       logger.debug(`Fetched video details: ${video.snippet.title}`);
 
       return {
-        name: video.snippet.title,
+        name: "Misc",
         description: video.snippet.description,
         channelTitle: video.snippet.channelTitle,
         publishedAt: video.snippet.publishedAt,
         thumbnails: video.snippet.thumbnails,
         itemCount: 1,
         videoId: video.id,
+        tracks: items,
       };
     } catch (err) {
       logger.error(`Error fetching video details: ${err.message}`);

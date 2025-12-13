@@ -1,4 +1,4 @@
-import { logger } from "../utils/logger.js";
+import { logger } from "../../utils/logger.js";
 
 /**
  * Get a comma-separated string of artist names from a Spotify object
