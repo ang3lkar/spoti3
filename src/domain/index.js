@@ -1,8 +1,8 @@
-import { logger } from "../../utils/logger.js";
-import { downloadTrackList } from "./playlist.js";
+import { logger } from "../utils/logger.js";
+import { downloadTrackList } from "./download/playlist.js";
 
-import { fetchPlaylist } from "../../services/index.js";
-import { createDownloadFolder } from "../../utils/file.js";
+import { fetchPlaylist } from "../services/index.js";
+import { createDownloadFolder } from "../utils/file.js";
 
 /**
  * Validates the URL and returns the source and value
@@ -19,7 +19,7 @@ const validateUrl = (url) => {
   throw new Error("Invalid URL - must be a Spotify or YouTube URL");
 };
 
-export async function download({ url, options }) {
+export async function run({ url, options }) {
   try {
     const { value, source } = validateUrl(url);
 

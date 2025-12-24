@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Command } from "commander";
-import { download } from "../domain/download/index.js";
+import { run } from "../domain/index.js";
 import { saveToFile } from "../store/file.js";
 
 const program = new Command();
@@ -29,7 +29,7 @@ program
   )
   .option("-f, --force", "force download of all tracks")
   .action(async (url, options) => {
-    await download({ url, options });
+    await run({ url, options });
   });
 
 program.parse();
