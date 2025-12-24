@@ -9,6 +9,7 @@ export async function downloadTrackList({ playlist, tracks, options }) {
 
   let total = tracks.length;
 
+  logger.newLine();
   logger.start(`Downloading ${total} tracks from "${playlist.folderName}"...`);
 
   const succeededTracks = [];

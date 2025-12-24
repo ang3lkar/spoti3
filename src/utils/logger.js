@@ -20,6 +20,10 @@ const baseLogger = createConsola({
 
 /** Just a simple wrapper to enforce colors */
 class Logger {
+  newLine() {
+    process.stdout.write("\n");
+  }
+
   start(message) {
     baseLogger.start(message);
   }

@@ -19,11 +19,14 @@ const validateUrl = (url) => {
   throw new Error("Invalid URL - must be a Spotify or YouTube URL");
 };
 
-export async function run({ url, options }) {
+export async function run({ url, options = {} }) {
   try {
     const { value, source } = validateUrl(url);
 
-    const playlist = await fetchPlaylist(value, { source });
+    const playlist = await fetchPlaylist(value, {
+      source,
+      mock: process.env.MOCK_DOWNLOAD === "yes",
+    });
     const album = options.album || playlist.name;
 
     createDownloadFolder(playlist.folderName);
