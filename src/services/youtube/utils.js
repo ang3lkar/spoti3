@@ -59,7 +59,7 @@ export function extractYouTubeId(url, options = {}) {
  * @param {object} playlist YouTube playlist object
  * @returns {string} Search term for YouTube search
  */
-export function getYouTubeSearchTerm(track, playlist) {
+export function getYouTubeSearchTerm(track, _playlist) {
   // For YouTube playlists, we can use the video title directly
   // since it's already a YouTube video
   return track.title || track.snippet?.title || "";

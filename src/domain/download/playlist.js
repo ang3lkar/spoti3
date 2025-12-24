@@ -1,6 +1,5 @@
 import { logger } from "../../utils/logger.js";
 import { downloadTrack } from "./track.js";
-import { lineWithCheckmark, lineWithX } from "../../store/helpers.js";
 import { QuotaExceededError } from "../errors.js";
 
 export async function downloadTrackList({ playlist, tracks, options = {} }) {
@@ -8,7 +7,7 @@ export async function downloadTrackList({ playlist, tracks, options = {} }) {
   let count = 0;
   let currentTrack;
 
-  let total = tracks.length;
+  const total = tracks.length;
 
   log.newLine();
   log.start(`Downloading ${total} tracks from "${playlist.folderName}"...`);

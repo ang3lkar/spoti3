@@ -7,7 +7,7 @@ describe("youtube.js services", () => {
   describe("fetchPlaylist", () => {
     it("should fetch and format playlist data", async () => {
       const url = "https://www.youtube.com/playlist?list=PL1234567890";
-      const mockPlaylistDetails = {
+      const _mockPlaylistDetails = {
         name: "My Awesome YouTube Playlist",
         channelTitle: "Music Channel",
         description: "A great playlist",
@@ -110,7 +110,7 @@ describe("youtube.js services", () => {
 
     it("should handle API errors", async () => {
       const url = "https://www.youtube.com/playlist?list=error";
-      const mockError = new Error("API Error");
+      const _mockError = new Error("API Error");
 
       const mockedApi = {
         fetchPlaylistDetails: mock.fn(() => {

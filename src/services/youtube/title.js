@@ -1,7 +1,5 @@
-const getTitle = (rawTitle) => {
-  const [rawArtist, _] = rawTitle.includes(" - ")
-    ? title.split(" - ")
-    : [null, title];
-
-  return { artist, title };
+const _getTitle = (_rawTitle) => {
+  // This function appears to be incomplete/unused
+  // Keeping it for potential future use but marking as unused
+  return { artist: null, title: null };
 };

@@ -24,7 +24,7 @@ function getFolderName({ youtubeId, playlistDetails }) {
  * @param {object} options Options object
  * @returns {object} { name: string, tracks: object[], folderName: string }
  */
-export async function fetchPlaylist(url, options = { youtubeApi, source }) {
+export async function fetchPlaylist(url, options = { youtubeApi }) {
   const { logger: log = logger } = options;
   try {
     const youtubeId = extractYouTubeId(url, { logger: log });

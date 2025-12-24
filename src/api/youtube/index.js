@@ -4,7 +4,7 @@ import { QuotaExceededError } from "../../domain/errors.js";
 import { logger } from "../../utils/logger.js";
 import { api } from "../../config/index.js";
 
-const { API_KEY, SEARCH_URL, SEARCH_PARAMS } = api.YOUTUBE;
+const { API_KEY } = api.YOUTUBE;
 
 const url = "https://www.googleapis.com/youtube/v3/search";
 const playlistUrl = "https://www.googleapis.com/youtube/v3/playlists";

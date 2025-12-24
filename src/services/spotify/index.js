@@ -45,7 +45,7 @@ function getFolderName({ spotifyId, playlistDetails }) {
  * @param {*} spotifyId
  * @returns {Playlist} { name: string, tracks: string[] }
  */
-export async function fetchPlaylist(url, options = { spotifyApi, source }) {
+export async function fetchPlaylist(url, options = { spotifyApi }) {
   const { logger: log = logger } = options;
   const accessToken = await options.spotifyApi.fetchAccessToken();
 

@@ -13,10 +13,7 @@ import {
   getTrackImageUrl,
   getSearchTerm,
 } from "../../services/spotify/utils.js";
-import {
-  getYouTubeSearchTerm,
-  getYouTubeTrackImageUrl,
-} from "../../services/youtube/utils.js";
+import { getYouTubeTrackImageUrl } from "../../services/youtube/utils.js";
 
 const { DOWNLOADS } = app.FOLDERS;
 
@@ -80,12 +77,11 @@ export async function downloadTrack({
     return { outcome: "MISSING_TRACK" };
   }
 
-  let isDownloaded;
   const playlistFolder = path.join(downloadsDir, playlist.folderName);
 
   const trackFilename = `${playlistFolder}/${track.fullTitle}.mp3`;
 
-  isDownloaded = fs.existsSync(trackFilename);
+  const isDownloaded = fs.existsSync(trackFilename);
 
   if (isDownloaded && !downloadOptions?.force) {
     return { outcome: "SUCCESS", mp3File: trackFilename };

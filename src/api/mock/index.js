@@ -1,4 +1,4 @@
-export async function fetchPlaylist({ youtubeId }) {
+export async function fetchPlaylist({ youtubeId: _youtubeId }) {
   try {
     return {
       name: "Mock Playlist",
