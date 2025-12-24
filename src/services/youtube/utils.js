@@ -144,7 +144,7 @@ export function enrichYouTubeTrack(item) {
     artist,
     title,
     channelTitle: channelName,
-    videoId: item.id,
+    videoId: item.contentDetails.videoId,
     publishedAt: snippet.publishedAt,
     thumbnails: snippet.thumbnails,
   };

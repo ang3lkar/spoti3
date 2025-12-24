@@ -164,7 +164,7 @@ describe("youtube.js utilities", () => {
       assert.strictEqual(result.fullTitle, "Great Artist - Amazing Song");
       assert.strictEqual(result.title, "Amazing Song");
       assert.strictEqual(result.channelTitle, "Great Artist");
-      assert.strictEqual(result.videoId, undefined);
+      assert.strictEqual(result.videoId, "video123");
       assert.strictEqual(result.publishedAt, "2023-01-01T00:00:00Z");
     });
 
