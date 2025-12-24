@@ -19,39 +19,31 @@ export function extractYouTubeId(url) {
   const v = queryParams.get("v");
   const channel = queryParams.get("channel");
 
-  const result = { type: null, value: null };
-
-  if (list) {
-    logger.debug(`Extracted YouTube playlist ID: ${list}`);
-    result.type = "playlist";
-    result.value = list;
-  }
-
-  if (v) {
-    logger.debug(`Extracted YouTube video ID: ${v}`);
-    result.type = "video";
-    result.value = v;
-  }
-
-  if (channel) {
-    logger.debug(`Extracted YouTube channel ID: ${channel}`);
-    result.type = "channel";
-    result.value = channel;
-  }
-
   // also check short-url form
   if (parsedUrl.host.includes("youtu.be")) {
     const value = parsedUrl.pathname.split("/")[1];
     logger.debug(`Extracted YouTube video ID: ${value}`);
-    result.type = "video";
-    result.value = parsedUrl.pathname.split("/")[1];
+    return { type: "video", value: parsedUrl.pathname.split("/")[1] };
+  }
+
+  if (list) {
+    logger.debug(`Extracted YouTube playlist ID: ${list}`);
+    return { type: "playlist", value: list };
+  }
+
+  if (v) {
+    logger.debug(`Extracted YouTube video ID: ${v}`);
+    return { type: "video", value: v };
+  }
+
+  if (channel) {
+    logger.debug(`Extracted YouTube channel ID: ${channel}`);
+    return { type: "channel", value: channel };
   }
 
   if (Object.keys(result).length === 0) {
     throw new Error("Invalid YouTube URL");
   }
-
-  return result;
 }
 
 /**

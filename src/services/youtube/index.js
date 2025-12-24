@@ -1,3 +1,4 @@
+import { logger } from "../../utils/logger.js";
 import * as youtubeApi from "../../api/youtube/index.js";
 import { extractYouTubeId, enrichYouTubeTrack } from "./utils.js";
 
@@ -24,17 +25,19 @@ function getFolderName({ youtubeId, playlistDetails }) {
  * @returns {object} { name: string, tracks: object[], folderName: string }
  */
 export async function fetchPlaylist(url, options = { youtubeApi, source }) {
-  const youtubeId = extractYouTubeId(url);
+  try {
+    const youtubeId = extractYouTubeId(url);
 
-  const playlistDetails = await youtubeApi.fetchPlaylistDetails({
-    youtubeId,
-  });
+    const playlistDetails = await youtubeApi.fetchPlaylistDetails({
+      youtubeId,
+    });
 
-  const tracks = [];
-  for (const item of playlistDetails.tracks) {
-    tracks.push(enrichYouTubeTrack(item));
+    const tracks = playlistDetails.tracks;
+
+    const folderName = getFolderName({ youtubeId, playlistDetails });
+    return { ...playlistDetails, folderName, tracks };
+  } catch (err) {
+    logger.error(err.stack);
+    throw err;
   }
-
-  const folderName = getFolderName({ youtubeId, playlistDetails });
-  return { ...playlistDetails, folderName, tracks };
 }
