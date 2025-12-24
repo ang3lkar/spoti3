@@ -28,6 +28,8 @@ export async function downloadTrackList({ playlist, tracks, options = {} }) {
   });
 
   for (const track of tracks) {
+    log.newLine();
+
     if (track === undefined) {
       log.info("Track is undefined");
       continue;

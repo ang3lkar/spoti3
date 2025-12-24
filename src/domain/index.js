@@ -26,7 +26,10 @@ export async function run({ url, options = {} }) {
 
     const playlist = await fetchPlaylist(value, {
       source,
-      mock: process.env.MOCK_DOWNLOAD === "yes",
+      options: {
+        ...options,
+        logger: log,
+      },
     });
     const album = options.album || playlist.name;
 
