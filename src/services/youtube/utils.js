@@ -28,14 +28,14 @@ export function extractYouTubeId(url, options = {}) {
     return { type: "video", value: parsedUrl.pathname.split("/")[1] };
   }
 
-  if (list) {
-    log.debug(`Extracted YouTube playlist ID: ${list}`);
-    return { type: "playlist", value: list };
-  }
-
   if (v) {
     log.debug(`Extracted YouTube video ID: ${v}`);
     return { type: "video", value: v };
+  }
+
+  if (list) {
+    log.debug(`Extracted YouTube playlist ID: ${list}`);
+    return { type: "playlist", value: list };
   }
 
   if (channel) {
@@ -144,7 +144,7 @@ export function enrichYouTubeTrack(item) {
     artist,
     title,
     channelTitle: channelName,
-    videoId: item.contentDetails.videoId,
+    videoId: item.contentDetails.videoId || item.id?.videoId,
     publishedAt: snippet.publishedAt,
     thumbnails: snippet.thumbnails,
   };

@@ -20,16 +20,6 @@ describe("youtube.js utilities", () => {
       });
     });
 
-    it("should extract track ID and playlist ID from valid URL", () => {
-      const url =
-        "https://www.youtube.com/watch?v=njwi8lK0jzU&list=RDnjwi8lK0jzU&start_radio=1&ab_channel=ANATOLIANPRODUCTION";
-      const result = extractYouTubeId(url, { logger: noOpLogger });
-      assert.deepStrictEqual(result, {
-        type: "playlist",
-        value: "RDnjwi8lK0jzU",
-      });
-    });
-
     it("should extract video ID from valid URL", () => {
       const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
       const result = extractYouTubeId(url, { logger: noOpLogger });
