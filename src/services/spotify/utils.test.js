@@ -5,7 +5,7 @@ import {
   getSearchTerm,
   getTrackImageUrl,
   getArtists,
-} from "../spotify.js";
+} from "./utils.js";
 
 describe("spotify.js utilities", () => {
   describe("extractSpotifyId", () => {

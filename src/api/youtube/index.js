@@ -88,7 +88,6 @@ export async function fetchPlaylistDetails({ youtubeId } = {}) {
         items,
       };
     } catch (err) {
-      logger.error(`Error fetching playlist details: ${err.message}`);
       throw err;
     }
   } else if (type === "video") {
@@ -122,7 +121,6 @@ export async function fetchPlaylistDetails({ youtubeId } = {}) {
         tracks: items,
       };
     } catch (err) {
-      logger.error(`Error fetching video details: ${err.message}`);
       throw err;
     }
   } else {

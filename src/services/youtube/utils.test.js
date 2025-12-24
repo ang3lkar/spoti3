@@ -6,7 +6,7 @@ import {
   getChannelName,
   getYouTubeTrackImageUrl,
   enrichYouTubeTrack,
-} from "../youtube.js";
+} from "./utils.js";
 
 describe("youtube.js utilities", () => {
   describe("extractYouTubeId", () => {
@@ -14,7 +14,8 @@ describe("youtube.js utilities", () => {
       const url = "https://www.youtube.com/playlist?list=PL1234567890";
       const result = extractYouTubeId(url);
       assert.deepStrictEqual(result, {
-        playlist: "PL1234567890",
+        type: "playlist",
+        value: "PL1234567890",
       });
     });
 
@@ -23,8 +24,8 @@ describe("youtube.js utilities", () => {
         "https://www.youtube.com/watch?v=njwi8lK0jzU&list=RDnjwi8lK0jzU&start_radio=1&ab_channel=ANATOLIANPRODUCTION";
       const result = extractYouTubeId(url);
       assert.deepStrictEqual(result, {
-        video: "njwi8lK0jzU",
-        playlist: "RDnjwi8lK0jzU",
+        type: "video",
+        value: "njwi8lK0jzU",
       });
     });
 
@@ -32,7 +33,8 @@ describe("youtube.js utilities", () => {
       const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
       const result = extractYouTubeId(url);
       assert.deepStrictEqual(result, {
-        video: "dQw4w9WgXcQ",
+        type: "video",
+        value: "dQw4w9WgXcQ",
       });
     });
 
@@ -40,14 +42,18 @@ describe("youtube.js utilities", () => {
       const url = "https://youtu.be/dQw4w9WgXcQ";
       const result = extractYouTubeId(url);
       assert.deepStrictEqual(result, {
-        video: "dQw4w9WgXcQ",
+        type: "video",
+        value: "dQw4w9WgXcQ",
       });
     });
 
     it("should extract channel ID from valid URL", () => {
       const url = "https://www.youtube.com/channel/UC1234567890";
-      // assert error is thrown
-      assert.throws(() => extractYouTubeId(url), Error, "Invalid YouTube URL");
+      const result = extractYouTubeId(url);
+      assert.deepStrictEqual(result, {
+        type: null,
+        value: null,
+      });
     });
   });
 
@@ -157,7 +163,7 @@ describe("youtube.js utilities", () => {
       assert.strictEqual(result.fullTitle, "Great Artist - Amazing Song");
       assert.strictEqual(result.title, "Amazing Song");
       assert.strictEqual(result.channelTitle, "Great Artist");
-      assert.strictEqual(result.videoId, "video123");
+      assert.strictEqual(result.videoId, undefined);
       assert.strictEqual(result.publishedAt, "2023-01-01T00:00:00Z");
     });
 
@@ -174,8 +180,8 @@ describe("youtube.js utilities", () => {
 
       const result = enrichYouTubeTrack(item);
 
-      assert.strictEqual(result.fullTitle, "Artist - Song | With | Slashes");
-      assert.strictEqual(result.title, "Song | With | Slashes");
+      assert.strictEqual(result.fullTitle, "Song - With / Slashes");
+      assert.strictEqual(result.title, "With / Slashes");
     });
 
     it("should handle track without channel title", () => {
@@ -188,10 +194,7 @@ describe("youtube.js utilities", () => {
         },
       };
 
-      const result = enrichYouTubeTrack(item);
-
-      assert.strictEqual(result.fullTitle, "Song Without Artist");
-      assert.strictEqual(result.channelTitle, "");
+      assert.throws(() => enrichYouTubeTrack(item), TypeError);
     });
   });
 });

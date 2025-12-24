@@ -1,6 +1,6 @@
 import { describe, it, mock } from "node:test";
 import assert from "node:assert";
-import { fetchPlaylist } from "../spotify.js";
+import { fetchPlaylist } from "../spotify/index.js";
 
 describe("spotify.js services", () => {
   describe("fetchPlaylist", () => {
@@ -149,10 +149,12 @@ describe("spotify.js services", () => {
       };
 
       // Verify that the error is thrown
-      await assert.rejects(
-        () => fetchPlaylist(url, { spotifyApi: mockedApi }),
-        /Invalid Spotify URL/
-      );
+      try {
+        await fetchPlaylist(url, { spotifyApi: mockedApi });
+        assert.fail("Expected error was not thrown");
+      } catch (err) {
+        assert.strictEqual(err.message, "Invalid Spotify URL");
+      }
     });
   });
 });
