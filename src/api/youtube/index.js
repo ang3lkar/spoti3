@@ -3,6 +3,7 @@ import axios from "axios";
 import { QuotaExceededError } from "../../domain/errors.js";
 import { logger } from "../../utils/logger.js";
 import { api } from "../../config/index.js";
+import { getCachePath, readCache, writeCache } from "../../utils/cache.js";
 
 const { API_KEY } = api.YOUTUBE;
 
@@ -61,6 +62,17 @@ export async function fetchTracks({ youtubeId, options = {} }) {
 
   log.debug(`Fetching YouTube ${type} tracks`);
 
+  // Check cache first (skip in test environment)
+  const disableCache = process.env.NODE_ENV === "test" || options.disableCache;
+  if (!disableCache) {
+    const cachePath = getCachePath(youtubeId, "tracks");
+    const cached = readCache(cachePath);
+    if (cached) {
+      log.debug(`Using cached tracks for ${type} ${value}`);
+      return cached;
+    }
+  }
+
   if (type === "playlist") {
     try {
       const response = await axios.get(playlistItemsUrl, {
@@ -92,6 +104,12 @@ export async function fetchTracks({ youtubeId, options = {} }) {
       }
 
       log.debug(`Fetched ${items.length} playlist items`);
+
+      // Write to cache (skip in test environment)
+      if (!disableCache) {
+        const cachePath = getCachePath(youtubeId, "tracks");
+        writeCache(cachePath, items);
+      }
 
       return items;
     } catch (err) {
@@ -126,6 +144,12 @@ export async function fetchTracks({ youtubeId, options = {} }) {
 
       log.debug(`Fetched 1 video item`);
 
+      // Write to cache (skip in test environment)
+      if (!disableCache) {
+        const cachePath = getCachePath(youtubeId, "tracks");
+        writeCache(cachePath, [playlistItem]);
+      }
+
       return [playlistItem];
     } catch (err) {
       log.error(`Error fetching video: ${err.message}`);
@@ -148,6 +172,17 @@ export async function fetchPlaylistDetails({ youtubeId, options = {} } = {}) {
 
   log.debug(`Fetching YouTube ${type} details`);
 
+  // Check cache first (skip in test environment)
+  const disableCache = process.env.NODE_ENV === "test" || options.disableCache;
+  if (!disableCache) {
+    const cachePath = getCachePath(youtubeId, "details");
+    const cached = readCache(cachePath);
+    if (cached) {
+      log.debug(`Using cached details for ${type} ${value}`);
+      return cached;
+    }
+  }
+
   if (type === "playlist") {
     try {
       const response = await axios.get(playlistUrl, {
@@ -163,7 +198,7 @@ export async function fetchPlaylistDetails({ youtubeId, options = {} } = {}) {
 
       log.debug(`Fetched playlist details: ${playlist.snippet.title}`);
 
-      return {
+      const result = {
         name: playlist.snippet.title,
         description: playlist.snippet.description,
         channelTitle: playlist.snippet.channelTitle,
@@ -173,6 +208,14 @@ export async function fetchPlaylistDetails({ youtubeId, options = {} } = {}) {
         playlistId: playlist.id,
         items,
       };
+
+      // Write to cache (skip in test environment)
+      if (!disableCache) {
+        const cachePath = getCachePath(youtubeId, "details");
+        writeCache(cachePath, result);
+      }
+
+      return result;
     } catch (err) {
       throw err;
     }
@@ -196,7 +239,7 @@ export async function fetchPlaylistDetails({ youtubeId, options = {} } = {}) {
 
       log.debug(`Fetched video details: ${video.snippet.title}`);
 
-      return {
+      const result = {
         name: "Misc",
         description: video.snippet.description,
         channelTitle: video.snippet.channelTitle,
@@ -206,6 +249,14 @@ export async function fetchPlaylistDetails({ youtubeId, options = {} } = {}) {
         videoId: video.id,
         tracks: items,
       };
+
+      // Write to cache (skip in test environment)
+      if (!disableCache) {
+        const cachePath = getCachePath(youtubeId, "details");
+        writeCache(cachePath, result);
+      }
+
+      return result;
     } catch (err) {
       throw err;
     }
