@@ -27,8 +27,6 @@ export async function downloadTrackList({ playlist, tracks, options }) {
   });
 
   for (const track of tracks) {
-    logger.info("--------------------------------");
-
     if (track === undefined) {
       logger.info("Track is undefined");
       continue;
@@ -36,9 +34,7 @@ export async function downloadTrackList({ playlist, tracks, options }) {
 
     count += 1;
     currentTrack = track;
-    logger.info(
-      `Downloading ${count}/${total} "${track.id}: ${track.fullTitle}"`
-    );
+    logger.info(`Downloading ${count}/${total} ${track.fullTitle}"`);
 
     const tagOptions = {
       title: track.fullTitle,
@@ -64,10 +60,10 @@ export async function downloadTrackList({ playlist, tracks, options }) {
 
       if (result.outcome === "SUCCESS") {
         succeededTracks.push(track);
-        logger.info(lineWithCheckmark(`${track.id}: ${track.fullTitle}`));
+        logger.info(`Downloaded ${track.fullTitle}`);
       } else {
         failedTracks.push(track);
-        logger.info(lineWithX(`${track.id}: ${track.fullTitle}`));
+        logger.info(`Failed to download ${track.fullTitle}`);
       }
     } catch (err) {
       if (err instanceof QuotaExceededError) {
