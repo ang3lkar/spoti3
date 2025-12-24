@@ -7,10 +7,12 @@ import { getFileName } from "../../utils/file.js";
  *
  * @param {*} file
  * @param {*} tags
+ * @param {*} options
  */
-export function setTags(file, tags = {}) {
+export function setTags(file, tags = {}, options = {}) {
+  const { logger: log = logger } = options;
   try {
-    logger.debug(`Setting tags for ${getFileName(file)}...`);
+    log.debug(`Setting tags for ${getFileName(file)}...`);
 
     const buffer = fs.readFileSync(file);
 
@@ -53,14 +55,14 @@ export function setTags(file, tags = {}) {
 
     mp3tag.save();
 
-    logger.debug(`Set tags for ${getFileName(file)}`);
+    log.debug(`Set tags for ${getFileName(file)}`);
 
     // Handle error if there's any
     if (mp3tag.error !== "") throw new Error(mp3tag.error);
 
     fs.writeFileSync(file, mp3tag.buffer);
   } catch (err) {
-    logger.error(err);
+    log.error(err);
     throw new Error(`Failed to set tags for ${file}: ${err.message}`);
   }
 }

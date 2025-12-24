@@ -28,11 +28,20 @@ const downloadsDir = path.join(process.cwd(), DOWNLOADS);
  * @param {*} track
  * @param {*} playlist
  * @param {*} playlistFolder
+ * @param {*} trackFilename
+ * @param {*} options
  */
-async function downloadArtwork(track, playlist, playlistFolder, trackFilename) {
+async function downloadArtwork(
+  track,
+  playlist,
+  playlistFolder,
+  trackFilename,
+  options = {}
+) {
+  const { logger: log = logger } = options;
   let artBytes;
   try {
-    logger.debug(`Downloading image for ${getFileName(trackFilename)}...`);
+    log.debug(`Downloading image for ${getFileName(trackFilename)}...`);
 
     let imageUrl;
 
@@ -46,15 +55,15 @@ async function downloadArtwork(track, playlist, playlistFolder, trackFilename) {
     }
 
     if (!imageUrl) {
-      logger.debug(`No image URL available for ${getFileName(trackFilename)}`);
+      log.debug(`No image URL available for ${getFileName(trackFilename)}`);
       return null;
     }
 
     const artBuffer = await downloadImageToMemory(imageUrl);
     artBytes = new Uint8Array(artBuffer);
   } catch (err) {
-    logger.error(`Failed to download image for ${getFileName(trackFilename)}`);
-    logger.error(err.message);
+    log.error(`Failed to download image for ${getFileName(trackFilename)}`);
+    log.error(err.message);
   }
   return artBytes;
 }
@@ -65,8 +74,9 @@ export async function downloadTrack({
   tagOptions,
   downloadOptions,
 }) {
+  const { logger: log = logger } = downloadOptions || {};
   if (!track) {
-    logger.error("Missing track");
+    log.error("Missing track");
     return { outcome: "MISSING_TRACK" };
   }
 
@@ -77,7 +87,7 @@ export async function downloadTrack({
 
   isDownloaded = fs.existsSync(trackFilename);
 
-  if (isDownloaded && !downloadOptions.force) {
+  if (isDownloaded && !downloadOptions?.force) {
     return { outcome: "SUCCESS", mp3File: trackFilename };
   }
 
@@ -88,13 +98,15 @@ export async function downloadTrack({
     if (track.videoId) {
       // YouTube track - use existing video ID
       videoId = track.videoId;
-      logger.debug(`Using existing video ID: ${videoId}`);
+      log.debug(`Using existing video ID: ${videoId}`);
     } else {
       // Spotify track - search YouTube
-      const searchResult = await searchYouTube(getSearchTerm(track, playlist));
+      const searchResult = await searchYouTube(getSearchTerm(track, playlist), {
+        logger: log,
+      });
 
       if (!searchResult) {
-        logger.error(`No video found for ${getSearchTerm(track, playlist)}`);
+        log.error(`No video found for ${getSearchTerm(track, playlist)}`);
         return { outcome: "NO_VIDEO_FOUND" };
       }
 
@@ -103,23 +115,23 @@ export async function downloadTrack({
 
     process.chdir(playlistFolder);
 
-    logger.debug(`Downloading ${getFileName(trackFilename)}...`);
+    log.debug(`Downloading ${getFileName(trackFilename)}...`);
 
-    if (process.env.MOCK_DOWNLOAD === "yes" || downloadOptions.mock) {
+    if (process.env.MOCK_DOWNLOAD === "yes" || downloadOptions?.mock) {
       await delay(300);
-      logger.debug(`Mocked download of ${getFileName(trackFilename)}`);
+      log.debug(`Mocked download of ${getFileName(trackFilename)}`);
       return { outcome: "SUCCESS", mp3File: trackFilename };
     }
 
-    mp3(track.fullTitle, videoId);
+    mp3(track.fullTitle, videoId, { logger: log });
 
-    logger.debug(`Downloaded ${getFileName(trackFilename)}`);
+    log.debug(`Downloaded ${getFileName(trackFilename)}`);
   } catch (err) {
     if (err instanceof QuotaExceededError) {
       throw err;
     }
 
-    logger.error(err);
+    log.error(err);
     return { outcome: "DOWNLOAD_ERROR", error: err };
   }
 
@@ -127,7 +139,8 @@ export async function downloadTrack({
     track,
     playlist,
     playlistFolder,
-    trackFilename
+    trackFilename,
+    { logger: log }
   );
 
   try {
@@ -152,9 +165,9 @@ export async function downloadTrack({
       artBytes,
     };
 
-    callSilently(setTags, trackFilename, tagOptions);
+    callSilently(setTags, trackFilename, tagOptions, { logger: log });
   } catch (err) {
-    logger.error(err.message);
+    log.error(err.message);
   }
 
   return { outcome: "SUCCESS", mp3File: trackFilename };

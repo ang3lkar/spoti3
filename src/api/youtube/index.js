@@ -3,7 +3,6 @@ import axios from "axios";
 import { QuotaExceededError } from "../../domain/errors.js";
 import { logger } from "../../utils/logger.js";
 import { api } from "../../config/index.js";
-import { enrichYouTubeTrack } from "../../services/youtube/utils.js";
 
 const { API_KEY, SEARCH_URL, SEARCH_PARAMS } = api.YOUTUBE;
 
@@ -20,8 +19,9 @@ const searchParams = {
 };
 
 // Function to search for a video on YouTube
-export async function searchYouTube(query) {
-  logger.debug(`Searching YouTube for ${query}`);
+export async function searchYouTube(query, options = {}) {
+  const { logger: log = logger } = options;
+  log.debug(`Searching YouTube for ${query}`);
 
   try {
     const response = await axios.get(url, {
@@ -55,10 +55,11 @@ export async function searchYouTube(query) {
  * @param {object} param0 { youtubeId }
  * @returns {Array} Array of playlist items
  */
-export async function fetchTracks({ youtubeId }) {
+export async function fetchTracks({ youtubeId, options = {} }) {
+  const { logger: log = logger } = options;
   const { type, value } = youtubeId;
 
-  logger.debug(`Fetching YouTube ${type} tracks`);
+  log.debug(`Fetching YouTube ${type} tracks`);
 
   if (type === "playlist") {
     try {
@@ -90,11 +91,11 @@ export async function fetchTracks({ youtubeId }) {
         nextPageToken = nextResponse.data.nextPageToken;
       }
 
-      logger.debug(`Fetched ${items.length} playlist items`);
+      log.debug(`Fetched ${items.length} playlist items`);
 
       return items;
     } catch (err) {
-      logger.error(`Error fetching playlist tracks: ${err.message}`);
+      log.error(`Error fetching playlist tracks: ${err.message}`);
       throw err;
     }
   } else if (type === "video") {
@@ -123,11 +124,11 @@ export async function fetchTracks({ youtubeId }) {
         id: { videoId: video.id },
       };
 
-      logger.debug(`Fetched 1 video item`);
+      log.debug(`Fetched 1 video item`);
 
       return [playlistItem];
     } catch (err) {
-      logger.error(`Error fetching video: ${err.message}`);
+      log.error(`Error fetching video: ${err.message}`);
       throw err;
     }
   } else {
@@ -141,10 +142,11 @@ export async function fetchTracks({ youtubeId }) {
  * @param {object} param0 { youtubeId }
  * @returns {object} Playlist details
  */
-export async function fetchPlaylistDetails({ youtubeId } = {}) {
+export async function fetchPlaylistDetails({ youtubeId, options = {} } = {}) {
+  const { logger: log = logger } = options;
   const { type, value } = youtubeId;
 
-  logger.debug(`Fetching YouTube ${type} details`);
+  log.debug(`Fetching YouTube ${type} details`);
 
   if (type === "playlist") {
     try {
@@ -159,9 +161,9 @@ export async function fetchPlaylistDetails({ youtubeId } = {}) {
       const items = response.data.items;
       const playlist = items[0];
 
-      logger.debug(`Fetched playlist details: ${playlist.snippet.title}`);
+      log.debug(`Fetched playlist details: ${playlist.snippet.title}`);
 
-      const result = {
+      return {
         name: playlist.snippet.title,
         description: playlist.snippet.description,
         channelTitle: playlist.snippet.channelTitle,
@@ -171,15 +173,6 @@ export async function fetchPlaylistDetails({ youtubeId } = {}) {
         playlistId: playlist.id,
         items,
       };
-
-      const playlistItems = await fetchTracks({ youtubeId });
-
-      const tracks = [];
-      for (const item of playlistItems) {
-        tracks.push(enrichYouTubeTrack(item));
-      }
-
-      return { ...result, tracks };
     } catch (err) {
       throw err;
     }
@@ -201,7 +194,7 @@ export async function fetchPlaylistDetails({ youtubeId } = {}) {
 
       const video = items[0];
 
-      logger.debug(`Fetched video details: ${video.snippet.title}`);
+      log.debug(`Fetched video details: ${video.snippet.title}`);
 
       return {
         name: "Misc",

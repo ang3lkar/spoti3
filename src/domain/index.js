@@ -20,6 +20,7 @@ const validateUrl = (url) => {
 };
 
 export async function run({ url, options = {} }) {
+  const { logger: log = logger } = options;
   try {
     const { value, source } = validateUrl(url);
 
@@ -35,9 +36,12 @@ export async function run({ url, options = {} }) {
       playlist,
       tracks: playlist.tracks,
       album,
-      options,
+      options: {
+        ...options,
+        logger: log,
+      },
     });
   } catch (err) {
-    logger.error(err.stack);
+    log.error(err.stack);
   }
 }

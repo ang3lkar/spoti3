@@ -1,4 +1,5 @@
 import * as spotifyApi from "../../api/spotify/index.js";
+import { logger } from "../../utils/logger.js";
 import { getArtists } from "./utils.js";
 import { getOrdinalString } from "../../utils/basic.js";
 import { extractSpotifyId } from "./utils.js";
@@ -45,9 +46,10 @@ function getFolderName({ spotifyId, playlistDetails }) {
  * @returns {Playlist} { name: string, tracks: string[] }
  */
 export async function fetchPlaylist(url, options = { spotifyApi, source }) {
+  const { logger: log = logger } = options;
   const accessToken = await options.spotifyApi.fetchAccessToken();
 
-  const spotifyId = extractSpotifyId(url);
+  const spotifyId = extractSpotifyId(url, { logger: log });
 
   const playlistDetails = await options.spotifyApi.fetchPlaylistDetails({
     accessToken,

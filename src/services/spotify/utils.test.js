@@ -6,12 +6,13 @@ import {
   getTrackImageUrl,
   getArtists,
 } from "./utils.js";
+import { noOpLogger } from "../../utils/logger.js";
 
 describe("spotify.js utilities", () => {
   describe("extractSpotifyId", () => {
     it("should extract playlist ID from valid URL", () => {
       const url = "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M";
-      const result = extractSpotifyId(url);
+      const result = extractSpotifyId(url, { logger: noOpLogger });
       assert.deepStrictEqual(result, {
         type: "playlist",
         value: "37i9dQZF1DXcBWIGoYBM5M",
@@ -20,7 +21,7 @@ describe("spotify.js utilities", () => {
 
     it("should extract album ID from valid URL", () => {
       const url = "https://open.spotify.com/album/6kf46HbnYCZzP6rjvQHYzg";
-      const result = extractSpotifyId(url);
+      const result = extractSpotifyId(url, { logger: noOpLogger });
       assert.deepStrictEqual(result, {
         type: "album",
         value: "6kf46HbnYCZzP6rjvQHYzg",
@@ -29,7 +30,7 @@ describe("spotify.js utilities", () => {
 
     it("should extract track ID from valid URL", () => {
       const url = "https://open.spotify.com/track/6rqhFgbbKwnb9MLmUQDhG6";
-      const result = extractSpotifyId(url);
+      const result = extractSpotifyId(url, { logger: noOpLogger });
       assert.deepStrictEqual(result, {
         type: "track",
         value: "6rqhFgbbKwnb9MLmUQDhG6",
@@ -38,13 +39,13 @@ describe("spotify.js utilities", () => {
 
     it("should throw error for invalid URL", () => {
       const url = "https://open.spotify.com/invalid/123";
-      assert.throws(() => extractSpotifyId(url), Error, "Invalid Spotify URL");
+      assert.throws(() => extractSpotifyId(url, { logger: noOpLogger }), Error, "Invalid Spotify URL");
     });
 
     it("should handle URLs with additional path segments", () => {
       const url =
         "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M?si=123";
-      const result = extractSpotifyId(url);
+      const result = extractSpotifyId(url, { logger: noOpLogger });
       assert.deepStrictEqual(result, {
         type: "playlist",
         value: "37i9dQZF1DXcBWIGoYBM5M",
