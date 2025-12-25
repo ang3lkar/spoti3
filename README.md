@@ -29,12 +29,6 @@ This tool combines several APIs to achieve seamless playlist downloading:
 
 ## 🚀 Installation
 
-### Quick Install
-
-```bash
-npm install -g spoti3
-```
-
 ### Development Setup
 
 ```bash
