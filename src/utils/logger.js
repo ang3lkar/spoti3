@@ -20,6 +20,10 @@ const baseLogger = createConsola({
 
 /** Just a simple wrapper to enforce colors */
 class Logger {
+  newLine() {
+    process.stdout.write("\n");
+  }
+
   start(message) {
     baseLogger.start(message);
   }
@@ -53,6 +57,23 @@ class Logger {
 const logger = new Logger();
 
 /**
+ * No-op logger that does nothing - useful for tests
+ */
+class NoOpLogger {
+  newLine() {}
+  start() {}
+  box() {}
+  prompt() {}
+  debug() {}
+  warn() {}
+  info() {}
+  error() {}
+  progress() {}
+}
+
+const noOpLogger = new NoOpLogger();
+
+/**
  * Call a function silently
  *
  * @param {*} fn
@@ -69,4 +90,4 @@ function callSilently(fn, ...args) {
   }
 }
 
-export { logger, callSilently };
+export { logger, noOpLogger, callSilently };

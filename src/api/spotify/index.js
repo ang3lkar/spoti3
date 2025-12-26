@@ -2,7 +2,7 @@ import axios from "axios";
 import { logger } from "../../utils/logger.js";
 import { api } from "../../config/index.js";
 
-const { CLIENT_ID, CLIENT_SECRET, TOKEN_URL, API_BASE_URL } = api.SPOTIFY;
+const { CLIENT_ID, CLIENT_SECRET, TOKEN_URL } = api.SPOTIFY;
 
 /**
  * Get an temporary access token from Spotify
@@ -45,7 +45,7 @@ export async function fetchPlaylistDetails({ accessToken, spotifyId }) {
 
   logger.debug(`Fetching ${type} details`);
 
-  let url = `https://api.spotify.com/v1/${type}s/${value}`;
+  const url = `https://api.spotify.com/v1/${type}s/${value}`;
 
   try {
     const response = await axios.get(url, {
@@ -89,7 +89,7 @@ export async function fetchMultipleTracks({ accessToken, spotifyId, url }) {
 
   logger.debug(`Fetching ${type} tracks`);
 
-  let tracksUrl = url || `https://api.spotify.com/v1/${type}s/${value}/tracks`;
+  const tracksUrl = url || `https://api.spotify.com/v1/${type}s/${value}/tracks`;
 
   const response = await axios.get(tracksUrl, {
     headers: {
@@ -122,7 +122,7 @@ export async function fetchSingleTrack({ accessToken, spotifyId }) {
 
   logger.debug(`Fetching a single track`);
 
-  let url = `https://api.spotify.com/v1/tracks/${value}`;
+  const url = `https://api.spotify.com/v1/tracks/${value}`;
 
   const response = await axios.get(url, {
     headers: {

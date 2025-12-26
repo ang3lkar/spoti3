@@ -82,7 +82,7 @@ describe("basic.js utilities", () => {
 
         // Return a mock request object
         return {
-          on: (event, handler) => {
+          on: (_event, _handler) => {
             // No error in this test case
           },
         };
