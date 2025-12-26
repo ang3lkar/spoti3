@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
+import { getRepoRoot } from "./repo.js";
 
-const CACHE_DIR = path.join(process.cwd(), ".cache");
+const CACHE_DIR = path.join(getRepoRoot(), ".cache");
 
 /**
  * Ensure the cache directory exists

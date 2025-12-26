@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { app } from "../config/index.js";
+import { getRepoRoot } from "./repo.js";
 
 const { DOWNLOADS } = app.FOLDERS;
 
@@ -10,7 +11,8 @@ const { DOWNLOADS } = app.FOLDERS;
  * @param {*} name The name of the folder to create
  */
 export function createDownloadFolder(name) {
-  const parentFolder = path.join(process.cwd(), DOWNLOADS);
+  const repoRoot = getRepoRoot();
+  const parentFolder = path.join(repoRoot, DOWNLOADS);
 
   if (!fs.existsSync(parentFolder)) {
     fs.mkdirSync(parentFolder);

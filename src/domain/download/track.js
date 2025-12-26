@@ -14,10 +14,11 @@ import {
   getSearchTerm,
 } from "../../services/spotify/utils.js";
 import { getYouTubeTrackImageUrl } from "../../services/youtube/utils.js";
+import { getRepoRoot } from "../../utils/repo.js";
 
 const { DOWNLOADS } = app.FOLDERS;
 
-const downloadsDir = path.join(process.cwd(), DOWNLOADS);
+const downloadsDir = path.join(getRepoRoot(), DOWNLOADS);
 
 /**
  * Downloads the artwork for a track
