@@ -3,12 +3,13 @@ import path from "path";
 import { titleToFriendlyName } from "../utils/basic.js";
 import { app } from "../config/index.js";
 import { logger } from "../utils/logger.js";
+import { getRepoRoot } from "../utils/repo.js";
 
 const { PLAYLISTS } = app.FOLDERS;
 
 export function getPlaylistFileName(playlist) {
   return path.join(
-    process.cwd(),
+    getRepoRoot(),
     PLAYLISTS,
     `${titleToFriendlyName(playlist)}.txt`
   );
@@ -43,7 +44,7 @@ export async function saveToFile({ playlist, options }) {
       fs.rmSync(filename, { force: true });
     }
 
-    const playlistsFolder = path.join(process.cwd(), PLAYLISTS);
+    const playlistsFolder = path.join(getRepoRoot(), PLAYLISTS);
     if (!fs.existsSync(playlistsFolder)) {
       fs.mkdirSync(playlistsFolder);
     }
@@ -53,5 +54,6 @@ export async function saveToFile({ playlist, options }) {
     return { filename };
   } catch (error) {
     logger.error("Error:", error.message);
+    throw error;
   }
 }

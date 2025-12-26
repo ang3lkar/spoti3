@@ -3,21 +3,7 @@ import { downloadTrackList } from "./download/playlist.js";
 
 import { fetchPlaylist } from "../services/index.js";
 import { createDownloadFolder } from "../utils/file.js";
-
-/**
- * Validates the URL and returns the source and value
- * @param {*} url
- * @returns {object} { value: url, source: "spotify" | "youtube" }
- */
-const validateUrl = (url) => {
-  if (url.includes("spotify.com")) {
-    return { value: url, source: "spotify" };
-  } else if (url.includes("youtube.com") || url.includes("youtu.be")) {
-    return { value: url, source: "youtube" };
-  }
-
-  throw new Error("Invalid URL - must be a Spotify or YouTube URL");
-};
+import { validateUrl } from "../utils/validation.js";
 
 export async function run({ url, options = {} }) {
   const { logger: log = logger } = options;
@@ -45,6 +31,7 @@ export async function run({ url, options = {} }) {
       },
     });
   } catch (err) {
-    log.error(err.stack);
+    log.error(err.stack || err.message || err);
+    throw err;
   }
 }

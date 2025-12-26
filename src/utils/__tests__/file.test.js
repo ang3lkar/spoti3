@@ -4,12 +4,13 @@ import fs from 'fs';
 import path from 'path';
 import { createDownloadFolder, getFileName } from '../file.js';
 import { app } from '../../config/index.js';
+import { getRepoRoot } from '../repo.js';
 
 describe('file.js utilities', () => {
   describe('createDownloadFolder', () => {
     it('should create folder structure correctly', () => {
       const testFolderName = 'test-folder';
-      const expectedPath = path.join(process.cwd(), app.FOLDERS.DOWNLOADS, testFolderName);
+      const expectedPath = path.join(getRepoRoot(), app.FOLDERS.DOWNLOADS, testFolderName);
 
       // Clean up if test folder exists from previous runs
       if (fs.existsSync(expectedPath)) {
