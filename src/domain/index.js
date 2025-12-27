@@ -23,10 +23,9 @@ export async function run({ url, options = {} }) {
 
     await downloadTrackList({
       playlist,
-      tracks: playlist.tracks,
-      album,
       options: {
         ...options,
+        album,
         logger: log,
       },
     });
