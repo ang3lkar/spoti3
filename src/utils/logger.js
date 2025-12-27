@@ -1,4 +1,3 @@
-import readline from "readline";
 import chalk from "chalk";
 import { createConsola } from "consola";
 import { app } from "../config/index.js";

@@ -42,7 +42,7 @@ export function readCache(cachePath) {
       return JSON.parse(data);
     }
     return null;
-  } catch (err) {
+  } catch {
     return null;
   }
 }

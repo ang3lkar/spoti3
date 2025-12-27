@@ -2,11 +2,12 @@ import { logger } from "../../utils/logger.js";
 import { downloadTrack } from "./track.js";
 import { QuotaExceededError } from "../errors.js";
 
-export async function downloadTrackList({ playlist, tracks, options = {} }) {
+export async function downloadTrackList({ playlist, options = {} }) {
   const { logger: log = logger } = options;
   let count = 0;
   let currentTrack;
 
+  const tracks = playlist.tracks;
   const total = tracks.length;
 
   log.newLine();
