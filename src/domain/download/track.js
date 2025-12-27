@@ -66,13 +66,9 @@ async function downloadArtwork(
   return artBytes;
 }
 
-export async function downloadTrack({
-  playlist,
-  track,
-  tagOptions,
-  downloadOptions,
-}) {
+export async function downloadTrack({ playlist, track, downloadOptions }) {
   const { logger: log = logger } = downloadOptions || {};
+
   if (!track) {
     log.error("Missing track");
     return { outcome: "MISSING_TRACK" };
@@ -140,6 +136,29 @@ export async function downloadTrack({
     { logger: log }
   );
 
+  return { outcome: "SUCCESS", mp3File: trackFilename, artBytes };
+}
+
+/**
+ * Saves track tags to the downloaded MP3 file
+ *
+ * @param {*} track
+ * @param {*} playlist
+ * @param {*} tagOptions
+ * @param {*} artBytes
+ * @param {*} options
+ */
+export function saveTrackTags(
+  track,
+  playlist,
+  tagOptions,
+  artBytes,
+  options = {}
+) {
+  const { logger: log = logger } = options;
+  const playlistFolder = path.join(downloadsDir, playlist.folderName);
+  const trackFilename = `${playlistFolder}/${track.fullTitle}.mp3`;
+
   try {
     // Handle different track structures for Spotify vs YouTube
     let title, artist;
@@ -154,7 +173,7 @@ export async function downloadTrack({
       artist = track.artists.map((a) => a.name).join(" & ");
     }
 
-    tagOptions = {
+    const finalTagOptions = {
       ordinal: tagOptions.ordinal,
       title: title,
       album: tagOptions.album || track.album?.name || playlist.name,
@@ -162,10 +181,8 @@ export async function downloadTrack({
       artBytes,
     };
 
-    callSilently(setTags, trackFilename, tagOptions, { logger: log });
+    callSilently(setTags, trackFilename, finalTagOptions, { logger: log });
   } catch (err) {
     log.error(err.message);
   }
-
-  return { outcome: "SUCCESS", mp3File: trackFilename };
 }

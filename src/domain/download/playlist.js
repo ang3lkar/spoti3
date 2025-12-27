@@ -1,11 +1,18 @@
 import { logger } from "../../utils/logger.js";
-import { downloadTrack } from "./track.js";
+import { downloadTrack, saveTrackTags } from "./track.js";
 import { QuotaExceededError } from "../errors.js";
+
+// Handle Ctrl+C (SIGINT)
+process.on("SIGINT", () => {
+  logger.info("\nCaught interrupt signal (Ctrl+C), cleaning up...");
+
+  // After cleanup, exit the process
+  process.exit();
+});
 
 export async function downloadTrackList({ playlist, options = {} }) {
   const { logger: log = logger } = options;
   let count = 0;
-  let currentTrack;
 
   const tracks = playlist.tracks;
   const total = tracks.length;
@@ -17,17 +24,6 @@ export async function downloadTrackList({ playlist, options = {} }) {
   const failedTracks = [];
   const pendingTracks = [...tracks];
 
-  // Handle Ctrl+C (SIGINT)
-  process.on("SIGINT", () => {
-    log.info("\nCaught interrupt signal (Ctrl+C), cleaning up...");
-
-    // bring current track back to pending to download next time
-    pendingTracks.push(currentTrack);
-
-    // After cleanup, exit the process
-    process.exit();
-  });
-
   for (const track of tracks) {
     log.newLine();
 
@@ -37,7 +33,6 @@ export async function downloadTrackList({ playlist, options = {} }) {
     }
 
     count += 1;
-    currentTrack = track;
     log.info(`Downloading ${count}/${total} ${track.fullTitle}"`);
 
     const tagOptions = {
@@ -55,7 +50,6 @@ export async function downloadTrackList({ playlist, options = {} }) {
       const result = await downloadTrack({
         playlist,
         track,
-        tagOptions,
         downloadOptions,
       });
 
@@ -66,6 +60,11 @@ export async function downloadTrackList({ playlist, options = {} }) {
       if (result.outcome === "SUCCESS") {
         succeededTracks.push(track);
         log.info(`Downloaded ${track.fullTitle}`);
+
+        // Save track tags after successful download
+        saveTrackTags(track, playlist, tagOptions, result.artBytes, {
+          logger: log,
+        });
       } else {
         failedTracks.push(track);
         log.info(`Failed to download ${track.fullTitle}`);
