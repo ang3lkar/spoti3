@@ -148,7 +148,7 @@ export async function downloadTrack({ playlist, track, downloadOptions }) {
  * @param {*} artBytes
  * @param {*} options
  */
-export function saveTrackTags(
+export async function saveTrackTags(
   track,
   playlist,
   tagOptions,
@@ -171,6 +171,27 @@ export function saveTrackTags(
       // Spotify track
       title = track.name;
       artist = track.artists.map((a) => a.name).join(" & ");
+    }
+
+    // Prompt user to confirm the artist / title when it comes from YouTube
+    if (track.videoId && log.prompt && typeof log.prompt === "function") {
+      const confirmedArtist = await log.prompt(`Artist: `, {
+        placeholder: "Not sure",
+        initial: artist,
+      });
+      // If user entered a value, use it; otherwise, keep existing value
+      if (confirmedArtist && confirmedArtist.trim().length > 0) {
+        artist = confirmedArtist.trim();
+      }
+
+      const confirmedTitle = await log.prompt(`Title: `, {
+        placeholder: "Not sure",
+        initial: title,
+      });
+      // If user entered a value, use it; otherwise, keep existing value
+      if (confirmedTitle && confirmedTitle.trim().length > 0) {
+        title = confirmedTitle.trim();
+      }
     }
 
     const finalTagOptions = {

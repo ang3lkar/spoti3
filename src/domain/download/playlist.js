@@ -62,7 +62,7 @@ export async function downloadTrackList({ playlist, options = {} }) {
         log.info(`Downloaded ${track.fullTitle}`);
 
         // Save track tags after successful download
-        saveTrackTags(track, playlist, tagOptions, result.artBytes, {
+        await saveTrackTags(track, playlist, tagOptions, result.artBytes, {
           logger: log,
         });
       } else {
