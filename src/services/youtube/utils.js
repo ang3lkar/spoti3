@@ -1,6 +1,7 @@
 import { logger } from "../../utils/logger.js";
 import * as MetadataFilter from "metadata-filter";
 import getArtistTitle from "get-artist-title";
+import { searchTrackByTitle } from "../spotify/search.js";
 
 /**
  * Extract YouTube playlist ID from a YouTube URL
@@ -115,26 +116,48 @@ export function getYouTubeTrackImageUrl(track, playlist) {
  * such as fullTitle.
  *
  * @param {object} item YouTube playlist item
- * @returns {object} Enriched track object
+ * @param {object} options Options object
+ * @param {object} options.logger Logger instance
+ * @param {boolean} options.disableCache Skip cache (for testing)
+ * @returns {Promise<object>} Enriched track object
  */
-export function enrichYouTubeTrack(item) {
+export async function enrichYouTubeTrack(item, options = {}) {
+  const { logger: log = logger, disableCache = false } = options;
   const { snippet } = item;
   const rawTitle = snippet.title;
 
   const channelName = getChannelName(item);
 
-  const [rawArtist, _] = rawTitle.includes(" - ")
-    ? rawTitle.split(" - ")
-    : [null, rawTitle];
-
-  const cleanTitle = MetadataFilter.youtube(rawTitle);
-  const [artist0, title] = getArtistTitle(cleanTitle, {
-    defaultArtist: rawArtist || channelName,
+  // Try Spotify search first
+  let artist, title, tagSource;
+  const spotifyResult = await searchTrackByTitle(rawTitle, {
+    logger: log,
+    disableCache,
   });
 
-  const artist = artist0.includes("Topic")
-    ? artist0.replace(" - Topic", "").trim()
-    : artist0;
+  if (spotifyResult && spotifyResult.artist && spotifyResult.title) {
+    // Use Spotify result
+    artist = spotifyResult.artist;
+    title = spotifyResult.title;
+    tagSource = "spotify";
+    log.debug(`Using Spotify metadata: ${artist} - ${title}`);
+  } else {
+    // Fallback to current parsing method
+    const [rawArtist, _] = rawTitle.includes(" - ")
+      ? rawTitle.split(" - ")
+      : [null, rawTitle];
+
+    const cleanTitle = MetadataFilter.youtube(rawTitle);
+    const [artist0, title0] = getArtistTitle(cleanTitle, {
+      defaultArtist: rawArtist || channelName,
+    });
+
+    artist = artist0.includes("Topic")
+      ? artist0.replace(" - Topic", "").trim()
+      : artist0;
+    title = title0;
+    tagSource = "youtube";
+  }
 
   const fullTitle = artist ? `${artist} - ${title}` : title;
 
@@ -143,6 +166,7 @@ export function enrichYouTubeTrack(item) {
     fullTitle,
     artist,
     title,
+    tagSource,
     channelTitle: channelName,
     videoId: item.contentDetails.videoId || item.id?.videoId,
     publishedAt: snippet.publishedAt,

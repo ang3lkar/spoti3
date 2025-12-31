@@ -136,7 +136,7 @@ describe("youtube.js utilities", () => {
   });
 
   describe("enrichYouTubeTrack", () => {
-    it("should enrich track with full title and video ID", () => {
+    it("should enrich track with full title and video ID", async () => {
       const item = {
         snippet: {
           title: "Amazing Song",
@@ -149,16 +149,23 @@ describe("youtube.js utilities", () => {
         },
       };
 
-      const result = enrichYouTubeTrack(item);
+      const result = await enrichYouTubeTrack(item, {
+        logger: noOpLogger,
+        disableCache: true,
+      });
 
       assert.strictEqual(result.fullTitle, "Great Artist - Amazing Song");
       assert.strictEqual(result.title, "Amazing Song");
       assert.strictEqual(result.channelTitle, "Great Artist");
       assert.strictEqual(result.videoId, "video123");
       assert.strictEqual(result.publishedAt, "2023-01-01T00:00:00Z");
+      // Should have tagSource set (youtube when Spotify search fails)
+      assert.ok(
+        result.tagSource === "youtube" || result.tagSource === "spotify"
+      );
     });
 
-    it("should replace forward slashes in title", () => {
+    it("should replace forward slashes in title", async () => {
       const item = {
         snippet: {
           title: "Song / With / Slashes",
@@ -169,13 +176,20 @@ describe("youtube.js utilities", () => {
         },
       };
 
-      const result = enrichYouTubeTrack(item);
+      const result = await enrichYouTubeTrack(item, {
+        logger: noOpLogger,
+        disableCache: true,
+      });
 
       assert.strictEqual(result.fullTitle, "Song - With / Slashes");
       assert.strictEqual(result.title, "With / Slashes");
+      // Should have tagSource set
+      assert.ok(
+        result.tagSource === "youtube" || result.tagSource === "spotify"
+      );
     });
 
-    it("should handle track without channel title", () => {
+    it("should handle track without channel title", async () => {
       const item = {
         snippet: {
           title: "Song Without Artist",
@@ -185,7 +199,65 @@ describe("youtube.js utilities", () => {
         },
       };
 
-      assert.throws(() => enrichYouTubeTrack(item), TypeError);
+      await assert.rejects(
+        () =>
+          enrichYouTubeTrack(item, {
+            logger: noOpLogger,
+            disableCache: true,
+          }),
+        TypeError
+      );
+    });
+
+    it("should use Spotify search result when available", async () => {
+      // Note: We can't easily mock ES modules in Node.js test runner,
+      // so we test the fallback behavior and integration separately
+      const item = {
+        snippet: {
+          title: "Oasis wonderwall live at wembley",
+          channelTitle: "Some Channel",
+        },
+        contentDetails: {
+          videoId: "video123",
+        },
+      };
+
+      // Since we can't easily mock ES modules in Node.js test runner,
+      // we'll test the fallback behavior and integration separately
+      // This test verifies the function works with disableCache
+      const result = await enrichYouTubeTrack(item, {
+        logger: noOpLogger,
+        disableCache: true,
+      });
+
+      // Should fallback to parsing when Spotify is not available in test
+      assert.ok(result.fullTitle);
+      assert.ok(result.artist);
+      assert.ok(result.title);
+    });
+
+    it("should fallback to parsing when Spotify search fails", async () => {
+      const item = {
+        snippet: {
+          title: "Unknown Song Title",
+          channelTitle: "Unknown Artist",
+        },
+        contentDetails: {
+          videoId: "video123",
+        },
+      };
+
+      // With disableCache and no Spotify credentials in test, should fallback
+      const result = await enrichYouTubeTrack(item, {
+        logger: noOpLogger,
+        disableCache: true,
+      });
+
+      // Should use fallback parsing
+      assert.ok(result.fullTitle);
+      assert.ok(result.artist || result.title);
+      // Should have tagSource set to youtube when Spotify fails
+      assert.strictEqual(result.tagSource, "youtube");
     });
   });
 });

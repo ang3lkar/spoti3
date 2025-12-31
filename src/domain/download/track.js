@@ -161,21 +161,34 @@ export async function saveTrackTags(
 
   try {
     // Handle different track structures for Spotify vs YouTube
-    let title, artist;
+    let title, artist, tagSource;
 
     if (track.videoId) {
       // YouTube track
       title = track.title;
       artist = track.artist;
+      // Use tagSource from enriched track, default to "youtube" if not set
+      tagSource = track.tagSource || "youtube";
     } else {
       // Spotify track
       title = track.name;
       artist = track.artists.map((a) => a.name).join(" & ");
+      tagSource = "spotify";
     }
 
     // Prompt user to confirm the artist / title when it comes from YouTube
     if (track.videoId && log.prompt && typeof log.prompt === "function") {
-      const confirmedArtist = await log.prompt(`Artist: `, {
+      // Determine prompt text based on tag source
+      const artistPromptText =
+        tagSource === "spotify"
+          ? "Artist (Tag source=Spotify): "
+          : "Artist (Tag source=Youtube): ";
+      const titlePromptText =
+        tagSource === "spotify"
+          ? "Title (Tag source=Spotify): "
+          : "Title (Tag source=Youtube): ";
+
+      const confirmedArtist = await log.prompt(artistPromptText, {
         placeholder: "Not sure",
         initial: artist,
       });
@@ -184,7 +197,7 @@ export async function saveTrackTags(
         artist = confirmedArtist.trim();
       }
 
-      const confirmedTitle = await log.prompt(`Title: `, {
+      const confirmedTitle = await log.prompt(titlePromptText, {
         placeholder: "Not sure",
         initial: title,
       });

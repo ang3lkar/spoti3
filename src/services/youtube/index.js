@@ -42,7 +42,7 @@ export async function fetchPlaylist(url, options = { youtubeApi }) {
 
     const tracks = [];
     for (const item of playlistItems) {
-      tracks.push(enrichYouTubeTrack(item));
+      tracks.push(await enrichYouTubeTrack(item, { logger: log }));
     }
 
     const folderName = getFolderName({ youtubeId, playlistDetails });

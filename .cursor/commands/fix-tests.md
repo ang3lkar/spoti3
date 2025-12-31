@@ -26,4 +26,5 @@ Execute the full test suite and systematically fix any failures, ensuring code q
    - Do not change the code being tested. If you are not sure, ask insted of proceeding to changes.
 
 4. **Ensure all tests pass**
+
    - Execute all tests and check if there are failures. If yes, start again until all tests pass.
