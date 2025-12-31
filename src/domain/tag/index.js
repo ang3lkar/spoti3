@@ -8,13 +8,12 @@ import { logger } from "../../utils/logger.js";
  * @param {*} tags
  * @param {*} options
  */
-export function setTags(file, tags = {}, options = {}) {
-  const { logger: log = logger } = options;
+export function setTags(file, tags = {}) {
   try {
     const { title, artist, ordinal, album, artBytes } = tags;
 
-    log.newLine();
-    log.debug(
+    logger.newLine();
+    logger.debug(
       `Setting tags: (title=${title}, artist=${artist}, ordinal=${ordinal}, album=${album})`
     );
 
@@ -57,14 +56,14 @@ export function setTags(file, tags = {}, options = {}) {
 
     mp3tag.save();
 
-    log.info(`Set tags successfully`);
+    logger.info(`Set tags successfully`);
 
     // Handle error if there's any
     if (mp3tag.error !== "") throw new Error(mp3tag.error);
 
     fs.writeFileSync(file, mp3tag.buffer);
   } catch (err) {
-    log.error(err);
+    logger.error(err);
     throw new Error(`Failed to set tags for ${file}: ${err.message}`);
   }
 }

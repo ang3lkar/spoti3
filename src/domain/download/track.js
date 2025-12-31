@@ -33,13 +33,11 @@ async function downloadArtwork(
   track,
   playlist,
   playlistFolder,
-  trackFilename,
-  options = {}
+  trackFilename
 ) {
-  const { logger: log = logger } = options;
   let artBytes;
   try {
-    log.debug(`Downloading image for ${getFileName(trackFilename)}...`);
+    logger.debug(`Downloading image for ${getFileName(trackFilename)}...`);
 
     let imageUrl;
 
@@ -53,24 +51,22 @@ async function downloadArtwork(
     }
 
     if (!imageUrl) {
-      log.debug(`No image URL available for ${getFileName(trackFilename)}`);
+      logger.debug(`No image URL available for ${getFileName(trackFilename)}`);
       return null;
     }
 
     const artBuffer = await downloadImageToMemory(imageUrl);
     artBytes = new Uint8Array(artBuffer);
   } catch (err) {
-    log.error(`Failed to download image for ${getFileName(trackFilename)}`);
-    log.error(err.message);
+    logger.error(`Failed to download image for ${getFileName(trackFilename)}`);
+    logger.error(err.message);
   }
   return artBytes;
 }
 
 export async function downloadTrack({ playlist, track, downloadOptions }) {
-  const { logger: log = logger } = downloadOptions || {};
-
   if (!track) {
-    log.error("Missing track");
+    logger.error("Missing track");
     return { outcome: "MISSING_TRACK" };
   }
 
@@ -91,15 +87,13 @@ export async function downloadTrack({ playlist, track, downloadOptions }) {
     if (track.videoId) {
       // YouTube track - use existing video ID
       videoId = track.videoId;
-      log.debug(`Using existing video ID: ${videoId}`);
+      logger.debug(`Using existing video ID: ${videoId}`);
     } else {
       // Spotify track - search YouTube
-      const searchResult = await searchYouTube(getSearchTerm(track, playlist), {
-        logger: log,
-      });
+      const searchResult = await searchYouTube(getSearchTerm(track, playlist));
 
       if (!searchResult) {
-        log.error(`No video found for ${getSearchTerm(track, playlist)}`);
+        logger.error(`No video found for ${getSearchTerm(track, playlist)}`);
         return { outcome: "NO_VIDEO_FOUND" };
       }
 
@@ -108,23 +102,23 @@ export async function downloadTrack({ playlist, track, downloadOptions }) {
 
     process.chdir(playlistFolder);
 
-    log.debug(`Downloading ${getFileName(trackFilename)}...`);
+    logger.debug(`Downloading ${getFileName(trackFilename)}...`);
 
     if (process.env.MOCK_DOWNLOAD === "yes" || downloadOptions?.mock) {
       await delay(300);
-      log.debug(`Mocked download of ${getFileName(trackFilename)}`);
+      logger.debug(`Mocked download of ${getFileName(trackFilename)}`);
       return { outcome: "SUCCESS", mp3File: trackFilename };
     }
 
-    mp3(track.fullTitle, videoId, { logger: log });
+    mp3(track.fullTitle, videoId);
 
-    log.debug(`Downloaded ${getFileName(trackFilename)}`);
+    logger.debug(`Downloaded ${getFileName(trackFilename)}`);
   } catch (err) {
     if (err instanceof QuotaExceededError) {
       throw err;
     }
 
-    log.error(err);
+    logger.error(err);
     return { outcome: "DOWNLOAD_ERROR", error: err };
   }
 
@@ -132,8 +126,7 @@ export async function downloadTrack({ playlist, track, downloadOptions }) {
     track,
     playlist,
     playlistFolder,
-    trackFilename,
-    { logger: log }
+    trackFilename
   );
 
   return { outcome: "SUCCESS", mp3File: trackFilename, artBytes };
@@ -152,30 +145,41 @@ export async function saveTrackTags(
   track,
   playlist,
   tagOptions,
-  artBytes,
-  options = {}
+  artBytes
 ) {
-  const { logger: log = logger } = options;
   const playlistFolder = path.join(downloadsDir, playlist.folderName);
   const trackFilename = `${playlistFolder}/${track.fullTitle}.mp3`;
 
   try {
     // Handle different track structures for Spotify vs YouTube
-    let title, artist;
+    let title, artist, tagSource;
 
     if (track.videoId) {
       // YouTube track
       title = track.title;
       artist = track.artist;
+      // Use tagSource from enriched track, default to "youtube" if not set
+      tagSource = track.tagSource || "youtube";
     } else {
       // Spotify track
       title = track.name;
       artist = track.artists.map((a) => a.name).join(" & ");
+      tagSource = "spotify";
     }
 
     // Prompt user to confirm the artist / title when it comes from YouTube
-    if (track.videoId && log.prompt && typeof log.prompt === "function") {
-      const confirmedArtist = await log.prompt(`Artist: `, {
+    if (track.videoId && logger.prompt && typeof logger.prompt === "function") {
+      // Determine prompt text based on tag source
+      const artistPromptText =
+        tagSource === "spotify"
+          ? "Artist (Tag source=Spotify): "
+          : "Artist (Tag source=Youtube): ";
+      const titlePromptText =
+        tagSource === "spotify"
+          ? "Title (Tag source=Spotify): "
+          : "Title (Tag source=Youtube): ";
+
+      const confirmedArtist = await logger.prompt(artistPromptText, {
         placeholder: "Not sure",
         initial: artist,
       });
@@ -184,7 +188,7 @@ export async function saveTrackTags(
         artist = confirmedArtist.trim();
       }
 
-      const confirmedTitle = await log.prompt(`Title: `, {
+      const confirmedTitle = await logger.prompt(titlePromptText, {
         placeholder: "Not sure",
         initial: title,
       });
@@ -202,8 +206,8 @@ export async function saveTrackTags(
       artBytes,
     };
 
-    callSilently(setTags, trackFilename, finalTagOptions, { logger: log });
+    callSilently(setTags, trackFilename, finalTagOptions);
   } catch (err) {
-    log.error(err.message);
+    logger.error(err.message);
   }
 }

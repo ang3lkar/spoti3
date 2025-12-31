@@ -11,29 +11,28 @@ process.on("SIGINT", () => {
 });
 
 export async function downloadTrackList({ playlist, options = {} }) {
-  const { logger: log = logger } = options;
   let count = 0;
 
   const tracks = playlist.tracks;
   const total = tracks.length;
 
-  log.newLine();
-  log.start(`Downloading ${total} tracks from "${playlist.folderName}"...`);
+  logger.newLine();
+  logger.start(`Downloading ${total} tracks (folder="${playlist.folderName}")...`);
 
   const succeededTracks = [];
   const failedTracks = [];
   const pendingTracks = [...tracks];
 
   for (const track of tracks) {
-    log.newLine();
+    logger.newLine();
 
     if (track === undefined) {
-      log.info("Track is undefined");
+      logger.info("Track is undefined");
       continue;
     }
 
     count += 1;
-    log.info(`Downloading ${count}/${total} ${track.fullTitle}"`);
+    logger.info(`Downloading ${count}/${total} ${track.fullTitle}"`);
 
     const tagOptions = {
       title: track.fullTitle,
@@ -43,7 +42,6 @@ export async function downloadTrackList({ playlist, options = {} }) {
 
     const downloadOptions = {
       ...options,
-      logger: log,
     };
 
     try {
@@ -59,26 +57,24 @@ export async function downloadTrackList({ playlist, options = {} }) {
 
       if (result.outcome === "SUCCESS") {
         succeededTracks.push(track);
-        log.info(`Downloaded ${track.fullTitle}`);
+        logger.info(`Downloaded ${track.fullTitle}`);
 
         // Save track tags after successful download
-        await saveTrackTags(track, playlist, tagOptions, result.artBytes, {
-          logger: log,
-        });
+        await saveTrackTags(track, playlist, tagOptions, result.artBytes);
       } else {
         failedTracks.push(track);
-        log.info(`Failed to download ${track.fullTitle}`);
+        logger.info(`Failed to download ${track.fullTitle}`);
       }
     } catch (err) {
       if (err instanceof QuotaExceededError) {
-        log.error(
+        logger.error(
           "Error occurred while searching YouTube: Request failed with status code 403."
         );
-        log.error("Youtube daily quota exceeded. Try again tomorrow!");
+        logger.error("Youtube daily quota exceeded. Try again tomorrow!");
         process.exit(0);
       }
 
-      log.error(err);
+      logger.error(err);
     }
   }
 

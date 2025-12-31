@@ -6,7 +6,6 @@ import { createDownloadFolder } from "../utils/file.js";
 import { validateUrl } from "../utils/validation.js";
 
 export async function run({ url, options = {} }) {
-  const { logger: log = logger } = options;
   try {
     const { value, source } = validateUrl(url);
 
@@ -14,7 +13,6 @@ export async function run({ url, options = {} }) {
       source,
       options: {
         ...options,
-        logger: log,
       },
     });
     const album = options.album || playlist.name;
@@ -26,11 +24,10 @@ export async function run({ url, options = {} }) {
       options: {
         ...options,
         album,
-        logger: log,
       },
     });
   } catch (err) {
-    log.error(err.stack || err.message || err);
+    logger.error(err.stack || err.message || err);
     throw err;
   }
 }

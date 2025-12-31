@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { getRepoRoot } from "./repo.js";
 
 const CACHE_DIR = path.join(getRepoRoot(), ".cache");
@@ -57,4 +58,21 @@ export function writeCache(cachePath, data) {
   ensureCacheDir();
   const json = JSON.stringify(data, null, 2);
   fs.writeFileSync(cachePath, json, "utf8");
+}
+
+/**
+ * Get the cache file path for a Spotify search query
+ *
+ * @param {string} normalizedQuery Normalized search query string
+ * @returns {string} Cache file path
+ */
+export function getSpotifySearchCachePath(normalizedQuery) {
+  ensureCacheDir();
+  // Create a hash of the query for a unique, safe filename
+  const hash = crypto
+    .createHash("md5")
+    .update(normalizedQuery.toLowerCase().trim())
+    .digest("hex");
+  const filename = `spotify_search_${hash}.json`;
+  return path.join(CACHE_DIR, filename);
 }

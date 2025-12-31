@@ -2,7 +2,7 @@ import axios from "axios";
 import { logger } from "../../utils/logger.js";
 import { api } from "../../config/index.js";
 
-const { CLIENT_ID, CLIENT_SECRET, TOKEN_URL } = api.SPOTIFY;
+const { CLIENT_ID, CLIENT_SECRET, TOKEN_URL, API_BASE_URL } = api.SPOTIFY;
 
 /**
  * Get an temporary access token from Spotify
@@ -135,4 +135,67 @@ export async function fetchSingleTrack({ accessToken, spotifyId }) {
   logger.debug(`Fetched track`);
 
   return [result];
+}
+
+/**
+ * Search for a track on Spotify by query string
+ *
+ * https://developer.spotify.com/documentation/web-api/reference/search
+ *
+ * @param {string} query Search query string
+ * @param {object} options Options object
+ * @param {string} options.accessToken Spotify access token (required)
+ * @returns {object|null} { artist: string, title: string } or null if not found
+ */
+export async function searchTrack(query, options = {}) {
+  const { accessToken } = options;
+
+  if (!accessToken) {
+    logger.debug("No access token provided for Spotify search");
+    return null;
+  }
+
+  if (!query || !query.trim()) {
+    logger.debug("Empty query provided for Spotify search");
+    return null;
+  }
+
+  try {
+    const url = `${API_BASE_URL}/search`;
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params: {
+        q: query.trim(),
+        type: "track",
+        limit: 1,
+      },
+    });
+
+    const tracks = response.data?.tracks?.items;
+
+    if (!tracks || tracks.length === 0) {
+      logger.debug(`No tracks found for query: ${query}`);
+      return null;
+    }
+
+    const track = tracks[0];
+    const artist = track.artists
+      ? track.artists.map((a) => a.name).join(", ")
+      : "";
+    const title = track.name || "";
+
+    logger.debug(`Found track on Spotify: ${artist} - ${title}`);
+
+    return {
+      artist,
+      title,
+      found: true,
+    };
+  } catch (err) {
+    // Silently fail - return null so we can fallback to current parsing
+    logger.debug(`Spotify search failed for query "${query}": ${err.message}`);
+    return null;
+  }
 }

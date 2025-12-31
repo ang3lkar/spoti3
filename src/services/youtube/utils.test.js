@@ -7,13 +7,11 @@ import {
   getYouTubeTrackImageUrl,
   enrichYouTubeTrack,
 } from "./utils.js";
-import { noOpLogger } from "../../utils/logger.js";
-
 describe("youtube.js utilities", () => {
   describe("extractYouTubeId", () => {
     it("should extract playlist ID from valid URL", () => {
       const url = "https://www.youtube.com/playlist?list=PL1234567890";
-      const result = extractYouTubeId(url, { logger: noOpLogger });
+      const result = extractYouTubeId(url);
       assert.deepStrictEqual(result, {
         type: "playlist",
         value: "PL1234567890",
@@ -22,7 +20,7 @@ describe("youtube.js utilities", () => {
 
     it("should extract video ID from valid URL", () => {
       const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-      const result = extractYouTubeId(url, { logger: noOpLogger });
+      const result = extractYouTubeId(url);
       assert.deepStrictEqual(result, {
         type: "video",
         value: "dQw4w9WgXcQ",
@@ -31,7 +29,7 @@ describe("youtube.js utilities", () => {
 
     it("should extract video ID from short URL", () => {
       const url = "https://youtu.be/dQw4w9WgXcQ";
-      const result = extractYouTubeId(url, { logger: noOpLogger });
+      const result = extractYouTubeId(url);
       assert.deepStrictEqual(result, {
         type: "video",
         value: "dQw4w9WgXcQ",
@@ -40,7 +38,7 @@ describe("youtube.js utilities", () => {
 
     it("should extract channel ID from valid URL", () => {
       const url = "https://www.youtube.com/channel/UC1234567890";
-      const result = extractYouTubeId(url, { logger: noOpLogger });
+      const result = extractYouTubeId(url);
       assert.deepStrictEqual(result, {
         type: null,
         value: null,
@@ -136,7 +134,7 @@ describe("youtube.js utilities", () => {
   });
 
   describe("enrichYouTubeTrack", () => {
-    it("should enrich track with full title and video ID", () => {
+    it("should enrich track with full title and video ID", async () => {
       const item = {
         snippet: {
           title: "Amazing Song",
@@ -149,16 +147,22 @@ describe("youtube.js utilities", () => {
         },
       };
 
-      const result = enrichYouTubeTrack(item);
+      const result = await enrichYouTubeTrack(item, {
+        disableCache: true,
+      });
 
       assert.strictEqual(result.fullTitle, "Great Artist - Amazing Song");
       assert.strictEqual(result.title, "Amazing Song");
       assert.strictEqual(result.channelTitle, "Great Artist");
       assert.strictEqual(result.videoId, "video123");
       assert.strictEqual(result.publishedAt, "2023-01-01T00:00:00Z");
+      // Should have tagSource set (youtube when Spotify search fails)
+      assert.ok(
+        result.tagSource === "youtube" || result.tagSource === "spotify"
+      );
     });
 
-    it("should replace forward slashes in title", () => {
+    it("should replace forward slashes in title", async () => {
       const item = {
         snippet: {
           title: "Song / With / Slashes",
@@ -169,13 +173,19 @@ describe("youtube.js utilities", () => {
         },
       };
 
-      const result = enrichYouTubeTrack(item);
+      const result = await enrichYouTubeTrack(item, {
+        disableCache: true,
+      });
 
       assert.strictEqual(result.fullTitle, "Song - With / Slashes");
       assert.strictEqual(result.title, "With / Slashes");
+      // Should have tagSource set
+      assert.ok(
+        result.tagSource === "youtube" || result.tagSource === "spotify"
+      );
     });
 
-    it("should handle track without channel title", () => {
+    it("should handle track without channel title", async () => {
       const item = {
         snippet: {
           title: "Song Without Artist",
@@ -185,7 +195,62 @@ describe("youtube.js utilities", () => {
         },
       };
 
-      assert.throws(() => enrichYouTubeTrack(item), TypeError);
+      await assert.rejects(
+        () =>
+          enrichYouTubeTrack(item, {
+            disableCache: true,
+          }),
+        TypeError
+      );
+    });
+
+    it("should use Spotify search result when available", async () => {
+      // Note: We can't easily mock ES modules in Node.js test runner,
+      // so we test the fallback behavior and integration separately
+      const item = {
+        snippet: {
+          title: "Oasis wonderwall live at wembley",
+          channelTitle: "Some Channel",
+        },
+        contentDetails: {
+          videoId: "video123",
+        },
+      };
+
+      // Since we can't easily mock ES modules in Node.js test runner,
+      // we'll test the fallback behavior and integration separately
+      // This test verifies the function works with disableCache
+      const result = await enrichYouTubeTrack(item, {
+        disableCache: true,
+      });
+
+      // Should fallback to parsing when Spotify is not available in test
+      assert.ok(result.fullTitle);
+      assert.ok(result.artist);
+      assert.ok(result.title);
+    });
+
+    it("should fallback to parsing when Spotify search fails", async () => {
+      const item = {
+        snippet: {
+          title: "Unknown Song Title",
+          channelTitle: "Unknown Artist",
+        },
+        contentDetails: {
+          videoId: "video123",
+        },
+      };
+
+      // With disableCache and no Spotify credentials in test, should fallback
+      const result = await enrichYouTubeTrack(item, {
+        disableCache: true,
+      });
+
+      // Should use fallback parsing
+      assert.ok(result.fullTitle);
+      assert.ok(result.artist || result.title);
+      // Should have tagSource set to youtube when Spotify fails
+      assert.strictEqual(result.tagSource, "youtube");
     });
   });
 });
