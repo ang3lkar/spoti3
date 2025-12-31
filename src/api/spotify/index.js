@@ -145,19 +145,18 @@ export async function fetchSingleTrack({ accessToken, spotifyId }) {
  * @param {string} query Search query string
  * @param {object} options Options object
  * @param {string} options.accessToken Spotify access token (required)
- * @param {object} options.logger Logger instance
  * @returns {object|null} { artist: string, title: string } or null if not found
  */
 export async function searchTrack(query, options = {}) {
-  const { accessToken, logger: log = logger } = options;
+  const { accessToken } = options;
 
   if (!accessToken) {
-    log.debug("No access token provided for Spotify search");
+    logger.debug("No access token provided for Spotify search");
     return null;
   }
 
   if (!query || !query.trim()) {
-    log.debug("Empty query provided for Spotify search");
+    logger.debug("Empty query provided for Spotify search");
     return null;
   }
 
@@ -177,7 +176,7 @@ export async function searchTrack(query, options = {}) {
     const tracks = response.data?.tracks?.items;
 
     if (!tracks || tracks.length === 0) {
-      log.debug(`No tracks found for query: ${query}`);
+      logger.debug(`No tracks found for query: ${query}`);
       return null;
     }
 
@@ -187,7 +186,7 @@ export async function searchTrack(query, options = {}) {
       : "";
     const title = track.name || "";
 
-    log.debug(`Found track on Spotify: ${artist} - ${title}`);
+    logger.debug(`Found track on Spotify: ${artist} - ${title}`);
 
     return {
       artist,
@@ -196,7 +195,7 @@ export async function searchTrack(query, options = {}) {
     };
   } catch (err) {
     // Silently fail - return null so we can fallback to current parsing
-    log.debug(`Spotify search failed for query "${query}": ${err.message}`);
+    logger.debug(`Spotify search failed for query "${query}": ${err.message}`);
     return null;
   }
 }

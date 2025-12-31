@@ -13,15 +13,14 @@ export function getArtists(object) {
   return object.artists.map((artist) => artist.name).join(", ");
 }
 
-export function extractSpotifyId(url, options = {}) {
-  const { logger: log = logger } = options;
-  log.debug("Extracting Spotify ID from spotify URL");
+export function extractSpotifyId(url) {
+  logger.debug("Extracting Spotify ID from spotify URL");
 
   const regex =
     /https?:\/\/open\.spotify\.com\/(playlist|album|track)\/([a-zA-Z0-9]+)/;
   const match = url.match(regex);
   if (match) {
-    log.debug(
+    logger.debug(
       `Extracted Spotify ID from spotify URL (type=${match[1]}) (spotifyId=${match[2]})`
     );
 

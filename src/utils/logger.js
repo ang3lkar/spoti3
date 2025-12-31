@@ -53,7 +53,7 @@ class Logger {
   }
 }
 
-const logger = new Logger();
+const regularLogger = new Logger();
 
 /**
  * No-op logger that does nothing - useful for tests
@@ -71,6 +71,11 @@ class NoOpLogger {
 }
 
 const noOpLogger = new NoOpLogger();
+
+/**
+ * Use NoOpLogger in test environment, regular logger otherwise
+ */
+const logger = process.env.NODE_ENV === "test" ? noOpLogger : regularLogger;
 
 /**
  * Call a function silently

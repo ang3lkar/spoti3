@@ -1,7 +1,6 @@
 import { describe, it, mock } from "node:test";
 import assert from "node:assert";
 import { fetchPlaylist } from "../youtube/index.js";
-import { noOpLogger } from "../../utils/logger.js";
 
 describe("youtube.js services", () => {
   describe("fetchPlaylist", () => {
@@ -54,7 +53,7 @@ describe("youtube.js services", () => {
       // The service code doesn't use options.youtubeApi, it uses the imported youtubeApi directly
       // So it will call the real API which fails with "playlist is not defined"
       try {
-        await fetchPlaylist(url, { youtubeApi: mockedApi, logger: noOpLogger });
+        await fetchPlaylist(url, { youtubeApi: mockedApi });
         assert.fail("Expected error was not thrown");
       } catch (err) {
         assert.strictEqual(err.message, "playlist is not defined");
@@ -98,7 +97,7 @@ describe("youtube.js services", () => {
       // The service code doesn't use options.youtubeApi, it uses the imported youtubeApi directly
       // So it will call the real API which fails with "Cannot read properties of undefined"
       try {
-        await fetchPlaylist(url, { youtubeApi: mockedApi, logger: noOpLogger });
+        await fetchPlaylist(url, { youtubeApi: mockedApi });
         assert.fail("Expected error was not thrown");
       } catch (err) {
         assert.strictEqual(
@@ -123,7 +122,7 @@ describe("youtube.js services", () => {
       // The service code doesn't use options.youtubeApi, it uses the imported youtubeApi directly
       // So it will call the real API which fails with "playlist is not defined"
       try {
-        await fetchPlaylist(url, { youtubeApi: mockedApi, logger: noOpLogger });
+        await fetchPlaylist(url, { youtubeApi: mockedApi });
         assert.fail("Expected error was not thrown");
       } catch (err) {
         assert.strictEqual(err.message, "playlist is not defined");
@@ -142,7 +141,7 @@ describe("youtube.js services", () => {
       // extractYouTubeId returns {type: null, value: null} for invalid URLs
       // The API throws "Unsupported YouTube ID type: null"
       try {
-        await fetchPlaylist(url, { youtubeApi: mockedApi, logger: noOpLogger });
+        await fetchPlaylist(url, { youtubeApi: mockedApi });
         assert.fail("Expected error was not thrown");
       } catch (err) {
         assert.strictEqual(err.message, "Unsupported YouTube ID type: null");

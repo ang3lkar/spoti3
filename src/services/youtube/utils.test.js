@@ -7,13 +7,11 @@ import {
   getYouTubeTrackImageUrl,
   enrichYouTubeTrack,
 } from "./utils.js";
-import { noOpLogger } from "../../utils/logger.js";
-
 describe("youtube.js utilities", () => {
   describe("extractYouTubeId", () => {
     it("should extract playlist ID from valid URL", () => {
       const url = "https://www.youtube.com/playlist?list=PL1234567890";
-      const result = extractYouTubeId(url, { logger: noOpLogger });
+      const result = extractYouTubeId(url);
       assert.deepStrictEqual(result, {
         type: "playlist",
         value: "PL1234567890",
@@ -22,7 +20,7 @@ describe("youtube.js utilities", () => {
 
     it("should extract video ID from valid URL", () => {
       const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-      const result = extractYouTubeId(url, { logger: noOpLogger });
+      const result = extractYouTubeId(url);
       assert.deepStrictEqual(result, {
         type: "video",
         value: "dQw4w9WgXcQ",
@@ -31,7 +29,7 @@ describe("youtube.js utilities", () => {
 
     it("should extract video ID from short URL", () => {
       const url = "https://youtu.be/dQw4w9WgXcQ";
-      const result = extractYouTubeId(url, { logger: noOpLogger });
+      const result = extractYouTubeId(url);
       assert.deepStrictEqual(result, {
         type: "video",
         value: "dQw4w9WgXcQ",
@@ -40,7 +38,7 @@ describe("youtube.js utilities", () => {
 
     it("should extract channel ID from valid URL", () => {
       const url = "https://www.youtube.com/channel/UC1234567890";
-      const result = extractYouTubeId(url, { logger: noOpLogger });
+      const result = extractYouTubeId(url);
       assert.deepStrictEqual(result, {
         type: null,
         value: null,
@@ -150,7 +148,6 @@ describe("youtube.js utilities", () => {
       };
 
       const result = await enrichYouTubeTrack(item, {
-        logger: noOpLogger,
         disableCache: true,
       });
 
@@ -177,7 +174,6 @@ describe("youtube.js utilities", () => {
       };
 
       const result = await enrichYouTubeTrack(item, {
-        logger: noOpLogger,
         disableCache: true,
       });
 
@@ -202,7 +198,6 @@ describe("youtube.js utilities", () => {
       await assert.rejects(
         () =>
           enrichYouTubeTrack(item, {
-            logger: noOpLogger,
             disableCache: true,
           }),
         TypeError
@@ -226,7 +221,6 @@ describe("youtube.js utilities", () => {
       // we'll test the fallback behavior and integration separately
       // This test verifies the function works with disableCache
       const result = await enrichYouTubeTrack(item, {
-        logger: noOpLogger,
         disableCache: true,
       });
 
@@ -249,7 +243,6 @@ describe("youtube.js utilities", () => {
 
       // With disableCache and no Spotify credentials in test, should fallback
       const result = await enrichYouTubeTrack(item, {
-        logger: noOpLogger,
         disableCache: true,
       });
 

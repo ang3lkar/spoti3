@@ -10,9 +10,8 @@ import { searchTrackByTitle } from "../spotify/search.js";
  * @param {object} options Options object
  * @returns {object} { type: string, value: string }
  */
-export function extractYouTubeId(url, options = {}) {
-  const { logger: log = logger } = options;
-  log.debug("Extracting YouTube ID from YouTube URL");
+export function extractYouTubeId(url) {
+  logger.debug("Extracting YouTube ID from YouTube URL");
 
   const parsedUrl = new URL(url);
 
@@ -25,22 +24,22 @@ export function extractYouTubeId(url, options = {}) {
   // also check short-url form
   if (parsedUrl.host.includes("youtu.be")) {
     const value = parsedUrl.pathname.split("/")[1];
-    log.debug(`Extracted YouTube video ID: ${value}`);
+    logger.debug(`Extracted YouTube video ID: ${value}`);
     return { type: "video", value: parsedUrl.pathname.split("/")[1] };
   }
 
   if (v) {
-    log.debug(`Extracted YouTube video ID: ${v}`);
+    logger.debug(`Extracted YouTube video ID: ${v}`);
     return { type: "video", value: v };
   }
 
   if (list) {
-    log.debug(`Extracted YouTube playlist ID: ${list}`);
+    logger.debug(`Extracted YouTube playlist ID: ${list}`);
     return { type: "playlist", value: list };
   }
 
   if (channel) {
-    log.debug(`Extracted YouTube channel ID: ${channel}`);
+    logger.debug(`Extracted YouTube channel ID: ${channel}`);
     return { type: "channel", value: channel };
   }
 
@@ -117,12 +116,11 @@ export function getYouTubeTrackImageUrl(track, playlist) {
  *
  * @param {object} item YouTube playlist item
  * @param {object} options Options object
- * @param {object} options.logger Logger instance
  * @param {boolean} options.disableCache Skip cache (for testing)
  * @returns {Promise<object>} Enriched track object
  */
 export async function enrichYouTubeTrack(item, options = {}) {
-  const { logger: log = logger, disableCache = false } = options;
+  const { disableCache = false } = options;
   const { snippet } = item;
   const rawTitle = snippet.title;
 
@@ -131,7 +129,6 @@ export async function enrichYouTubeTrack(item, options = {}) {
   // Try Spotify search first
   let artist, title, tagSource;
   const spotifyResult = await searchTrackByTitle(rawTitle, {
-    logger: log,
     disableCache,
   });
 
@@ -140,7 +137,7 @@ export async function enrichYouTubeTrack(item, options = {}) {
     artist = spotifyResult.artist;
     title = spotifyResult.title;
     tagSource = "spotify";
-    log.debug(`Using Spotify metadata: ${artist} - ${title}`);
+    logger.debug(`Using Spotify metadata: ${artist} - ${title}`);
   } else {
     // Fallback to current parsing method
     const [rawArtist, _] = rawTitle.includes(" - ")

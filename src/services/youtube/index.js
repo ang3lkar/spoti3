@@ -25,30 +25,29 @@ function getFolderName({ youtubeId, playlistDetails }) {
  * @returns {object} { name: string, tracks: object[], folderName: string }
  */
 export async function fetchPlaylist(url, options = { youtubeApi }) {
-  const { logger: log = logger } = options;
   try {
-    const youtubeId = extractYouTubeId(url, { logger: log });
+    const youtubeId = extractYouTubeId(url);
     const api = options.youtubeApi || youtubeApi;
 
     const playlistDetails = await api.fetchPlaylistDetails({
       youtubeId,
-      options: { logger: log },
+      options: {},
     });
 
     const playlistItems = await api.fetchTracks({
       youtubeId,
-      options: { logger: log },
+      options: {},
     });
 
     const tracks = [];
     for (const item of playlistItems) {
-      tracks.push(await enrichYouTubeTrack(item, { logger: log }));
+      tracks.push(await enrichYouTubeTrack(item));
     }
 
     const folderName = getFolderName({ youtubeId, playlistDetails });
     return { ...playlistDetails, folderName, tracks };
   } catch (err) {
-    log.error(err.stack);
+    logger.error(err.stack);
     throw err;
   }
 }

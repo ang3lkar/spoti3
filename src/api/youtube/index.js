@@ -20,9 +20,8 @@ const searchParams = {
 };
 
 // Function to search for a video on YouTube
-export async function searchYouTube(query, options = {}) {
-  const { logger: log = logger } = options;
-  log.debug(`Searching YouTube for ${query}`);
+export async function searchYouTube(query) {
+  logger.debug(`Searching YouTube for ${query}`);
 
   try {
     const response = await axios.get(url, {
@@ -57,10 +56,9 @@ export async function searchYouTube(query, options = {}) {
  * @returns {Array} Array of playlist items
  */
 export async function fetchTracks({ youtubeId, options = {} }) {
-  const { logger: log = logger } = options;
   const { type, value } = youtubeId;
 
-  log.debug(`Fetching YouTube ${type} tracks`);
+  logger.debug(`Fetching YouTube ${type} tracks`);
 
   // Check cache first (skip in test environment)
   const disableCache = process.env.NODE_ENV === "test" || options.disableCache;
@@ -68,7 +66,7 @@ export async function fetchTracks({ youtubeId, options = {} }) {
     const cachePath = getCachePath(youtubeId, "tracks");
     const cached = readCache(cachePath);
     if (cached) {
-      log.debug(`Using cached tracks for ${type} ${value}`);
+      logger.debug(`Using cached tracks for ${type} ${value}`);
       return cached;
     }
   }
@@ -103,7 +101,7 @@ export async function fetchTracks({ youtubeId, options = {} }) {
         nextPageToken = nextResponse.data.nextPageToken;
       }
 
-      log.debug(`Fetched ${items.length} playlist items`);
+      logger.debug(`Fetched ${items.length} playlist items`);
 
       // Write to cache (skip in test environment)
       if (!disableCache) {
@@ -113,7 +111,7 @@ export async function fetchTracks({ youtubeId, options = {} }) {
 
       return items;
     } catch (err) {
-      log.error(`Error fetching playlist tracks: ${err.message}`);
+      logger.error(`Error fetching playlist tracks: ${err.message}`);
       throw err;
     }
   } else if (type === "video") {
@@ -142,7 +140,7 @@ export async function fetchTracks({ youtubeId, options = {} }) {
         id: { videoId: video.id },
       };
 
-      log.debug(`Fetched 1 video item`);
+      logger.debug(`Fetched 1 video item`);
 
       // Write to cache (skip in test environment)
       if (!disableCache) {
@@ -152,7 +150,7 @@ export async function fetchTracks({ youtubeId, options = {} }) {
 
       return [playlistItem];
     } catch (err) {
-      log.error(`Error fetching video: ${err.message}`);
+      logger.error(`Error fetching video: ${err.message}`);
       throw err;
     }
   } else {
@@ -167,10 +165,9 @@ export async function fetchTracks({ youtubeId, options = {} }) {
  * @returns {object} Playlist details
  */
 export async function fetchPlaylistDetails({ youtubeId, options = {} } = {}) {
-  const { logger: log = logger } = options;
   const { type, value } = youtubeId;
 
-  log.debug(`Fetching YouTube ${type} details`);
+  logger.debug(`Fetching YouTube ${type} details`);
 
   // Check cache first (skip in test environment)
   const disableCache = process.env.NODE_ENV === "test" || options.disableCache;
@@ -178,7 +175,7 @@ export async function fetchPlaylistDetails({ youtubeId, options = {} } = {}) {
     const cachePath = getCachePath(youtubeId, "details");
     const cached = readCache(cachePath);
     if (cached) {
-      log.debug(`Using cached details for ${type} ${value}`);
+      logger.debug(`Using cached details for ${type} ${value}`);
       return cached;
     }
   }
@@ -196,7 +193,7 @@ export async function fetchPlaylistDetails({ youtubeId, options = {} } = {}) {
       const items = response.data.items;
       const playlist = items[0];
 
-      log.debug(`Fetched playlist details: ${playlist.snippet.title}`);
+      logger.debug(`Fetched playlist details: ${playlist.snippet.title}`);
 
       const result = {
         name: playlist.snippet.title,
@@ -237,7 +234,7 @@ export async function fetchPlaylistDetails({ youtubeId, options = {} } = {}) {
 
       const video = items[0];
 
-      log.debug(`Fetched video details: ${video.snippet.title}`);
+      logger.debug(`Fetched video details: ${video.snippet.title}`);
 
       const result = {
         name: "Misc",

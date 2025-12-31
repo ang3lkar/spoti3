@@ -53,22 +53,21 @@ function normalizeQuery(title) {
  *
  * @param {string} youtubeTitle YouTube video title
  * @param {object} options Options object
- * @param {object} options.logger Logger instance
  * @param {boolean} options.disableCache Skip cache (for testing)
  * @returns {object|null} { artist: string, title: string, source: 'spotify' } or null
  */
 export async function searchTrackByTitle(youtubeTitle, options = {}) {
-  const { logger: log = logger, disableCache = false } = options;
+  const { disableCache = false } = options;
 
   if (!youtubeTitle || !youtubeTitle.trim()) {
-    log.debug("Empty YouTube title provided for Spotify search");
+    logger.debug("Empty YouTube title provided for Spotify search");
     return null;
   }
 
   // Normalize the query
   const normalizedQuery = normalizeQuery(youtubeTitle);
   if (!normalizedQuery) {
-    log.debug("Query became empty after normalization");
+    logger.debug("Query became empty after normalization");
     return null;
   }
 
@@ -78,7 +77,7 @@ export async function searchTrackByTitle(youtubeTitle, options = {}) {
     const cachePath = getSpotifySearchCachePath(normalizedQuery);
     const cached = readCache(cachePath);
     if (cached) {
-      log.debug(`Using cached Spotify search result for: ${normalizedQuery}`);
+      logger.debug(`Using cached Spotify search result for: ${normalizedQuery}`);
       return cached;
     }
   }
@@ -88,18 +87,17 @@ export async function searchTrackByTitle(youtubeTitle, options = {}) {
   try {
     accessToken = await spotifyApi.fetchAccessToken();
     if (!accessToken) {
-      log.debug("Failed to get Spotify access token");
+      logger.debug("Failed to get Spotify access token");
       return null;
     }
   } catch (err) {
-    log.debug(`Error fetching Spotify access token: ${err.message}`);
+    logger.debug(`Error fetching Spotify access token: ${err.message}`);
     return null;
   }
 
   // Search Spotify
   const result = await spotifyApi.searchTrack(normalizedQuery, {
     accessToken,
-    logger: log,
   });
 
   if (!result) {
