@@ -9,7 +9,6 @@ import {
   displayImageInTerminal,
 } from "../../utils/basic.js";
 import { mp3 } from "../convert/index.js";
-import { delay } from "../../utils/basic.js";
 import { setTags } from "../tag/index.js";
 import { getFileName } from "../../utils/file.js";
 import {
@@ -108,12 +107,6 @@ export async function downloadTrack({ playlist, track, downloadOptions }) {
     process.chdir(playlistFolder);
 
     logger.debug(`Downloading ${getFileName(trackFilename)}...`);
-
-    if (process.env.MOCK_DOWNLOAD === "yes" || downloadOptions?.mock) {
-      await delay(300);
-      logger.debug(`Mocked download of ${getFileName(trackFilename)}`);
-      return { outcome: "SUCCESS", mp3File: trackFilename };
-    }
 
     mp3(track.fullTitle, videoId);
 
