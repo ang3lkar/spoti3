@@ -196,7 +196,7 @@ export async function fetchSingleTrack({ accessToken, spotifyId }) {
  * @param {object} options Options object
  * @param {string} options.accessToken Spotify access token (required)
  * @param {boolean} options.disableCache Disable cache (default: false)
- * @returns {object|null} { artist: string, title: string } or null if not found
+ * @returns {object|null} { artist: string, title: string, thumbnails: Array } or null if not found
  */
 export async function searchTrack(query, options = {}) {
   const { accessToken, disableCache: optDisableCache } = options;
@@ -251,12 +251,14 @@ export async function searchTrack(query, options = {}) {
       ? track.artists.map((a) => a.name).join(", ")
       : "";
     const title = track.name || "";
+    const thumbnails = track.album?.images || [];
 
     logger.debug(`Found track on Spotify: ${artist} - ${title}`);
 
     const result = {
       artist,
       title,
+      thumbnails,
       found: true,
     };
 

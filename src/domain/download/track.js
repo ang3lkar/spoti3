@@ -163,14 +163,11 @@ export async function saveTrackTags(track, playlist, tagOptions, artBytes) {
     // Prompt user to confirm the artist / title when it comes from YouTube
     if (track.videoId && logger.prompt && typeof logger.prompt === "function") {
       // Determine prompt text based on tag source
-      const artistPromptText =
-        tagSource === "spotify"
-          ? "Artist (Tag source=Spotify): "
-          : "Artist (Tag source=Youtube): ";
-      const titlePromptText =
-        tagSource === "spotify"
-          ? "Title (Tag source=Spotify): "
-          : "Title (Tag source=Youtube): ";
+      const artistPromptText = `Artist (source: ${tagSource})`;
+      const titlePromptText = `Title (source: ${tagSource})`;
+      const thumbnailPromptText = track.thumbnails
+        ? `Thumbnail (source: ${tagSource})`
+        : null;
 
       const confirmedArtist = await logger.prompt(artistPromptText, {
         placeholder: "Not sure",
@@ -199,7 +196,7 @@ export async function saveTrackTags(track, playlist, tagOptions, artBytes) {
             "Thumbnail preview not available (use iTerm2/Kitty/WezTerm)"
           );
         }
-        const approvedThumbnail = await logger.prompt("Use this thumbnail?", {
+        const approvedThumbnail = await logger.prompt(thumbnailPromptText, {
           type: "confirm",
           initial: true,
         });
