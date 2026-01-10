@@ -1,6 +1,12 @@
 import axios from "axios";
 import { logger } from "../../utils/logger.js";
 import { api } from "../../config/index.js";
+import {
+  getCachePath,
+  readCache,
+  writeCache,
+  getSpotifySearchCachePath,
+} from "../../utils/cache.js";
 
 const { CLIENT_ID, CLIENT_SECRET, TOKEN_URL, API_BASE_URL } = api.SPOTIFY;
 
@@ -40,10 +46,25 @@ export async function fetchAccessToken() {
  * @param {*} param0
  * @returns
  */
-export async function fetchPlaylistDetails({ accessToken, spotifyId }) {
+export async function fetchPlaylistDetails({
+  accessToken,
+  spotifyId,
+  options = {},
+}) {
   const { type, value } = spotifyId;
 
   logger.debug(`Fetching ${type} details`);
+
+  // Check cache first (skip in test environment)
+  const disableCache = process.env.NODE_ENV === "test" || options.disableCache;
+  if (!disableCache) {
+    const cachePath = getCachePath(spotifyId, "details");
+    const cached = readCache(cachePath);
+    if (cached) {
+      logger.debug(`Using cached details for ${type} ${value}`);
+      return cached;
+    }
+  }
 
   const url = `https://api.spotify.com/v1/${type}s/${value}`;
 
@@ -56,23 +77,51 @@ export async function fetchPlaylistDetails({ accessToken, spotifyId }) {
 
     logger.debug(`Fetched ${type} details`);
 
-    return {
+    const result = {
       ...response.data,
     };
+
+    // Write to cache (skip in test environment)
+    if (!disableCache) {
+      const cachePath = getCachePath(spotifyId, "details");
+      writeCache(cachePath, result);
+    }
+
+    return result;
   } catch (err) {
     logger.error(`Error fetching playlist details: ${err.message}`);
     throw err;
   }
 }
 
-export async function fetchTracks({ accessToken, spotifyId }) {
-  const { type } = spotifyId;
+export async function fetchTracks({ accessToken, spotifyId, options = {} }) {
+  const { type, value } = spotifyId;
 
-  if (type === "track") {
-    return fetchSingleTrack({ accessToken, spotifyId });
-  } else {
-    return fetchMultipleTracks({ accessToken, spotifyId });
+  // Check cache first (skip in test environment)
+  const disableCache = process.env.NODE_ENV === "test" || options.disableCache;
+  if (!disableCache) {
+    const cachePath = getCachePath(spotifyId, "tracks");
+    const cached = readCache(cachePath);
+    if (cached) {
+      logger.debug(`Using cached tracks for ${type} ${value}`);
+      return cached;
+    }
   }
+
+  let result;
+  if (type === "track") {
+    result = await fetchSingleTrack({ accessToken, spotifyId });
+  } else {
+    result = await fetchMultipleTracks({ accessToken, spotifyId });
+  }
+
+  // Write to cache (skip in test environment)
+  if (!disableCache) {
+    const cachePath = getCachePath(spotifyId, "tracks");
+    writeCache(cachePath, result);
+  }
+
+  return result;
 }
 
 /**
@@ -89,7 +138,8 @@ export async function fetchMultipleTracks({ accessToken, spotifyId, url }) {
 
   logger.debug(`Fetching ${type} tracks`);
 
-  const tracksUrl = url || `https://api.spotify.com/v1/${type}s/${value}/tracks`;
+  const tracksUrl =
+    url || `https://api.spotify.com/v1/${type}s/${value}/tracks`;
 
   const response = await axios.get(tracksUrl, {
     headers: {
@@ -145,10 +195,11 @@ export async function fetchSingleTrack({ accessToken, spotifyId }) {
  * @param {string} query Search query string
  * @param {object} options Options object
  * @param {string} options.accessToken Spotify access token (required)
+ * @param {boolean} options.disableCache Disable cache (default: false)
  * @returns {object|null} { artist: string, title: string } or null if not found
  */
 export async function searchTrack(query, options = {}) {
-  const { accessToken } = options;
+  const { accessToken, disableCache: optDisableCache } = options;
 
   if (!accessToken) {
     logger.debug("No access token provided for Spotify search");
@@ -160,6 +211,21 @@ export async function searchTrack(query, options = {}) {
     return null;
   }
 
+  const normalizedQuery = query.trim();
+
+  // Check cache first (skip in test environment)
+  const disableCache = process.env.NODE_ENV === "test" || optDisableCache;
+  if (!disableCache) {
+    const cachePath = getSpotifySearchCachePath(normalizedQuery);
+    const cached = readCache(cachePath);
+    if (cached) {
+      logger.debug(
+        `Using cached Spotify search result for: ${normalizedQuery}`
+      );
+      return cached;
+    }
+  }
+
   try {
     const url = `${API_BASE_URL}/search`;
     const response = await axios.get(url, {
@@ -167,7 +233,7 @@ export async function searchTrack(query, options = {}) {
         Authorization: `Bearer ${accessToken}`,
       },
       params: {
-        q: query.trim(),
+        q: normalizedQuery,
         type: "track",
         limit: 1,
       },
@@ -188,11 +254,19 @@ export async function searchTrack(query, options = {}) {
 
     logger.debug(`Found track on Spotify: ${artist} - ${title}`);
 
-    return {
+    const result = {
       artist,
       title,
       found: true,
     };
+
+    // Write to cache (skip in test environment)
+    if (!disableCache) {
+      const cachePath = getSpotifySearchCachePath(normalizedQuery);
+      writeCache(cachePath, result);
+    }
+
+    return result;
   } catch (err) {
     // Silently fail - return null so we can fallback to current parsing
     logger.debug(`Spotify search failed for query "${query}": ${err.message}`);
