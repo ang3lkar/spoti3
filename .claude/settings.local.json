@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(git remote get-url:*)",
+      "mcp__github__list_issues",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(curl:*)",
+      "Bash(chmod:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "github"
+  ]
+}
