@@ -2,37 +2,61 @@ import { logger } from "../../utils/logger.js";
 import { downloadTrack, saveTrackTags } from "./track.js";
 import { QuotaExceededError } from "../errors.js";
 
-// Handle Ctrl+C (SIGINT)
-process.on("SIGINT", () => {
-  logger.info("\nCaught interrupt signal (Ctrl+C), cleaning up...");
+const DOWNLOAD_OUTCOME = {
+  SUCCESS: "SUCCESS",
+};
 
-  // After cleanup, exit the process
-  process.exit();
-});
+/**
+ * Setup handler for Ctrl+C (SIGINT) interrupts
+ */
+function setupInterruptHandler() {
+  process.on("SIGINT", () => {
+    logger.info("\nCaught interrupt signal (Ctrl+C), cleaning up...");
+    process.exit();
+  });
+}
+
+/**
+ * Process a single track: download and tag
+ */
+async function processTrack({ track, playlist, tagOptions, downloadOptions }) {
+  const result = await downloadTrack({
+    playlist,
+    track,
+    downloadOptions,
+  });
+
+  if (result.outcome === DOWNLOAD_OUTCOME.SUCCESS) {
+    logger.info(`Downloaded ${track.fullTitle}`);
+    await saveTrackTags(track, playlist, tagOptions, result.artBytes);
+    return true;
+  }
+
+  logger.info(`Failed to download ${track.fullTitle}`);
+  return false;
+}
 
 export async function downloadTrackList({ playlist, options = {} }) {
-  let count = 0;
+  setupInterruptHandler();
 
-  const tracks = playlist.tracks;
+  const { tracks } = playlist;
   const total = tracks.length;
 
   logger.newLine();
   logger.start(`Downloading ${total} tracks (folder="${playlist.folderName}")...`);
 
-  const succeededTracks = [];
-  const failedTracks = [];
-  const pendingTracks = [...tracks];
+  let count = 0;
 
   for (const track of tracks) {
     logger.newLine();
 
-    if (track === undefined) {
+    if (!track) {
       logger.info("Track is undefined");
       continue;
     }
 
     count += 1;
-    logger.info(`Downloading ${count}/${total} ${track.fullTitle}"`);
+    logger.info(`Downloading ${count}/${total} ${track.fullTitle}`);
 
     const tagOptions = {
       title: track.fullTitle,
@@ -40,38 +64,20 @@ export async function downloadTrackList({ playlist, options = {} }) {
       album: options.album,
     };
 
-    const downloadOptions = {
-      ...options,
-    };
-
     try {
-      const result = await downloadTrack({
-        playlist,
+      await processTrack({
         track,
-        downloadOptions,
+        playlist,
+        tagOptions,
+        downloadOptions: options,
       });
-
-      const index = pendingTracks.indexOf(track);
-
-      pendingTracks.splice(index, 1);
-
-      if (result.outcome === "SUCCESS") {
-        succeededTracks.push(track);
-        logger.info(`Downloaded ${track.fullTitle}`);
-
-        // Save track tags after successful download
-        await saveTrackTags(track, playlist, tagOptions, result.artBytes);
-      } else {
-        failedTracks.push(track);
-        logger.info(`Failed to download ${track.fullTitle}`);
-      }
     } catch (err) {
       if (err instanceof QuotaExceededError) {
         logger.error(
           "Error occurred while searching YouTube: Request failed with status code 403."
         );
         logger.error("Youtube daily quota exceeded. Try again tomorrow!");
-        process.exit(0);
+        process.exit(1);
       }
 
       logger.error(err);
