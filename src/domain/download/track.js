@@ -22,30 +22,123 @@ const { DOWNLOADS } = app.FOLDERS;
 
 const downloadsDir = path.join(getRepoRoot(), DOWNLOADS);
 
+// Constants
+const TAG_SOURCE = {
+  YOUTUBE: "youtube",
+  SPOTIFY: "spotify",
+};
+
+// Helpers
+
+/**
+ * Check if the track is from YouTube (has videoId)
+ */
+function isYouTubeTrack(track) {
+  return Boolean(track?.videoId);
+}
+
+/**
+ * Get the full file path for a track
+ */
+function getTrackFilePath(playlist, track) {
+  const playlistFolder = path.join(downloadsDir, playlist.folderName);
+  return `${playlistFolder}/${track.fullTitle}.mp3`;
+}
+
+/**
+ * Get the playlist folder path
+ */
+function getPlaylistFolder(playlist) {
+  return path.join(downloadsDir, playlist.folderName);
+}
+
+/**
+ * Extract title, artist and tag source from a track (handles both YouTube and Spotify)
+ */
+function getTrackMetadata(track) {
+  if (isYouTubeTrack(track)) {
+    return {
+      title: track.title,
+      artist: track.artist,
+      tagSource: track.tagSource || TAG_SOURCE.YOUTUBE,
+    };
+  }
+  return {
+    title: track.name,
+    artist: track.artists.map((a) => a.name).join(" & "),
+    tagSource: TAG_SOURCE.SPOTIFY,
+  };
+}
+
+/**
+ * Prompt user to confirm/edit track metadata (artist, title, thumbnail)
+ * Only prompts for YouTube tracks when logger.prompt is available
+ */
+async function promptForTrackMetadata(track, metadata, artBytes) {
+  let { artist, title } = metadata;
+  const { tagSource } = metadata;
+
+  // Only prompt for YouTube tracks when prompt function is available
+  if (
+    !isYouTubeTrack(track) ||
+    !logger.prompt ||
+    typeof logger.prompt !== "function"
+  ) {
+    return { artist, title, artBytes };
+  }
+
+  const artistPromptText = `Artist (source: ${tagSource})`;
+  const titlePromptText = `Title (source: ${tagSource})`;
+  const thumbnailPromptText = track.thumbnails
+    ? `Thumbnail (source: ${tagSource})`
+    : null;
+
+  const confirmedArtist = await logger.prompt(artistPromptText, {
+    placeholder: "Not sure",
+    initial: artist,
+  });
+  if (confirmedArtist && confirmedArtist.trim().length > 0) {
+    artist = confirmedArtist.trim();
+  }
+
+  const confirmedTitle = await logger.prompt(titlePromptText, {
+    placeholder: "Not sure",
+    initial: title,
+  });
+  if (confirmedTitle && confirmedTitle.trim().length > 0) {
+    title = confirmedTitle.trim();
+  }
+
+  // Preview thumbnail and ask for approval
+  if (artBytes && artBytes.length > 0) {
+    logger.newLine();
+    const imageDisplayed = displayImageInTerminal(artBytes);
+    if (!imageDisplayed) {
+      logger.info("Thumbnail preview not available (use iTerm2/Kitty/WezTerm)");
+    }
+    const approvedThumbnail = await logger.prompt(thumbnailPromptText, {
+      type: "confirm",
+      initial: true,
+    });
+    if (!approvedThumbnail) {
+      artBytes = null;
+      logger.info("Thumbnail skipped");
+    }
+  }
+
+  return { artist, title, artBytes };
+}
+
 /**
  * Downloads the artwork for a track
- *
- * @param {*} track
- * @param {*} playlist
- * @param {*} playlistFolder
- * @param {*} trackFilename
- * @param {*} options
  */
-async function downloadArtwork(track, playlist, playlistFolder, trackFilename) {
-  let artBytes;
+async function downloadArtwork(track, playlist, trackFilename) {
   try {
     logger.debug(`Downloading image for ${getFileName(trackFilename)}...`);
 
-    let imageUrl;
-
-    // Check if this is a YouTube track or Spotify track
-    if (track.videoId) {
-      // YouTube track
-      imageUrl = getYouTubeTrackImageUrl(track, playlist);
-    } else {
-      // Spotify track
-      imageUrl = getTrackImageUrl(track, playlist);
-    }
+    const imageUrl = isYouTubeTrack(track)
+      ? getYouTubeTrackImageUrl(track, playlist)
+      : getTrackImageUrl(track, playlist);
 
     if (!imageUrl) {
       logger.debug(`No image URL available for ${getFileName(trackFilename)}`);
@@ -53,12 +146,12 @@ async function downloadArtwork(track, playlist, playlistFolder, trackFilename) {
     }
 
     const artBuffer = await downloadImageToMemory(imageUrl);
-    artBytes = new Uint8Array(artBuffer);
+    return new Uint8Array(artBuffer);
   } catch (err) {
     logger.error(`Failed to download image for ${getFileName(trackFilename)}`);
     logger.error(err.message);
+    return null;
   }
-  return artBytes;
 }
 
 export async function downloadTrack({ playlist, track, downloadOptions }) {
@@ -67,152 +160,61 @@ export async function downloadTrack({ playlist, track, downloadOptions }) {
     return { outcome: "MISSING_TRACK" };
   }
 
-  const playlistFolder = path.join(downloadsDir, playlist.folderName);
-
-  const trackFilename = `${playlistFolder}/${track.fullTitle}.mp3`;
-
+  const playlistFolder = getPlaylistFolder(playlist);
+  const trackFilename = getTrackFilePath(playlist, track);
   const isDownloaded = fs.existsSync(trackFilename);
 
   if (isDownloaded && !downloadOptions?.force) {
-    // Still download artwork even if file exists (for tagging)
-    const artBytes = await downloadArtwork(
-      track,
-      playlist,
-      playlistFolder,
-      trackFilename
-    );
+    const artBytes = await downloadArtwork(track, playlist, trackFilename);
     return { outcome: "SUCCESS", mp3File: trackFilename, artBytes };
   }
 
   try {
     let videoId;
 
-    // Check if this is a YouTube track (has videoId) or Spotify track (needs search)
-    if (track.videoId) {
-      // YouTube track - use existing video ID
+    if (isYouTubeTrack(track)) {
       videoId = track.videoId;
       logger.debug(`Using existing video ID: ${videoId}`);
     } else {
-      // Spotify track - search YouTube
       const searchResult = await searchYouTube(getSearchTerm(track, playlist));
-
       if (!searchResult) {
         logger.error(`No video found for ${getSearchTerm(track, playlist)}`);
         return { outcome: "NO_VIDEO_FOUND" };
       }
-
       videoId = searchResult.videoId;
     }
 
-    process.chdir(playlistFolder);
-
-    logger.debug(`Downloading ${getFileName(trackFilename)}...`);
-
-    mp3(track.fullTitle, videoId);
+    mp3(track.fullTitle, videoId, { cwd: playlistFolder });
 
     logger.debug(`Downloaded ${getFileName(trackFilename)}`);
   } catch (err) {
     if (err instanceof QuotaExceededError) {
       throw err;
     }
-
     logger.error(err);
     return { outcome: "DOWNLOAD_ERROR", error: err };
   }
 
-  const artBytes = await downloadArtwork(
-    track,
-    playlist,
-    playlistFolder,
-    trackFilename
-  );
-
+  const artBytes = await downloadArtwork(track, playlist, trackFilename);
   return { outcome: "SUCCESS", mp3File: trackFilename, artBytes };
 }
 
 /**
  * Saves track tags to the downloaded MP3 file
- *
- * @param {*} track
- * @param {*} playlist
- * @param {*} tagOptions
- * @param {*} artBytes
- * @param {*} options
  */
 export async function saveTrackTags(track, playlist, tagOptions, artBytes) {
-  const playlistFolder = path.join(downloadsDir, playlist.folderName);
-  const trackFilename = `${playlistFolder}/${track.fullTitle}.mp3`;
+  const trackFilename = getTrackFilePath(playlist, track);
 
   try {
-    // Handle different track structures for Spotify vs YouTube
-    let title, artist, tagSource;
-
-    if (track.videoId) {
-      // YouTube track
-      title = track.title;
-      artist = track.artist;
-      // Use tagSource from enriched track, default to "youtube" if not set
-      tagSource = track.tagSource || "youtube";
-    } else {
-      // Spotify track
-      title = track.name;
-      artist = track.artists.map((a) => a.name).join(" & ");
-      tagSource = "spotify";
-    }
-
-    // Prompt user to confirm the artist / title when it comes from YouTube
-    if (track.videoId && logger.prompt && typeof logger.prompt === "function") {
-      // Determine prompt text based on tag source
-      const artistPromptText = `Artist (source: ${tagSource})`;
-      const titlePromptText = `Title (source: ${tagSource})`;
-      const thumbnailPromptText = track.thumbnails
-        ? `Thumbnail (source: ${tagSource})`
-        : null;
-
-      const confirmedArtist = await logger.prompt(artistPromptText, {
-        placeholder: "Not sure",
-        initial: artist,
-      });
-      // If user entered a value, use it; otherwise, keep existing value
-      if (confirmedArtist && confirmedArtist.trim().length > 0) {
-        artist = confirmedArtist.trim();
-      }
-
-      const confirmedTitle = await logger.prompt(titlePromptText, {
-        placeholder: "Not sure",
-        initial: title,
-      });
-      // If user entered a value, use it; otherwise, keep existing value
-      if (confirmedTitle && confirmedTitle.trim().length > 0) {
-        title = confirmedTitle.trim();
-      }
-
-      // Preview thumbnail and ask for approval
-      if (artBytes && artBytes.length > 0) {
-        logger.newLine();
-        const imageDisplayed = displayImageInTerminal(artBytes);
-        if (!imageDisplayed) {
-          logger.info(
-            "Thumbnail preview not available (use iTerm2/Kitty/WezTerm)"
-          );
-        }
-        const approvedThumbnail = await logger.prompt(thumbnailPromptText, {
-          type: "confirm",
-          initial: true,
-        });
-        if (!approvedThumbnail) {
-          artBytes = null;
-          logger.info("Thumbnail skipped");
-        }
-      }
-    }
+    const metadata = getTrackMetadata(track);
+    const confirmed = await promptForTrackMetadata(track, metadata, artBytes);
 
     const finalTagOptions = {
       ordinal: tagOptions.ordinal,
-      title: title,
+      title: confirmed.title,
       album: tagOptions.album || track.album?.name || playlist.name,
-      artist: artist,
-      artBytes,
+      artist: confirmed.artist,
+      artBytes: confirmed.artBytes,
     };
 
     callSilently(setTags, trackFilename, finalTagOptions);
