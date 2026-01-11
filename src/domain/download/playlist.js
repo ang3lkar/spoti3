@@ -43,7 +43,9 @@ export async function downloadTrackList({ playlist, options = {} }) {
   const total = tracks.length;
 
   logger.newLine();
-  logger.start(`Downloading ${total} tracks (folder="${playlist.folderName}")...`);
+  logger.start(
+    `Downloading ${total} tracks (folder="${playlist.folderName}")...`
+  );
 
   let count = 0;
 
@@ -72,6 +74,12 @@ export async function downloadTrackList({ playlist, options = {} }) {
         downloadOptions: options,
       });
     } catch (err) {
+      // Check if error is due to SIGINT (Ctrl+C) - exit entirely
+      if (err.signal === "SIGINT") {
+        logger.info("\nDownload interrupted by user (Ctrl+C)");
+        process.exit(130); // Standard exit code for SIGINT
+      }
+
       if (err instanceof QuotaExceededError) {
         logger.error(
           "Error occurred while searching YouTube: Request failed with status code 403."
