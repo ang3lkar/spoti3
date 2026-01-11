@@ -85,8 +85,18 @@ export async function fetchTracks({ youtubeId, options = {} }) {
       let items = response.data.items;
       let nextPageToken = response.data.nextPageToken;
 
+      // Track seen page tokens to detect infinite loops (e.g., YouTube Music Radio playlists)
+      const seenPageTokens = new Set();
+
       // Handle pagination for large playlists
       while (nextPageToken) {
+        // Detect cyclic page tokens (Radio playlists loop forever)
+        if (seenPageTokens.has(nextPageToken)) {
+          logger.debug(`Detected cyclic page token, stopping pagination at ${items.length} items`);
+          break;
+        }
+        seenPageTokens.add(nextPageToken);
+
         const nextResponse = await axios.get(playlistItemsUrl, {
           params: {
             part: "snippet,contentDetails",
