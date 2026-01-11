@@ -15,15 +15,15 @@ function ensureCacheDir() {
 }
 
 /**
- * Get the cache file path for a YouTube ID
+ * Get the cache file path for an ID object (YouTube or Spotify)
  *
- * @param {object} youtubeId { type: string, value: string }
+ * @param {object} id { type: string, value: string }
  * @param {string} suffix Optional suffix to differentiate cache types (e.g., 'details', 'tracks')
  * @returns {string} Cache file path
  */
-export function getCachePath(youtubeId, suffix = "") {
+export function getCachePath(id, suffix = "") {
   ensureCacheDir();
-  const { type, value } = youtubeId;
+  const { type, value } = id;
   const filename = suffix
     ? `${type}_${value}_${suffix}.json`
     : `${type}_${value}.json`;

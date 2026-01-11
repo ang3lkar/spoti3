@@ -43,7 +43,6 @@ program
   .command("mp3")
   .description("Downloads a tracklist into mp3 files from YouTube")
   .argument("<url>", "the Spotify playlist/track URL")
-  .option("-m, --mock", "do not download the files")
   .option(
     "-a, --album-tag",
     "set album name in mp3 files, will override default album name"

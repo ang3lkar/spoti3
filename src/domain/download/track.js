@@ -4,9 +4,11 @@ import { logger, callSilently } from "../../utils/logger.js";
 import { app } from "../../config/index.js";
 import { QuotaExceededError } from "../errors.js";
 import { searchYouTube } from "../../api/youtube/index.js";
-import { downloadImageToMemory } from "../../utils/basic.js";
+import {
+  downloadImageToMemory,
+  displayImageInTerminal,
+} from "../../utils/basic.js";
 import { mp3 } from "../convert/index.js";
-import { delay } from "../../utils/basic.js";
 import { setTags } from "../tag/index.js";
 import { getFileName } from "../../utils/file.js";
 import {
@@ -29,12 +31,7 @@ const downloadsDir = path.join(getRepoRoot(), DOWNLOADS);
  * @param {*} trackFilename
  * @param {*} options
  */
-async function downloadArtwork(
-  track,
-  playlist,
-  playlistFolder,
-  trackFilename
-) {
+async function downloadArtwork(track, playlist, playlistFolder, trackFilename) {
   let artBytes;
   try {
     logger.debug(`Downloading image for ${getFileName(trackFilename)}...`);
@@ -77,7 +74,14 @@ export async function downloadTrack({ playlist, track, downloadOptions }) {
   const isDownloaded = fs.existsSync(trackFilename);
 
   if (isDownloaded && !downloadOptions?.force) {
-    return { outcome: "SUCCESS", mp3File: trackFilename };
+    // Still download artwork even if file exists (for tagging)
+    const artBytes = await downloadArtwork(
+      track,
+      playlist,
+      playlistFolder,
+      trackFilename
+    );
+    return { outcome: "SUCCESS", mp3File: trackFilename, artBytes };
   }
 
   try {
@@ -103,12 +107,6 @@ export async function downloadTrack({ playlist, track, downloadOptions }) {
     process.chdir(playlistFolder);
 
     logger.debug(`Downloading ${getFileName(trackFilename)}...`);
-
-    if (process.env.MOCK_DOWNLOAD === "yes" || downloadOptions?.mock) {
-      await delay(300);
-      logger.debug(`Mocked download of ${getFileName(trackFilename)}`);
-      return { outcome: "SUCCESS", mp3File: trackFilename };
-    }
 
     mp3(track.fullTitle, videoId);
 
@@ -141,12 +139,7 @@ export async function downloadTrack({ playlist, track, downloadOptions }) {
  * @param {*} artBytes
  * @param {*} options
  */
-export async function saveTrackTags(
-  track,
-  playlist,
-  tagOptions,
-  artBytes
-) {
+export async function saveTrackTags(track, playlist, tagOptions, artBytes) {
   const playlistFolder = path.join(downloadsDir, playlist.folderName);
   const trackFilename = `${playlistFolder}/${track.fullTitle}.mp3`;
 
@@ -170,14 +163,11 @@ export async function saveTrackTags(
     // Prompt user to confirm the artist / title when it comes from YouTube
     if (track.videoId && logger.prompt && typeof logger.prompt === "function") {
       // Determine prompt text based on tag source
-      const artistPromptText =
-        tagSource === "spotify"
-          ? "Artist (Tag source=Spotify): "
-          : "Artist (Tag source=Youtube): ";
-      const titlePromptText =
-        tagSource === "spotify"
-          ? "Title (Tag source=Spotify): "
-          : "Title (Tag source=Youtube): ";
+      const artistPromptText = `Artist (source: ${tagSource})`;
+      const titlePromptText = `Title (source: ${tagSource})`;
+      const thumbnailPromptText = track.thumbnails
+        ? `Thumbnail (source: ${tagSource})`
+        : null;
 
       const confirmedArtist = await logger.prompt(artistPromptText, {
         placeholder: "Not sure",
@@ -195,6 +185,25 @@ export async function saveTrackTags(
       // If user entered a value, use it; otherwise, keep existing value
       if (confirmedTitle && confirmedTitle.trim().length > 0) {
         title = confirmedTitle.trim();
+      }
+
+      // Preview thumbnail and ask for approval
+      if (artBytes && artBytes.length > 0) {
+        logger.newLine();
+        const imageDisplayed = displayImageInTerminal(artBytes);
+        if (!imageDisplayed) {
+          logger.info(
+            "Thumbnail preview not available (use iTerm2/Kitty/WezTerm)"
+          );
+        }
+        const approvedThumbnail = await logger.prompt(thumbnailPromptText, {
+          type: "confirm",
+          initial: true,
+        });
+        if (!approvedThumbnail) {
+          artBytes = null;
+          logger.info("Thumbnail skipped");
+        }
       }
     }
 

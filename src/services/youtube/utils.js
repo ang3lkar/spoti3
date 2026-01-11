@@ -76,14 +76,43 @@ export function getChannelName(track) {
 }
 
 /**
+ * Convert Spotify thumbnails (array) to YouTube thumbnail format (object with named keys)
+ * Spotify returns images sorted by size descending: [640px, 300px, 64px]
+ *
+ * @param {Array} spotifyThumbnails Array of Spotify image objects
+ * @returns {object|null} YouTube-style thumbnails object or null
+ */
+function normalizeSpotifyThumbnails(spotifyThumbnails) {
+  if (!spotifyThumbnails || spotifyThumbnails.length === 0) {
+    return null;
+  }
+
+  const result = {};
+
+  for (const img of spotifyThumbnails) {
+    const size = img.width || 0;
+    // Map Spotify sizes to YouTube-like keys
+    if (size >= 500 && !result.high) {
+      result.high = img;
+    } else if (size >= 200 && !result.medium) {
+      result.medium = img;
+    } else if (!result.default) {
+      result.default = img;
+    }
+  }
+
+  return Object.keys(result).length > 0 ? result : null;
+}
+
+/**
  * Get the thumbnail URL for a YouTube track
+ * Prefers Spotify thumbnails (from album art) when available
  *
  * @param {object} track YouTube track object
  * @param {object} playlist YouTube playlist object
  * @returns {string} Thumbnail URL
  */
 export function getYouTubeTrackImageUrl(track, playlist) {
-  // Try to get the highest quality thumbnail available
   const thumbnails = track.thumbnails || track.snippet?.thumbnails;
 
   if (thumbnails) {
@@ -127,7 +156,7 @@ export async function enrichYouTubeTrack(item, options = {}) {
   const channelName = getChannelName(item);
 
   // Try Spotify search first
-  let artist, title, tagSource;
+  let artist, title, tagSource, normalizedThumbnails;
   const spotifyResult = await searchTrackByTitle(rawTitle, {
     disableCache,
   });
@@ -137,6 +166,8 @@ export async function enrichYouTubeTrack(item, options = {}) {
     artist = spotifyResult.artist;
     title = spotifyResult.title;
     tagSource = "spotify";
+    // Convert Spotify thumbnails to YouTube format for consistency
+    normalizedThumbnails = normalizeSpotifyThumbnails(spotifyResult.thumbnails);
     logger.debug(`Using Spotify metadata: ${artist} - ${title}`);
   } else {
     // Fallback to current parsing method
@@ -167,6 +198,6 @@ export async function enrichYouTubeTrack(item, options = {}) {
     channelTitle: channelName,
     videoId: item.contentDetails.videoId || item.id?.videoId,
     publishedAt: snippet.publishedAt,
-    thumbnails: snippet.thumbnails,
+    thumbnails: normalizedThumbnails || snippet.thumbnails,
   };
 }

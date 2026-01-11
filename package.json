@@ -10,7 +10,7 @@
   "scripts": {
     "test": "NODE_ENV=test node --test",
     "start": "node src/cli/index.js mp3",
-    "debug": "LOG_LEVEL=debug MOCK_DOWNLOAD=yes node --inspect src/cli/index.js mp3",
+    "debug": "LOG_LEVEL=debug node --inspect src/cli/index.js mp3",
     "lint": "eslint ."
   },
   "keywords": [
