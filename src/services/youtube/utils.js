@@ -116,7 +116,6 @@ export function getYouTubeTrackImageUrl(track, playlist) {
   const thumbnails = track.thumbnails || track.snippet?.thumbnails;
 
   if (thumbnails) {
-    // Prefer maxres, then high, then medium, then default
     return (
       thumbnails.maxres?.url ||
       thumbnails.high?.url ||
@@ -125,7 +124,6 @@ export function getYouTubeTrackImageUrl(track, playlist) {
     );
   }
 
-  // Fallback to playlist thumbnail if available
   const playlistThumbnails = playlist.thumbnails;
   if (playlistThumbnails) {
     return (

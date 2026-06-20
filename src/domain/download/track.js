@@ -17,6 +17,7 @@ import {
 } from "../../services/spotify/utils.js";
 import { getYouTubeTrackImageUrl } from "../../services/youtube/utils.js";
 import { getRepoRoot } from "../../utils/repo.js";
+import { cropToSquare } from "../../utils/image.js";
 
 const { DOWNLOADS } = app.FOLDERS;
 
@@ -146,7 +147,10 @@ async function downloadArtwork(track, playlist, trackFilename) {
     }
 
     const artBuffer = await downloadImageToMemory(imageUrl);
-    return new Uint8Array(artBuffer);
+    const cropped = isYouTubeTrack(track)
+      ? await cropToSquare(artBuffer)
+      : artBuffer;
+    return new Uint8Array(cropped);
   } catch (err) {
     logger.error(`Failed to download image for ${getFileName(trackFilename)}`);
     logger.error(err.message);

@@ -90,7 +90,8 @@ describe("youtube.js utilities", () => {
   });
 
   describe("getYouTubeTrackImageUrl", () => {
-    it("should return maxres thumbnail if available", () => {
+    it("should prefer maxres thumbnail when available", () => {
+      // #given
       const track = {
         thumbnails: {
           maxres: { url: "https://example.com/maxres.jpg" },
@@ -98,11 +99,16 @@ describe("youtube.js utilities", () => {
         },
       };
       const playlist = {};
+
+      // #when
       const result = getYouTubeTrackImageUrl(track, playlist);
+
+      // #then
       assert.strictEqual(result, "https://example.com/maxres.jpg");
     });
 
-    it("should fallback to high quality thumbnail", () => {
+    it("should fallback to high thumbnail when maxres unavailable", () => {
+      // #given
       const track = {
         thumbnails: {
           high: { url: "https://example.com/high.jpg" },
@@ -110,25 +116,39 @@ describe("youtube.js utilities", () => {
         },
       };
       const playlist = {};
+
+      // #when
       const result = getYouTubeTrackImageUrl(track, playlist);
+
+      // #then
       assert.strictEqual(result, "https://example.com/high.jpg");
     });
 
-    it("should use playlist thumbnail as fallback", () => {
+    it("should use playlist thumbnail when track has no thumbnails", () => {
+      // #given
       const track = {};
       const playlist = {
         thumbnails: {
           high: { url: "https://example.com/playlist.jpg" },
         },
       };
+
+      // #when
       const result = getYouTubeTrackImageUrl(track, playlist);
+
+      // #then
       assert.strictEqual(result, "https://example.com/playlist.jpg");
     });
 
-    it("should return null if no thumbnails available", () => {
+    it("should return null when no thumbnails available", () => {
+      // #given
       const track = {};
       const playlist = {};
+
+      // #when
       const result = getYouTubeTrackImageUrl(track, playlist);
+
+      // #then
       assert.strictEqual(result, null);
     });
   });
