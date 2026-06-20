@@ -8,32 +8,27 @@ Spoti3 is a CLI tool that downloads songs from Spotify playlists/albums/tracks t
 
 ## Development Commands
 
-### Running the Application
-
 ```bash
-# Download a playlist/album/track
-npm run start <spotify_url>
+# Download a playlist/album/track to MP3
+npm run start <url>
+
+# Import a playlist to a text file (playlists/ folder)
+node src/cli/index.js import <url>
 
 # Debug mode with detailed logging
-npm run debug <spotify_url>
-```
+npm run debug <url>
 
-### Testing
-
-```bash
 # Run all tests (uses Node.js built-in test runner)
 npm test
 
 # Run tests in a specific file
 node --test src/utils/__tests__/basic.test.js
-```
 
-### Linting
-
-```bash
 # Run ESLint
 npm run lint
 ```
+
+The `mp3` subcommand accepts `--force` (re-download existing files) and `--album-tag` (override album ID3 tag).
 
 ## Architecture Overview
 
@@ -49,39 +44,32 @@ The codebase follows a layered architecture with clear separation of concerns:
 - **`/src/store`** - Persistence layer for saving playlists to disk
 - **`/src/utils`** - Shared utility functions (logging, caching, file operations, validation)
 
-### Data Flow
+### Two Workflows
 
-1. **CLI** (`src/cli/index.js`) receives user input and validates the URL
-2. **Services** (`src/services/index.js`) routes to appropriate service based on URL source (Spotify/YouTube)
-3. **API clients** fetch playlist metadata from Spotify API
-4. **Services** search YouTube for matching tracks for each song
-5. **Domain layer** (`src/domain/download/playlist.js`) orchestrates downloading each track:
-   - Calls yt-dlp via `downloadTrack()` to download MP3
-   - Tags MP3 files with metadata via `saveTrackTags()`
-6. Downloads are saved to `downloads/<playlist-name>/` folder
+**`mp3` command** (download flow):
+1. CLI validates URL → identifies source as `spotify` or `youtube`
+2. `src/services/index.js` routes to the appropriate service
+3. For Spotify: fetches playlist metadata and constructs `searchTitle` per track for YouTube search
+4. For YouTube: fetches playlist/video/channel details directly
+5. `src/domain/download/playlist.js` loops over tracks: calls yt-dlp via `downloadTrack()`, then tags with `saveTrackTags()`
+6. MP3s saved to `downloads/<playlist-name>/`
+
+**`import` command** (save-to-file flow):
+1. Fetches playlist metadata same as above
+2. Saves track list (`id: fullTitle` lines) to `playlists/<name>.txt` via `src/store/file.js`
+3. Skips save if file already exists (use `--force` to overwrite)
 
 ### Key Modules
 
-**URL Validation** (`src/utils/validation.js`)
+**URL Validation** (`src/utils/validation.js`) — identifies source as `spotify` or `youtube`, used at CLI entry before any fetching.
 
-- Validates and identifies source (Spotify vs YouTube)
-- Used at CLI entry point before fetching playlist
+**Playlist Fetching** (`src/services/spotify/index.js`, `src/services/youtube/index.js`) — normalizes API responses into `{ name, folderName, tracks[] }`. Spotify tracks get `fullTitle` with ordinal prefix (e.g. `01. Artist - Song`) and a `searchTitle` for YouTube lookup; YouTube tracks already have a `videoId`.
 
-**Playlist Fetching** (`src/services/spotify/index.js`, `src/services/youtube/index.js`)
+**Track Downloading** (`src/domain/download/track.js`) — decides whether to search YouTube (Spotify tracks) or use the existing `videoId` (YouTube tracks); calls yt-dlp via `src/domain/convert/index.js`; skips already-downloaded files unless `--force`.
 
-- Fetches playlist/album/track metadata from Spotify API
-- Searches YouTube API for each track to find matching videos
-- Returns normalized playlist object with track list
+**Interactive Prompt** (`src/domain/download/track.js:promptForTrackMetadata`) — only fires for YouTube-sourced tracks when `logger.prompt` is available; allows confirming/editing artist, title, and thumbnail before tagging.
 
-**Track Downloading** (`src/domain/download/track.js`)
-
-- Executes yt-dlp command to download from YouTube
-- Handles file naming, folder structure
-
-**MP3 Tagging** (`src/domain/tag/index.js`)
-
-- Uses mp3tag.js to write ID3 tags (title, artist, album, track number, cover art)
-- Downloads cover art from Spotify and embeds into MP3
+**MP3 Tagging** (`src/domain/tag/index.js`) — uses mp3tag.js to write ID3 tags (title, artist, album, track number, cover art embedded from Spotify/YouTube thumbnail URL).
 
 ## Configuration
 
@@ -101,13 +89,15 @@ Required API keys in `.env` (see `.env.sample`):
 
 ## Testing Strategy
 
-Tests use Node.js built-in test runner (node:test). Test files are located:
+Tests use Node.js built-in test runner (`node:test`). `npm test` auto-discovers all `*.test.js` files. Test files live in:
 
-- `src/utils/__tests__/` - Utility function tests
-- `src/services/__tests__/` - Service layer integration tests
-- `src/services/spotify/*.test.js` - Spotify-specific tests co-located with implementation
+- `src/utils/__tests__/` — utility function tests
+- `src/services/__tests__/` — service layer tests
+- `src/services/spotify/*.test.js` — Spotify tests co-located with implementation
 
-When adding new utility functions, add tests to existing test files in `__tests__` folders rather than creating new test files.
+When adding new utility functions, add tests to existing `__tests__` files rather than creating new test files.
+
+Services support a `mock` option (`options.mock = true`) that swaps in `src/api/mock/index.js`, which returns a static fixture playlist — useful for tests that exercise the domain layer without hitting APIs.
 
 ## Coding Patterns
 
@@ -120,8 +110,9 @@ When adding new utility functions, add tests to existing test files in `__tests_
 
 ## Common Gotchas
 
-- **API Rate Limits**: YouTube API has daily quotas (~100 songs/day). Quota exceeded errors are handled via `QuotaExceededError` in `src/domain/errors.js`
-- **Signal Handling**: The download loop handles SIGINT (Ctrl+C) gracefully in `src/domain/download/playlist.js`
-- **Track Matching**: YouTube search may not always find the exact song. The matching logic is in `src/services/youtube/index.js`
-- **API Caching**: API responses are cached in `.cache/` directory to avoid repeated calls during development
-- **Spotify Playlists**: Some Spotify-curated playlists may not be downloadable due to API restrictions
+- **ffmpeg path hardcoded**: `src/domain/convert/index.js` passes `--ffmpeg-location /opt/homebrew/bin/ffmpeg` — this assumes macOS with Homebrew. Change this if ffmpeg is installed elsewhere.
+- **API Rate Limits**: YouTube API has daily quotas (~100 songs/day). Quota exceeded errors are thrown as `QuotaExceededError` (`src/domain/errors.js`) and cause a clean exit.
+- **Signal Handling**: The download loop handles SIGINT (Ctrl+C) gracefully in `src/domain/download/playlist.js`; exits with code 130.
+- **Track Matching**: YouTube search may not always find the exact song. The matching logic is in `src/services/youtube/index.js`.
+- **API Caching**: API responses are cached in `.cache/` to avoid repeated calls during development.
+- **Spotify Playlists**: Some Spotify-curated playlists may not be downloadable due to API restrictions.
