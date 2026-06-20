@@ -5,6 +5,9 @@ import {
   readCache,
   writeCache,
 } from "../../utils/cache.js";
+import { SPOTIFY } from "../../config/api.js";
+
+let warnedAboutMissingCredentials = false;
 
 /**
  * Normalize a YouTube title for Spotify search by removing common suffixes
@@ -58,6 +61,14 @@ function normalizeQuery(title) {
  */
 export async function searchTrackByTitle(youtubeTitle, options = {}) {
   const { disableCache = false } = options;
+
+  if (!SPOTIFY.CLIENT_ID || !SPOTIFY.CLIENT_SECRET) {
+    if (!warnedAboutMissingCredentials) {
+      logger.warn("Spotify credentials not configured, skipping Spotify metadata lookup");
+      warnedAboutMissingCredentials = true;
+    }
+    return null;
+  }
 
   if (!youtubeTitle || !youtubeTitle.trim()) {
     logger.debug("Empty YouTube title provided for Spotify search");
