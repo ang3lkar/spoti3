@@ -116,3 +116,7 @@ Services support a `mock` option (`options.mock = true`) that swaps in `src/api/
 - **Track Matching**: YouTube search may not always find the exact song. The matching logic is in `src/services/youtube/index.js`.
 - **API Caching**: API responses are cached in `.cache/` to avoid repeated calls during development.
 - **Spotify Playlists**: Some Spotify-curated playlists may not be downloadable due to API restrictions.
+
+## Development guidelines
+
+When asked to bump a version, update CHANGELOG.md. 
