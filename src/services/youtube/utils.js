@@ -72,7 +72,13 @@ export function getYouTubeSearchTerm(track, _playlist) {
  * @returns {string} Channel name
  */
 export function getChannelName(track) {
-  return track.snippet?.channelTitle || track.channelTitle || "";
+  const raw =
+    track.snippet?.videoOwnerChannelTitle ||
+    track.snippet?.channelTitle ||
+    track.channelTitle ||
+    "";
+  const cleaned = raw.replace(/ - Topic$/i, "").trim();
+  return cleaned.toLowerCase() === "youtube" ? "" : cleaned;
 }
 
 /**
@@ -178,9 +184,7 @@ export async function enrichYouTubeTrack(item, options = {}) {
       defaultArtist: rawArtist || channelName,
     });
 
-    artist = artist0.includes("Topic")
-      ? artist0.replace(" - Topic", "").trim()
-      : artist0;
+    artist = artist0.replace(/ - Topic$/i, "").trim();
     title = title0;
     tagSource = "youtube";
   }

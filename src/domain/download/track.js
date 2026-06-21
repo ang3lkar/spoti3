@@ -29,7 +29,7 @@ const TAG_SOURCE = {
   SPOTIFY: "spotify",
 };
 
-export const remembered = { artist: null, thumbnail: null };
+export const remembered = { artist: null, thumbnail: null, thumbnailBytes: null };
 
 // Helpers
 
@@ -158,7 +158,9 @@ async function promptForTrackMetadata(track, metadata, artBytes) {
 
   // Thumbnail
   if (artBytes && artBytes.length > 0) {
-    if (remembered.thumbnail !== null) {
+    if (remembered.thumbnailBytes !== null) {
+      artBytes = remembered.thumbnailBytes;
+    } else if (remembered.thumbnail !== null) {
       if (!remembered.thumbnail) {
         artBytes = null;
       }
@@ -178,13 +180,36 @@ async function promptForTrackMetadata(track, metadata, artBytes) {
           { label: "Accept and remember for next tracks", value: "accept-remember" },
           { label: "Skip", value: "skip" },
           { label: "Skip and remember for next tracks", value: "skip-remember" },
+          { label: "Custom URL...", value: "custom" },
         ],
       });
 
       if (choice === "skip" || choice === "skip-remember") {
         artBytes = null;
         logger.info("Thumbnail skipped");
+      } else if (choice === "custom") {
+        const customUrl = await promptWithTimeout("Thumbnail URL", { initial: "" });
+        if (customUrl && customUrl.trim().length > 0) {
+          try {
+            const buffer = await downloadImageToMemory(customUrl.trim());
+            artBytes = new Uint8Array(buffer);
+            const customChoice = await promptWithTimeout("Use this thumbnail?", {
+              type: "select",
+              options: [
+                { label: "Accept", value: "accept" },
+                { label: "Accept and remember for next tracks", value: "remember" },
+              ],
+            });
+            if (customChoice === "remember") {
+              remembered.thumbnailBytes = artBytes;
+            }
+          } catch (err) {
+            logger.error(`Failed to download thumbnail: ${err.message}`);
+            artBytes = null;
+          }
+        }
       }
+
       if (choice === "accept-remember") {
         remembered.thumbnail = true;
       } else if (choice === "skip-remember") {

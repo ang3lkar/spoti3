@@ -70,22 +70,44 @@ describe("youtube.js utilities", () => {
   });
 
   describe("getChannelName", () => {
-    it("should return channel title from snippet", () => {
-      const track = { snippet: { channelTitle: "Music Channel" } };
-      const result = getChannelName(track);
-      assert.strictEqual(result, "Music Channel");
+    it("should prefer videoOwnerChannelTitle over channelTitle", () => {
+      const track = { snippet: { videoOwnerChannelTitle: "Oasis", channelTitle: "YouTube Music" } };
+      assert.strictEqual(getChannelName(track), "Oasis");
     });
 
-    it("should return channel title from direct property", () => {
+    it("should fall back to channelTitle when videoOwnerChannelTitle is absent", () => {
+      const track = { snippet: { channelTitle: "Music Channel" } };
+      assert.strictEqual(getChannelName(track), "Music Channel");
+    });
+
+    it("should fall back to direct channelTitle property", () => {
       const track = { channelTitle: "Direct Channel" };
-      const result = getChannelName(track);
-      assert.strictEqual(result, "Direct Channel");
+      assert.strictEqual(getChannelName(track), "Direct Channel");
+    });
+
+    it("should strip the ' - Topic' suffix", () => {
+      const track = { snippet: { videoOwnerChannelTitle: "Oasis - Topic" } };
+      assert.strictEqual(getChannelName(track), "Oasis");
+    });
+
+    it("should strip ' - Topic' case-insensitively", () => {
+      const track = { snippet: { videoOwnerChannelTitle: "Radiohead - topic" } };
+      assert.strictEqual(getChannelName(track), "Radiohead");
+    });
+
+    it("should return empty string when channel name is YouTube", () => {
+      const track = { snippet: { channelTitle: "YouTube" } };
+      assert.strictEqual(getChannelName(track), "");
+    });
+
+    it("should return empty string when channel name is YouTube case-insensitively", () => {
+      const track = { snippet: { channelTitle: "youtube" } };
+      assert.strictEqual(getChannelName(track), "");
     });
 
     it("should return empty string if no channel title", () => {
       const track = {};
-      const result = getChannelName(track);
-      assert.strictEqual(result, "");
+      assert.strictEqual(getChannelName(track), "");
     });
   });
 
