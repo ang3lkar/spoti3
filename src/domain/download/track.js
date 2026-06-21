@@ -29,6 +29,8 @@ const TAG_SOURCE = {
   SPOTIFY: "spotify",
 };
 
+export const remembered = { artist: null, thumbnail: null };
+
 // Helpers
 
 /**
@@ -71,15 +73,10 @@ function getTrackMetadata(track) {
   };
 }
 
-/**
- * Prompt user to confirm/edit track metadata (artist, title, thumbnail)
- * Only prompts for YouTube tracks when logger.prompt is available
- */
 async function promptForTrackMetadata(track, metadata, artBytes) {
   let { artist, title } = metadata;
   const { tagSource } = metadata;
 
-  // Only prompt for YouTube tracks when prompt function is available
   if (
     !isYouTubeTrack(track) ||
     !logger.prompt ||
@@ -88,21 +85,41 @@ async function promptForTrackMetadata(track, metadata, artBytes) {
     return { artist, title, artBytes };
   }
 
-  const artistPromptText = `Artist (source: ${tagSource})`;
-  const titlePromptText = `Title (source: ${tagSource})`;
-  const thumbnailPromptText = track.thumbnails
-    ? `Thumbnail (source: ${tagSource})`
-    : null;
+  // Artist — skip prompt if already remembered from a previous track
+  if (remembered.artist !== null) {
+    artist = remembered.artist;
+  } else {
+    const choice = await logger.prompt(
+      `Artist (source: ${tagSource}): "${artist}"`,
+      {
+        type: "select",
+        options: [
+          { label: "Accept", value: "accept" },
+          { label: "Accept and remember for next tracks", value: "remember" },
+          { label: "Edit...", value: "edit" },
+        ],
+      }
+    );
 
-  const confirmedArtist = await logger.prompt(artistPromptText, {
-    placeholder: "Not sure",
-    initial: artist,
-  });
-  if (confirmedArtist && confirmedArtist.trim().length > 0) {
-    artist = confirmedArtist.trim();
+    if (choice === "remember") {
+      remembered.artist = artist;
+    } else if (choice === "edit") {
+      const edited = await logger.prompt("Artist", { initial: artist });
+      if (edited && edited.trim().length > 0) {
+        artist = edited.trim();
+      }
+      const shouldRemember = await logger.prompt(
+        `Remember "${artist}" for next tracks?`,
+        { type: "confirm", initial: false }
+      );
+      if (shouldRemember) {
+        remembered.artist = artist;
+      }
+    }
   }
 
-  const confirmedTitle = await logger.prompt(titlePromptText, {
+  // Title
+  const confirmedTitle = await logger.prompt(`Title (source: ${tagSource})`, {
     placeholder: "Not sure",
     initial: title,
   });
@@ -110,20 +127,40 @@ async function promptForTrackMetadata(track, metadata, artBytes) {
     title = confirmedTitle.trim();
   }
 
-  // Preview thumbnail and ask for approval
+  // Thumbnail
   if (artBytes && artBytes.length > 0) {
-    logger.newLine();
-    const imageDisplayed = displayImageInTerminal(artBytes);
-    if (!imageDisplayed) {
-      logger.info("Thumbnail preview not available (use iTerm2/Kitty/WezTerm)");
-    }
-    const approvedThumbnail = await logger.prompt(thumbnailPromptText, {
-      type: "confirm",
-      initial: true,
-    });
-    if (!approvedThumbnail) {
-      artBytes = null;
-      logger.info("Thumbnail skipped");
+    if (remembered.thumbnail !== null) {
+      if (!remembered.thumbnail) {
+        artBytes = null;
+      }
+    } else {
+      logger.newLine();
+      const imageDisplayed = displayImageInTerminal(artBytes);
+      if (!imageDisplayed) {
+        logger.info("Thumbnail preview not available (use iTerm2/Kitty/WezTerm)");
+      }
+      const thumbnailPromptText = track.thumbnails
+        ? `Thumbnail (source: ${tagSource})`
+        : null;
+      const choice = await logger.prompt(thumbnailPromptText, {
+        type: "select",
+        options: [
+          { label: "Accept", value: "accept" },
+          { label: "Accept and remember for next tracks", value: "accept-remember" },
+          { label: "Skip", value: "skip" },
+          { label: "Skip and remember for next tracks", value: "skip-remember" },
+        ],
+      });
+
+      if (choice === "skip" || choice === "skip-remember") {
+        artBytes = null;
+        logger.info("Thumbnail skipped");
+      }
+      if (choice === "accept-remember") {
+        remembered.thumbnail = true;
+      } else if (choice === "skip-remember") {
+        remembered.thumbnail = false;
+      }
     }
   }
 
@@ -207,11 +244,23 @@ export async function downloadTrack({ playlist, track, downloadOptions }) {
  * Saves track tags to the downloaded MP3 file
  */
 export async function saveTrackTags(track, playlist, tagOptions, artBytes) {
-  const trackFilename = getTrackFilePath(playlist, track);
+  let trackFilename = getTrackFilePath(playlist, track);
 
   try {
     const metadata = getTrackMetadata(track);
     const confirmed = await promptForTrackMetadata(track, metadata, artBytes);
+
+    if (isYouTubeTrack(track)) {
+      const confirmedFullTitle = `${confirmed.artist} - ${confirmed.title}`;
+      if (confirmedFullTitle !== track.fullTitle) {
+        const newFilename = path.join(
+          path.dirname(trackFilename),
+          `${confirmedFullTitle}.mp3`
+        );
+        fs.renameSync(trackFilename, newFilename);
+        trackFilename = newFilename;
+      }
+    }
 
     const finalTagOptions = {
       ordinal: tagOptions.ordinal,
