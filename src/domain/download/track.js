@@ -98,7 +98,7 @@ async function promptWithTimeout(message, options) {
     if (controller.signal.aborted) {
       return getDefaultValue(options);
     }
-    throw err;
+    process.exit(130);
   }
 }
 

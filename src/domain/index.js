@@ -9,8 +9,12 @@ async function confirmFolderName(suggested) {
   if (!logger.prompt || typeof logger.prompt !== "function") {
     return suggested;
   }
-  const confirmed = await logger.prompt("Download folder", { initial: suggested });
-  return confirmed && confirmed.trim().length > 0 ? confirmed.trim() : suggested;
+  try {
+    const confirmed = await logger.prompt("Download folder", { initial: suggested });
+    return confirmed && confirmed.trim().length > 0 ? confirmed.trim() : suggested;
+  } catch {
+    process.exit(130);
+  }
 }
 
 export async function run({ url, options = {} }) {
