@@ -73,6 +73,35 @@ function getTrackMetadata(track) {
   };
 }
 
+const PROMPT_TIMEOUT_MS = 5000;
+
+function getDefaultValue(options) {
+  if (options.type === "select") {
+    const first = options.options?.[0];
+    return typeof first === "string" ? first : first?.value;
+  }
+  return options.initial ?? null;
+}
+
+async function promptWithTimeout(message, options) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), PROMPT_TIMEOUT_MS);
+  try {
+    const result = await logger.prompt(message, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    return result;
+  } catch (err) {
+    clearTimeout(timer);
+    if (controller.signal.aborted) {
+      return getDefaultValue(options);
+    }
+    throw err;
+  }
+}
+
 async function promptForTrackMetadata(track, metadata, artBytes) {
   let { artist, title } = metadata;
   const { tagSource } = metadata;
@@ -89,7 +118,7 @@ async function promptForTrackMetadata(track, metadata, artBytes) {
   if (remembered.artist !== null) {
     artist = remembered.artist;
   } else {
-    const choice = await logger.prompt(
+    const choice = await promptWithTimeout(
       `Artist (source: ${tagSource}): "${artist}"`,
       {
         type: "select",
@@ -104,11 +133,11 @@ async function promptForTrackMetadata(track, metadata, artBytes) {
     if (choice === "remember") {
       remembered.artist = artist;
     } else if (choice === "edit") {
-      const edited = await logger.prompt("Artist", { initial: artist });
+      const edited = await promptWithTimeout("Artist", { initial: artist });
       if (edited && edited.trim().length > 0) {
         artist = edited.trim();
       }
-      const shouldRemember = await logger.prompt(
+      const shouldRemember = await promptWithTimeout(
         `Remember "${artist}" for next tracks?`,
         { type: "confirm", initial: false }
       );
@@ -119,10 +148,10 @@ async function promptForTrackMetadata(track, metadata, artBytes) {
   }
 
   // Title
-  const confirmedTitle = await logger.prompt(`Title (source: ${tagSource})`, {
-    placeholder: "Not sure",
-    initial: title,
-  });
+  const confirmedTitle = await promptWithTimeout(
+    `Title (source: ${tagSource})`,
+    { placeholder: "Not sure", initial: title }
+  );
   if (confirmedTitle && confirmedTitle.trim().length > 0) {
     title = confirmedTitle.trim();
   }
@@ -142,7 +171,7 @@ async function promptForTrackMetadata(track, metadata, artBytes) {
       const thumbnailPromptText = track.thumbnails
         ? `Thumbnail (source: ${tagSource})`
         : null;
-      const choice = await logger.prompt(thumbnailPromptText, {
+      const choice = await promptWithTimeout(thumbnailPromptText, {
         type: "select",
         options: [
           { label: "Accept", value: "accept" },
