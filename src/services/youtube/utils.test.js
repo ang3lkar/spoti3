@@ -4,6 +4,7 @@ import {
   extractYouTubeId,
   getYouTubeSearchTerm,
   getChannelName,
+  getTopicChannelArtist,
   getYouTubeTrackImageUrl,
   enrichYouTubeTrack,
 } from "./utils.js";
@@ -108,6 +109,36 @@ describe("youtube.js utilities", () => {
     it("should return empty string if no channel title", () => {
       const track = {};
       assert.strictEqual(getChannelName(track), "");
+    });
+  });
+
+  describe("getTopicChannelArtist", () => {
+    it("should return the artist from a Topic channel", () => {
+      // #given
+      const track = { snippet: { videoOwnerChannelTitle: "Gorillaz - Topic" } };
+      // #when / #then
+      assert.strictEqual(getTopicChannelArtist(track), "Gorillaz");
+    });
+
+    it("should match the ' - Topic' suffix case-insensitively", () => {
+      // #given
+      const track = { snippet: { videoOwnerChannelTitle: "Radiohead - topic" } };
+      // #when / #then
+      assert.strictEqual(getTopicChannelArtist(track), "Radiohead");
+    });
+
+    it("should return empty string for non-Topic channels", () => {
+      // #given
+      const track = { snippet: { videoOwnerChannelTitle: "OasisVEVO" } };
+      // #when / #then
+      assert.strictEqual(getTopicChannelArtist(track), "");
+    });
+
+    it("should return empty string when videoOwnerChannelTitle is absent", () => {
+      // #given
+      const track = { snippet: { channelTitle: "Some Channel" } };
+      // #when / #then
+      assert.strictEqual(getTopicChannelArtist(track), "");
     });
   });
 
