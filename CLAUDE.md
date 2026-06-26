@@ -81,6 +81,7 @@ Required API keys in `.env` (see `.env.sample`):
 - `SPOTIFY_CLIENT_SECRET` - From Spotify Developer Dashboard
 - `YOUTUBE_API_KEY` - From Google Cloud Console (YouTube Data API v3)
 - `LOG_LEVEL` - Optional: debug, info, warn, error (default: info)
+- `PROMPT_TIMEOUT_SECONDS` - Optional: seconds to wait for interactive prompts before accepting the default; `0` waits indefinitely (default: 5)
 
 ### External Dependencies
 

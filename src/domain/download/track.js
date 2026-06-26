@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { logger, callSilently } from "../../utils/logger.js";
-import { app } from "../../config/index.js";
+import { app, download } from "../../config/index.js";
 import { QuotaExceededError } from "../errors.js";
 import { searchYouTube } from "../../api/youtube/index.js";
 import {
@@ -73,7 +73,7 @@ function getTrackMetadata(track) {
   };
 }
 
-const PROMPT_TIMEOUT_MS = 5000;
+const PROMPT_TIMEOUT_MS = download.DOWNLOAD.PROMPT_TIMEOUT_MS;
 
 function getDefaultValue(options) {
   if (options.type === "select") {
@@ -85,7 +85,10 @@ function getDefaultValue(options) {
 
 async function promptWithTimeout(message, options) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), PROMPT_TIMEOUT_MS);
+  const timer =
+    PROMPT_TIMEOUT_MS > 0
+      ? setTimeout(() => controller.abort(), PROMPT_TIMEOUT_MS)
+      : null;
   try {
     const result = await logger.prompt(message, {
       ...options,
