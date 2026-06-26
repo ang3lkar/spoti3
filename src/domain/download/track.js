@@ -93,7 +93,7 @@ async function promptWithTimeout(message, options) {
     });
     clearTimeout(timer);
     return result;
-  } catch (err) {
+  } catch {
     clearTimeout(timer);
     if (controller.signal.aborted) {
       return getDefaultValue(options);
@@ -102,7 +102,7 @@ async function promptWithTimeout(message, options) {
   }
 }
 
-async function promptForTrackMetadata(track, metadata, artBytes) {
+export async function promptForTrackMetadata(track, metadata, artBytes) {
   let { artist, title } = metadata;
   const { tagSource } = metadata;
 
@@ -249,83 +249,72 @@ async function downloadArtwork(track, playlist, trackFilename) {
   }
 }
 
-export async function downloadTrack({ playlist, track, downloadOptions }) {
+/**
+ * Derive the final file title from the (possibly user-confirmed) metadata.
+ * YouTube tracks use the confirmed artist/title; Spotify tracks keep their
+ * ordinal-prefixed fullTitle.
+ */
+export function getFinalFullTitle(track, confirmed) {
+  if (isYouTubeTrack(track)) {
+    return `${confirmed.artist} - ${confirmed.title}`;
+  }
+  return track.fullTitle;
+}
+
+async function resolveVideoId(track, playlist) {
+  if (isYouTubeTrack(track)) {
+    logger.debug(`Using existing video ID: ${track.videoId}`);
+    return track.videoId;
+  }
+  const searchResult = await searchYouTube(getSearchTerm(track, playlist));
+  return searchResult?.videoId ?? null;
+}
+
+export async function downloadTrack({ playlist, track, tagOptions, downloadOptions }) {
   if (!track) {
     logger.error("Missing track");
     return { outcome: "MISSING_TRACK" };
   }
 
   const playlistFolder = getPlaylistFolder(playlist);
-  const trackFilename = getTrackFilePath(playlist, track);
-  const isDownloaded = fs.existsSync(trackFilename);
+  const provisionalFilename = getTrackFilePath(playlist, track);
 
-  if (isDownloaded && !downloadOptions?.force) {
-    const artBytes = await downloadArtwork(track, playlist, trackFilename);
-    return { outcome: "SUCCESS", mp3File: trackFilename, artBytes };
-  }
+  const artBytes = await downloadArtwork(track, playlist, provisionalFilename);
+  const metadata = getTrackMetadata(track);
+  const confirmed = await promptForTrackMetadata(track, metadata, artBytes);
 
-  try {
-    let videoId;
+  const finalFullTitle = getFinalFullTitle(track, confirmed);
+  const finalFilename = path.join(
+    playlistFolder,
+    `${sanitizeFilename(finalFullTitle)}.mp3`
+  );
 
-    if (isYouTubeTrack(track)) {
-      videoId = track.videoId;
-      logger.debug(`Using existing video ID: ${videoId}`);
-    } else {
-      const searchResult = await searchYouTube(getSearchTerm(track, playlist));
-      if (!searchResult) {
+  if (!fs.existsSync(finalFilename) || downloadOptions?.force) {
+    try {
+      const videoId = await resolveVideoId(track, playlist);
+      if (!videoId) {
         logger.error(`No video found for ${getSearchTerm(track, playlist)}`);
         return { outcome: "NO_VIDEO_FOUND" };
       }
-      videoId = searchResult.videoId;
-    }
-
-    mp3(sanitizeFilename(track.fullTitle), videoId, { cwd: playlistFolder });
-
-    logger.debug(`Downloaded ${getFileName(trackFilename)}`);
-  } catch (err) {
-    if (err instanceof QuotaExceededError) {
-      throw err;
-    }
-    logger.error(err);
-    return { outcome: "DOWNLOAD_ERROR", error: err };
-  }
-
-  const artBytes = await downloadArtwork(track, playlist, trackFilename);
-  return { outcome: "SUCCESS", mp3File: trackFilename, artBytes };
-}
-
-/**
- * Saves track tags to the downloaded MP3 file
- */
-export async function saveTrackTags(track, playlist, tagOptions, artBytes) {
-  let trackFilename = getTrackFilePath(playlist, track);
-
-  try {
-    const metadata = getTrackMetadata(track);
-    const confirmed = await promptForTrackMetadata(track, metadata, artBytes);
-
-    if (isYouTubeTrack(track)) {
-      const confirmedFullTitle = `${confirmed.artist} - ${confirmed.title}`;
-      if (confirmedFullTitle !== track.fullTitle) {
-        const newFilename = path.join(
-          path.dirname(trackFilename),
-          `${sanitizeFilename(confirmedFullTitle)}.mp3`
-        );
-        fs.renameSync(trackFilename, newFilename);
-        trackFilename = newFilename;
+      mp3(sanitizeFilename(finalFullTitle), videoId, { cwd: playlistFolder });
+      logger.debug(`Downloaded ${getFileName(finalFilename)}`);
+    } catch (err) {
+      if (err instanceof QuotaExceededError) {
+        throw err;
       }
+      logger.error(err);
+      return { outcome: "DOWNLOAD_ERROR", error: err };
     }
-
-    const finalTagOptions = {
-      ordinal: tagOptions.ordinal,
-      title: confirmed.title,
-      album: tagOptions.album || track.album?.name || playlist.name,
-      artist: confirmed.artist,
-      artBytes: confirmed.artBytes,
-    };
-
-    callSilently(setTags, trackFilename, finalTagOptions);
-  } catch (err) {
-    logger.error(err.message);
   }
+
+  const finalTagOptions = {
+    ordinal: tagOptions.ordinal,
+    title: confirmed.title,
+    album: tagOptions.album || track.album?.name || playlist.name,
+    artist: confirmed.artist,
+    artBytes: confirmed.artBytes,
+  };
+  callSilently(setTags, finalFilename, finalTagOptions);
+
+  return { outcome: "SUCCESS", mp3File: finalFilename };
 }

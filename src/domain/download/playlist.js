@@ -1,5 +1,5 @@
 import { logger } from "../../utils/logger.js";
-import { downloadTrack, saveTrackTags } from "./track.js";
+import { downloadTrack } from "./track.js";
 import { QuotaExceededError } from "../errors.js";
 
 const DOWNLOAD_OUTCOME = {
@@ -23,12 +23,12 @@ async function processTrack({ track, playlist, tagOptions, downloadOptions }) {
   const result = await downloadTrack({
     playlist,
     track,
+    tagOptions,
     downloadOptions,
   });
 
   if (result.outcome === DOWNLOAD_OUTCOME.SUCCESS) {
     logger.info(`Downloaded ${track.fullTitle}`);
-    await saveTrackTags(track, playlist, tagOptions, result.artBytes);
     return true;
   }
 
