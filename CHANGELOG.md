@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.8.3] - 2026-06-26
+
+### Fixed
+- Ctrl+C during an interactive prompt now exits the program instead of letting the track loop continue
+
 ## [1.8.2] - 2026-06-21
 
 ### Added
