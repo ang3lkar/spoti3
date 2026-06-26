@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { logger, callSilently } from "../../utils/logger.js";
+import { logger, callSilently, isPromptCancelled } from "../../utils/logger.js";
 import { app, download } from "../../config/index.js";
 import { QuotaExceededError } from "../errors.js";
 import { searchYouTube } from "../../api/youtube/index.js";
@@ -95,6 +95,9 @@ async function promptWithTimeout(message, options) {
       signal: controller.signal,
     });
     clearTimeout(timer);
+    if (isPromptCancelled(result)) {
+      process.exit(130);
+    }
     return result;
   } catch {
     clearTimeout(timer);

@@ -1,4 +1,4 @@
-import { logger } from "../utils/logger.js";
+import { logger, isPromptCancelled } from "../utils/logger.js";
 import { downloadTrackList } from "./download/playlist.js";
 
 import { fetchPlaylist } from "../services/index.js";
@@ -11,6 +11,9 @@ async function confirmFolderName(suggested) {
   }
   try {
     const confirmed = await logger.prompt("Download folder", { initial: suggested });
+    if (isPromptCancelled(confirmed)) {
+      process.exit(130);
+    }
     return confirmed && confirmed.trim().length > 0 ? confirmed.trim() : suggested;
   } catch {
     process.exit(130);

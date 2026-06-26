@@ -94,4 +94,12 @@ function callSilently(fn, ...args) {
   }
 }
 
-export { logger, noOpLogger, callSilently };
+/**
+ * In raw mode the terminal never raises SIGINT, so Ctrl+C during a prompt is
+ * resolved by consola/clack as a cancel symbol rather than throwing or exiting.
+ */
+function isPromptCancelled(result) {
+  return typeof result === "symbol";
+}
+
+export { logger, noOpLogger, callSilently, isPromptCancelled };

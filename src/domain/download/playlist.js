@@ -12,7 +12,7 @@ const DOWNLOAD_OUTCOME = {
 function setupInterruptHandler() {
   process.on("SIGINT", () => {
     logger.info("\nCaught interrupt signal (Ctrl+C), cleaning up...");
-    process.exit();
+    process.exit(130);
   });
 }
 
