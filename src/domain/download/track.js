@@ -10,7 +10,7 @@ import {
 } from "../../utils/basic.js";
 import { mp3 } from "../convert/index.js";
 import { setTags } from "../tag/index.js";
-import { getFileName } from "../../utils/file.js";
+import { getFileName, sanitizeFilename } from "../../utils/file.js";
 import {
   getTrackImageUrl,
   getSearchTerm,
@@ -45,7 +45,7 @@ function isYouTubeTrack(track) {
  */
 function getTrackFilePath(playlist, track) {
   const playlistFolder = path.join(downloadsDir, playlist.folderName);
-  return `${playlistFolder}/${track.fullTitle}.mp3`;
+  return path.join(playlistFolder, `${sanitizeFilename(track.fullTitle)}.mp3`);
 }
 
 /**
@@ -279,7 +279,7 @@ export async function downloadTrack({ playlist, track, downloadOptions }) {
       videoId = searchResult.videoId;
     }
 
-    mp3(track.fullTitle, videoId, { cwd: playlistFolder });
+    mp3(sanitizeFilename(track.fullTitle), videoId, { cwd: playlistFolder });
 
     logger.debug(`Downloaded ${getFileName(trackFilename)}`);
   } catch (err) {
@@ -309,7 +309,7 @@ export async function saveTrackTags(track, playlist, tagOptions, artBytes) {
       if (confirmedFullTitle !== track.fullTitle) {
         const newFilename = path.join(
           path.dirname(trackFilename),
-          `${confirmedFullTitle}.mp3`
+          `${sanitizeFilename(confirmedFullTitle)}.mp3`
         );
         fs.renameSync(trackFilename, newFilename);
         trackFilename = newFilename;

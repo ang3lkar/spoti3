@@ -28,3 +28,11 @@ export function createDownloadFolder(name) {
 export function getFileName(filePath) {
   return path.basename(filePath);
 }
+
+/**
+ * Replace characters that the filesystem treats as path separators so a track
+ * title like "AC/DC" produces a single file instead of a nested folder.
+ */
+export function sanitizeFilename(name) {
+  return name.replace(/\//g, "|");
+}

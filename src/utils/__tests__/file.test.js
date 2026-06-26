@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import fs from 'fs';
 import path from 'path';
-import { createDownloadFolder, getFileName } from '../file.js';
+import { createDownloadFolder, getFileName, sanitizeFilename } from '../file.js';
 import { app } from '../../config/index.js';
 import { getRepoRoot } from '../repo.js';
 
@@ -47,6 +47,23 @@ describe('file.js utilities', () => {
     it('should handle simple filename without extension', () => {
       const filePath = 'file';
       assert.strictEqual(getFileName(filePath), 'file');
+    });
+  });
+
+  describe('sanitizeFilename', () => {
+    it('should replace forward slashes with a pipe', () => {
+      // #given / #when / #then
+      assert.strictEqual(sanitizeFilename('AC/DC - Thunderstruck'), 'AC|DC - Thunderstruck');
+    });
+
+    it('should replace every forward slash', () => {
+      // #given / #when / #then
+      assert.strictEqual(sanitizeFilename('a/b/c'), 'a|b|c');
+    });
+
+    it('should leave names without slashes unchanged', () => {
+      // #given / #when / #then
+      assert.strictEqual(sanitizeFilename('Re-Hash'), 'Re-Hash');
     });
   });
 });

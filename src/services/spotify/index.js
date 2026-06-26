@@ -14,14 +14,11 @@ function enrichTrack({ item, ordinal, totalLength, type }) {
 
   const artists = getArtists(track);
 
-  // Replace / with | to avoid creating folders when creating mp3 files
-  const name = track.name.replace(/\//g, "|");
-
   const prefix = shouldPrefixWithOrdinal(type)
     ? `${getOrdinalString(ordinal + 1, totalLength)}. `
     : "";
-  const fullTitle = `${prefix}${artists} - ${name}`;
-  const searchTitle = `${artists} ${name}`; // used for searching on YouTube
+  const fullTitle = `${prefix}${artists} - ${track.name}`;
+  const searchTitle = `${artists} ${track.name}`; // used for searching on YouTube
 
   return { ...track, fullTitle, searchTitle };
 }
