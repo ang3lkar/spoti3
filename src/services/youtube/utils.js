@@ -191,18 +191,23 @@ export async function enrichYouTubeTrack(item, options = {}) {
     normalizedThumbnails = normalizeSpotifyThumbnails(spotifyResult.thumbnails);
     logger.debug(`Using Spotify metadata: ${artist} - ${title}`);
   } else {
-    // Fallback to current parsing method
-    const [rawArtist, _] = rawTitle.includes(" - ")
-      ? rawTitle.split(" - ")
-      : [null, rawTitle];
-
+    // Fallback to parsing the title. get-artist-title splits aggressively on
+    // bare separators ("Re-Hash" -> ["Re", "Hash"]), so only trust its split
+    // when the title contains a separator surrounded by spaces; otherwise keep
+    // the whole title and take the artist from the channel.
     const cleanTitle = MetadataFilter.youtube(rawTitle);
+    const hasSpacedSeparator = /\s[-–—/|:~_]\s/.test(cleanTitle);
     const [artist0, title0] = getArtistTitle(cleanTitle, {
-      defaultArtist: rawArtist || channelName,
+      defaultArtist: channelName,
     });
 
-    artist = artist0.replace(/ - Topic$/i, "").trim();
-    title = title0;
+    if (hasSpacedSeparator) {
+      artist = artist0.replace(/ - Topic$/i, "").trim();
+      title = title0;
+    } else {
+      artist = channelName.replace(/ - Topic$/i, "").trim();
+      title = cleanTitle;
+    }
     tagSource = "youtube";
   }
 

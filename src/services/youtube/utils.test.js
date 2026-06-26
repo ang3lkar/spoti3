@@ -258,6 +258,51 @@ describe("youtube.js utilities", () => {
       );
     });
 
+    it("should keep a hyphenated title whole when there is no spaced separator", async () => {
+      // #given
+      const item = {
+        snippet: {
+          title: "Re-Hash",
+          channelTitle: "Gorillaz",
+        },
+        contentDetails: {
+          videoId: "video123",
+        },
+      };
+
+      // #when
+      const result = await enrichYouTubeTrack(item, {
+        disableCache: true,
+      });
+
+      // #then
+      assert.strictEqual(result.title, "Re-Hash");
+      assert.strictEqual(result.artist, "Gorillaz");
+      assert.strictEqual(result.fullTitle, "Gorillaz - Re-Hash");
+    });
+
+    it("should drop the artist prefix but keep the hyphenated title", async () => {
+      // #given
+      const item = {
+        snippet: {
+          title: "Gorillaz - Re-Hash",
+          channelTitle: "Some Channel",
+        },
+        contentDetails: {
+          videoId: "video123",
+        },
+      };
+
+      // #when
+      const result = await enrichYouTubeTrack(item, {
+        disableCache: true,
+      });
+
+      // #then
+      assert.strictEqual(result.artist, "Gorillaz");
+      assert.strictEqual(result.title, "Re-Hash");
+    });
+
     it("should handle track without channel title", async () => {
       const item = {
         snippet: {
