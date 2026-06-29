@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "spoti3",
+  "project_id": "d6dff10a-f8a2-4981-bbda-9c4cb4e980a6"
+}
