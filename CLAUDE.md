@@ -28,7 +28,7 @@ node --test src/utils/__tests__/basic.test.js
 npm run lint
 ```
 
-The `mp3` subcommand accepts `--force` (re-download existing files) and `--album-tag` (override album ID3 tag).
+The `mp3` subcommand accepts `--force` (re-download existing files), `--album-tag` (override album ID3 tag), and `--yolo` (skip interactive prompts and accept calculated tags).
 
 ## Architecture Overview
 
@@ -117,6 +117,12 @@ Services support a `mock` option (`options.mock = true`) that swaps in `src/api/
 - **Track Matching**: YouTube search may not always find the exact song. The matching logic is in `src/services/youtube/index.js`.
 - **API Caching**: API responses are cached in `.cache/` to avoid repeated calls during development.
 - **Spotify Playlists**: Some Spotify-curated playlists may not be downloadable due to API restrictions.
+
+## Model Assignment
+
+- Orchestration, architecture decisions, code review: main session (Fable)
+- Implementation, test writing, file search, boilerplate: delegate to subagents (Sonnet)
+- Don't implement directly in the main session — delegate execution work
 
 ## Development guidelines
 

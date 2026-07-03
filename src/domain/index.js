@@ -32,7 +32,9 @@ export async function run({ url, options = {} }) {
     });
     const album = options.album || playlist.name;
 
-    const folderName = await confirmFolderName(playlist.folderName);
+    const folderName = options.yolo
+      ? playlist.folderName
+      : await confirmFolderName(playlist.folderName);
     createDownloadFolder(folderName);
 
     await downloadTrackList({

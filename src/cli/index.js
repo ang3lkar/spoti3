@@ -48,6 +48,7 @@ program
     "set album name in mp3 files, will override default album name"
   )
   .option("-f, --force", "force download of all tracks")
+  .option("-y, --yolo", "skip interactive prompts and accept calculated tags")
   .action(async (url, options) => {
     try {
       await run({ url, options });

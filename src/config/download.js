@@ -17,6 +17,7 @@ export const DOWNLOAD = {
     mock: false,
     force: false,
     albumTag: false,
+    yolo: false,
   },
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000, // milliseconds

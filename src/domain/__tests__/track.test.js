@@ -97,4 +97,38 @@ describe("promptForTrackMetadata", () => {
     assert.strictEqual(logger.prompt.mock.callCount(), 0);
     assert.deepStrictEqual(result, { artist: "Artist", title: "Song", artBytes: null });
   });
+
+  it("returns calculated metadata without prompting in yolo mode", async () => {
+    // #given
+    const track = ytTrack("Artist - Song", "Artist", "Song");
+    const artBytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0]);
+
+    // #when
+    const result = await promptForTrackMetadata(
+      track,
+      { artist: "Artist", title: "Song", tagSource: "youtube" },
+      artBytes,
+      { yolo: true }
+    );
+
+    // #then
+    assert.strictEqual(logger.prompt.mock.callCount(), 0);
+    assert.deepStrictEqual(result, { artist: "Artist", title: "Song", artBytes });
+  });
+
+  it("still prompts for YouTube tracks when yolo is not set", async () => {
+    // #given
+    const track = ytTrack("Artist - Song", "Artist", "Song");
+    const artBytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0]);
+
+    // #when
+    await promptForTrackMetadata(
+      track,
+      { artist: "Artist", title: "Song", tagSource: "youtube" },
+      artBytes
+    );
+
+    // #then
+    assert.ok(logger.prompt.mock.callCount() > 0);
+  });
 });

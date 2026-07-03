@@ -75,47 +75,38 @@ function getTrackMetadata(track) {
 
 const PROMPT_TIMEOUT_MS = download.DOWNLOAD.PROMPT_TIMEOUT_MS;
 
-function getDefaultValue(options) {
-  if (options.type === "select") {
-    const first = options.options?.[0];
-    return typeof first === "string" ? first : first?.value;
-  }
-  return options.initial ?? null;
-}
-
+// Consola 3.2.3 ignores AbortSignal entirely, so a timeout can't cancel the
+// prompt directly. Emitting a synthetic Enter keypress instead submits the
+// prompt's current (default) value, which clack's prompt listens for on stdin.
 async function promptWithTimeout(message, options) {
-  const controller = new AbortController();
   const timer =
     PROMPT_TIMEOUT_MS > 0
-      ? setTimeout(() => controller.abort(), PROMPT_TIMEOUT_MS)
+      ? setTimeout(() => {
+          process.stdin.emit("keypress", "\r", { name: "return" });
+        }, PROMPT_TIMEOUT_MS)
       : null;
   try {
-    const result = await logger.prompt(message, {
-      ...options,
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
+    const result = await logger.prompt(message, options);
     if (isPromptCancelled(result)) {
       process.exit(130);
     }
     return result;
   } catch {
-    clearTimeout(timer);
-    if (controller.signal.aborted) {
-      return getDefaultValue(options);
-    }
     process.exit(130);
+  } finally {
+    clearTimeout(timer);
   }
 }
 
-export async function promptForTrackMetadata(track, metadata, artBytes) {
+export async function promptForTrackMetadata(track, metadata, artBytes, options = {}) {
   let { artist, title } = metadata;
   const { tagSource } = metadata;
 
   if (
     !isYouTubeTrack(track) ||
     !logger.prompt ||
-    typeof logger.prompt !== "function"
+    typeof logger.prompt !== "function" ||
+    options.yolo
   ) {
     return { artist, title, artBytes };
   }
@@ -287,7 +278,12 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
 
   const artBytes = await downloadArtwork(track, playlist, provisionalFilename);
   const metadata = getTrackMetadata(track);
-  const confirmed = await promptForTrackMetadata(track, metadata, artBytes);
+  const confirmed = await promptForTrackMetadata(
+    track,
+    metadata,
+    artBytes,
+    downloadOptions ?? {}
+  );
 
   const finalFullTitle = getFinalFullTitle(track, confirmed);
   const finalFilename = path.join(
