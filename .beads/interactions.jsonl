@@ -1,3 +1,0 @@
-{"id":"int-de773751","kind":"field_change","created_at":"2026-07-03T07:10:25.954619Z","actor":"Angelos Karagkiozidis","issue_id":"spoti3-1ly","extra":{"field":"status","new_value":"closed","old_value":"open","reason":"Closed"}}
-{"id":"int-4aed37fa","kind":"field_change","created_at":"2026-07-03T07:10:26.111275Z","actor":"Angelos Karagkiozidis","issue_id":"spoti3-bua","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Closed"}}
-{"id":"int-9c1a4319","kind":"field_change","created_at":"2026-09-10T20:53:16.692711Z","actor":"Angelos Karagkiozidis","issue_id":"spoti3-snh","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Edit paths run without a timer; title prompt cancels its timer on first keypress"}}

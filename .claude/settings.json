@@ -1,39 +1,10 @@
 {
-  "hooks": {
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "command": "bd prime",
-            "type": "command"
-          }
-        ],
-        "matcher": ""
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "command": "bd prime",
-            "type": "command"
-          }
-        ],
-        "matcher": ""
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "Bash(npx eslint *)",
       "Bash(npm test)",
       "Bash(npm test *)",
       "Bash(npm run lint)",
-      "Bash(bd ready)",
-      "Bash(bd show *)",
-      "Bash(bd list *)",
-      "Bash(bd search *)",
-      "Bash(bd stats)",
       "mcp__claude_ai_Datadog__search_datadog_logs"
     ]
   }

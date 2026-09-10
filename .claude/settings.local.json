@@ -16,8 +16,6 @@
       "Bash(npx eslint *)",
       "Bash(npm version *)",
       "Bash(git push *)",
-      "WebFetch(domain:eventsapi.dolthub.com)",
-      "Bash(git -C /Users/angeloskaragiozidis/Repositories/spoti3 add .beads/interactions.jsonl)",
       "Bash(git -C /Users/angeloskaragiozidis/Repositories/spoti3 commit -m ' *)",
       "Bash(git -C /Users/angeloskaragiozidis/Repositories/spoti3 push)",
       "Bash(git -C /Users/angeloskaragiozidis/Repositories/spoti3 status --short)"
