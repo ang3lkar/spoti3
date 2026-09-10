@@ -7,6 +7,7 @@ import { searchYouTube } from "../../api/youtube/index.js";
 import {
   downloadImageToMemory,
   displayImageInTerminal,
+  greekToLatin,
 } from "../../utils/basic.js";
 import { mp3 } from "../convert/index.js";
 import { setTags } from "../tag/index.js";
@@ -61,30 +62,21 @@ function getPlaylistFolder(playlist) {
 function getTrackMetadata(track) {
   if (isYouTubeTrack(track)) {
     return {
-      title: track.title,
-      artist: track.artist,
+      title: greekToLatin(track.title),
+      artist: greekToLatin(track.artist),
       tagSource: track.tagSource || TAG_SOURCE.YOUTUBE,
     };
   }
   return {
-    title: track.name,
-    artist: track.artists.map((a) => a.name).join(" & "),
+    title: greekToLatin(track.name),
+    artist: greekToLatin(track.artists.map((a) => a.name).join(" & ")),
     tagSource: TAG_SOURCE.SPOTIFY,
   };
 }
 
 const PROMPT_TIMEOUT_MS = download.DOWNLOAD.PROMPT_TIMEOUT_MS;
 
-// Consola 3.2.3 ignores AbortSignal entirely, so a timeout can't cancel the
-// prompt directly. Emitting a synthetic Enter keypress instead submits the
-// prompt's current (default) value, which clack's prompt listens for on stdin.
-async function promptWithTimeout(message, options) {
-  const timer =
-    PROMPT_TIMEOUT_MS > 0
-      ? setTimeout(() => {
-          process.stdin.emit("keypress", "\r", { name: "return" });
-        }, PROMPT_TIMEOUT_MS)
-      : null;
+async function prompt(message, options) {
   try {
     const result = await logger.prompt(message, options);
     if (isPromptCancelled(result)) {
@@ -93,8 +85,31 @@ async function promptWithTimeout(message, options) {
     return result;
   } catch {
     process.exit(130);
+  }
+}
+
+// Consola 3.2.3 ignores AbortSignal entirely, so a timeout can't cancel the
+// prompt directly. Emitting a synthetic Enter keypress instead submits the
+// prompt's current (default) value, which clack's prompt listens for on stdin.
+async function promptWithTimeout(message, options, { cancelOnKeypress = false } = {}) {
+  if (PROMPT_TIMEOUT_MS <= 0) {
+    return prompt(message, options);
+  }
+
+  const timer = setTimeout(() => {
+    process.stdin.emit("keypress", "\r", { name: "return" });
+  }, PROMPT_TIMEOUT_MS);
+  const cancelTimer = () => clearTimeout(timer);
+
+  if (cancelOnKeypress) {
+    process.stdin.once("keypress", cancelTimer);
+  }
+
+  try {
+    return await prompt(message, options);
   } finally {
     clearTimeout(timer);
+    process.stdin.off("keypress", cancelTimer);
   }
 }
 
@@ -130,11 +145,11 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
     if (choice === "remember") {
       remembered.artist = artist;
     } else if (choice === "edit") {
-      const edited = await promptWithTimeout("Artist", { initial: artist });
+      const edited = await prompt("Artist", { initial: artist });
       if (edited && edited.trim().length > 0) {
         artist = edited.trim();
       }
-      const shouldRemember = await promptWithTimeout(
+      const shouldRemember = await prompt(
         `Remember "${artist}" for next tracks?`,
         { type: "confirm", initial: false }
       );
@@ -147,7 +162,8 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
   // Title
   const confirmedTitle = await promptWithTimeout(
     `Title (source: ${tagSource})`,
-    { placeholder: "Not sure", initial: title }
+    { placeholder: "Not sure", initial: title },
+    { cancelOnKeypress: true }
   );
   if (confirmedTitle && confirmedTitle.trim().length > 0) {
     title = confirmedTitle.trim();
@@ -185,7 +201,7 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
         artBytes = null;
         logger.info("Thumbnail skipped");
       } else if (choice === "custom") {
-        const customUrl = await promptWithTimeout("Thumbnail URL", { initial: "" });
+        const customUrl = await prompt("Thumbnail URL", { initial: "" });
         if (customUrl && customUrl.trim().length > 0) {
           try {
             const buffer = await downloadImageToMemory(customUrl.trim());
@@ -312,7 +328,7 @@ export async function downloadTrack({ playlist, track, tagOptions, downloadOptio
   const finalTagOptions = {
     ordinal: tagOptions.ordinal,
     title: confirmed.title,
-    album: tagOptions.album || track.album?.name || playlist.name,
+    album: greekToLatin(tagOptions.album || track.album?.name || playlist.name),
     artist: confirmed.artist,
     artBytes: confirmed.artBytes,
   };
