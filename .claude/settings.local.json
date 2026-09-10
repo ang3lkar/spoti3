@@ -7,7 +7,20 @@
       "Bash(cat:*)",
       "Bash(ls:*)",
       "Bash(curl:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d['items'][0] if 'items' in d else d, indent=2\\)[:2000]\\)\")",
+      "Bash(python3 -c ' *)",
+      "Bash(node --test src/services/)",
+      "Bash(npm test *)",
+      "Bash(node *)",
+      "Bash(npx eslint *)",
+      "Bash(npm version *)",
+      "Bash(git push *)",
+      "WebFetch(domain:eventsapi.dolthub.com)",
+      "Bash(git -C /Users/angeloskaragiozidis/Repositories/spoti3 add .beads/interactions.jsonl)",
+      "Bash(git -C /Users/angeloskaragiozidis/Repositories/spoti3 commit -m ' *)",
+      "Bash(git -C /Users/angeloskaragiozidis/Repositories/spoti3 push)",
+      "Bash(git -C /Users/angeloskaragiozidis/Repositories/spoti3 status --short)"
     ]
   },
   "enableAllProjectMcpServers": true,
