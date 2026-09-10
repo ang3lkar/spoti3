@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { app } from "../config/index.js";
 import { getRepoRoot } from "./repo.js";
+import { greekToLatin } from "./basic.js";
 
 const { DOWNLOADS } = app.FOLDERS;
 
@@ -30,9 +31,10 @@ export function getFileName(filePath) {
 }
 
 /**
- * Replace characters that the filesystem treats as path separators so a track
- * title like "AC/DC" produces a single file instead of a nested folder.
+ * Transliterates Greek characters to Latin, then replaces characters that the
+ * filesystem treats as path separators so a track title like "AC/DC" produces
+ * a single file instead of a nested folder.
  */
 export function sanitizeFilename(name) {
-  return name.replace(/\//g, "|");
+  return greekToLatin(name).replace(/\//g, "|");
 }

@@ -1,17 +1,18 @@
 import { logger } from "../../utils/logger.js";
 import * as youtubeApi from "../../api/youtube/index.js";
 import { extractYouTubeId, enrichYouTubeTrack } from "./utils.js";
+import { greekToLatin } from "../../utils/basic.js";
 
 function getFolderName({ youtubeId, playlistDetails }) {
   const { type } = youtubeId;
 
   switch (type) {
     case "playlist":
-      return playlistDetails.name;
+      return greekToLatin(playlistDetails.name);
     case "video":
-      return playlistDetails.name;
+      return greekToLatin(playlistDetails.name);
     case "channel":
-      return `Channel: ${playlistDetails.channelTitle}`;
+      return greekToLatin(`Channel: ${playlistDetails.channelTitle}`);
     default:
       throw new Error(`Unsupported YouTube ID type: ${youtubeId.type}`);
   }

@@ -1,7 +1,7 @@
 import * as spotifyApi from "../../api/spotify/index.js";
 import { logger } from "../../utils/logger.js";
 import { getArtists } from "./utils.js";
-import { getOrdinalString } from "../../utils/basic.js";
+import { getOrdinalString, greekToLatin } from "../../utils/basic.js";
 import { extractSpotifyId } from "./utils.js";
 
 function shouldPrefixWithOrdinal(type) {
@@ -26,9 +26,9 @@ function enrichTrack({ item, ordinal, totalLength, type }) {
 function getFolderName({ spotifyId, playlistDetails }) {
   switch (spotifyId.type) {
     case "playlist":
-      return playlistDetails.name;
+      return greekToLatin(playlistDetails.name);
     case "album":
-      return `${getArtists(playlistDetails)} - ${playlistDetails.name}`;
+      return greekToLatin(`${getArtists(playlistDetails)} - ${playlistDetails.name}`);
     case "track":
       return `Misc`;
     default:
