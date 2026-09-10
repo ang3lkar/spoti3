@@ -8,6 +8,63 @@ function removeSpecialCharacters(text) {
   return text.replace(/[^\w\s]/gi, "");
 }
 
+const GREEK_SINGLE_MAP = {
+  α: "a", β: "v", γ: "g", δ: "d", ε: "e", ζ: "z", η: "i", ι: "i", κ: "k",
+  λ: "l", μ: "m", ν: "n", ξ: "x", ο: "o", π: "p", ρ: "r", σ: "s", ς: "s",
+  τ: "t", υ: "y", φ: "f", ω: "o",
+  Α: "A", Β: "V", Γ: "G", Δ: "D", Ε: "E", Ζ: "Z", Η: "I", Ι: "I", Κ: "K",
+  Λ: "L", Μ: "M", Ν: "N", Ξ: "X", Ο: "O", Π: "P", Ρ: "R", Σ: "S", Τ: "T",
+  Υ: "Y", Φ: "F", Ω: "O",
+};
+
+const GREEK_MULTI_MAP = { θ: "th", χ: "ch", ψ: "ps" };
+const GREEK_MULTI_MAP_UPPER = { Θ: "th", Χ: "ch", Ψ: "ps" };
+
+function isUpperCase(char) {
+  return Boolean(
+    char && char === char.toUpperCase() && char !== char.toLowerCase()
+  );
+}
+
+function transliterateChar(char, nextChar) {
+  if (GREEK_SINGLE_MAP[char]) return GREEK_SINGLE_MAP[char];
+  if (GREEK_MULTI_MAP[char]) return GREEK_MULTI_MAP[char];
+  if (GREEK_MULTI_MAP_UPPER[char]) {
+    const base = GREEK_MULTI_MAP_UPPER[char];
+    return isUpperCase(nextChar)
+      ? base.toUpperCase()
+      : base[0].toUpperCase() + base.slice(1);
+  }
+  return char;
+}
+
+/**
+ * Transliterates Greek text to Latin characters using an ELOT-743-style
+ * mapping, so filenames and tags stay in a single, filesystem-friendly script.
+ *
+ * The context-dependent αυ/ευ/μπ/ντ/γκ ELOT rules are deliberately omitted -
+ * they matter for official transliteration but are unnecessary for filenames.
+ *
+ * @param {string} text The text to transliterate
+ * @returns {string} The transliterated text, or the input unchanged if it isn't a non-empty string
+ */
+export function greekToLatin(text) {
+  if (typeof text !== "string" || text.length === 0) return text;
+
+  const stripped = text
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .normalize("NFC");
+
+  const withDigraphs = stripped
+    .replace(/ΟΥ/g, "OU")
+    .replace(/Ου/g, "Ou")
+    .replace(/ου/g, "ou");
+
+  const chars = Array.from(withDigraphs);
+  return chars.map((char, i) => transliterateChar(char, chars[i + 1])).join("");
+}
+
 /**
  * Converts a title to a friendly filename, no spaces and irregular chars and adding the playlist id
  *
@@ -17,7 +74,7 @@ function removeSpecialCharacters(text) {
 export function titleToFriendlyName(playlist) {
   const { id, name } = playlist;
 
-  let result = name;
+  let result = greekToLatin(name);
 
   result = removeEmojis(result);
   result = removeSpecialCharacters(result);

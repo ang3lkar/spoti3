@@ -6,6 +6,7 @@ import {
   delay,
   downloadImageToMemory,
   getOrdinalString,
+  greekToLatin,
 } from "../basic.js";
 
 describe("basic.js utilities", () => {
@@ -141,6 +142,61 @@ describe("basic.js utilities", () => {
       assert.strictEqual(getOrdinalString(1, 2), "1");
       assert.strictEqual(getOrdinalString(2, 3), "2");
       assert.strictEqual(getOrdinalString(9, 10), "09");
+    });
+  });
+
+  describe("greekToLatin", () => {
+    it("should transliterate a common word", () => {
+      assert.strictEqual(greekToLatin("Ελλάδα"), "Ellada");
+    });
+
+    it("should map final sigma to s", () => {
+      assert.strictEqual(greekToLatin("Νίκος"), "Nikos");
+    });
+
+    it("should keep multi-character mappings fully uppercase in all-caps text", () => {
+      assert.strictEqual(greekToLatin("ΘΕΣΣΑΛΟΝΙΚΗ"), "THESSALONIKI");
+    });
+
+    it("should title-case multi-character mappings otherwise", () => {
+      assert.strictEqual(greekToLatin("Θεσσαλονίκη"), "Thessaloniki");
+    });
+
+    it("should handle the ου digraph instead of mapping it letter by letter", () => {
+      assert.strictEqual(greekToLatin("Πουλόπουλος"), "Poulopoulos");
+    });
+
+    it("should pass through Latin, digits and punctuation untouched", () => {
+      assert.strictEqual(
+        greekToLatin("Remix - Καλοκαίρι 2024"),
+        "Remix - Kalokairi 2024"
+      );
+    });
+
+    it("should be idempotent", () => {
+      const once = greekToLatin("Θεσσαλονίκη - Πουλόπουλος 2024");
+      assert.strictEqual(greekToLatin(once), once);
+    });
+
+    it("should return non-string input unchanged", () => {
+      assert.strictEqual(greekToLatin(null), null);
+      assert.strictEqual(greekToLatin(undefined), undefined);
+    });
+
+    it("should return empty input unchanged", () => {
+      assert.strictEqual(greekToLatin(""), "");
+    });
+
+    it("should not leave any Greek codepoints behind", () => {
+      const greekRange = /[Ͱ-Ͽἀ-῿]/;
+      for (const sample of [
+        "Ελλάδα",
+        "ΘΕΣΣΑΛΟΝΙΚΗ",
+        "Πουλόπουλος",
+        "Remix - Καλοκαίρι 2024",
+      ]) {
+        assert.ok(!greekRange.test(greekToLatin(sample)));
+      }
     });
   });
 });
