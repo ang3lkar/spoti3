@@ -2,6 +2,7 @@
 import "dotenv/config";
 import { Command } from "commander";
 import { run } from "../domain/index.js";
+import { latinizeDirectory } from "../domain/latinize/index.js";
 import { saveToFile } from "../store/file.js";
 import { fetchPlaylist } from "../services/index.js";
 import { logger } from "../utils/logger.js";
@@ -52,6 +53,25 @@ program
   .action(async (url, options) => {
     try {
       await run({ url, options });
+    } catch (err) {
+      logger.error(err.message || err);
+      if (err.stack) {
+        logger.error(err.stack);
+      }
+      process.exit(1);
+    }
+  });
+
+program
+  .command("latinize")
+  .description(
+    "Replaces Greek characters with Latin counterparts in file/folder names and MP3 tags"
+  )
+  .argument("<dir>", "the directory to scan recursively")
+  .option("-d, --dry-run", "print the plan without making any changes")
+  .action(async (dir, options) => {
+    try {
+      latinizeDirectory({ dir, options: { dryRun: options.dryRun } });
     } catch (err) {
       logger.error(err.message || err);
       if (err.stack) {
