@@ -113,9 +113,14 @@ async function promptWithTimeout(message, options, { cancelOnKeypress = false } 
   }
 }
 
+function selectOptions(all, singleTrack) {
+  return singleTrack ? all.filter(({ value }) => !value.includes("remember")) : all;
+}
+
 export async function promptForTrackMetadata(track, metadata, artBytes, options = {}) {
   let { artist, title } = metadata;
   const { tagSource } = metadata;
+  const { singleTrack } = options;
 
   if (
     !isYouTubeTrack(track) ||
@@ -134,11 +139,14 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
       `Artist (source: ${tagSource}): "${artist}"`,
       {
         type: "select",
-        options: [
-          { label: "Accept", value: "accept" },
-          { label: "Accept and remember for next tracks", value: "remember" },
-          { label: "Edit...", value: "edit" },
-        ],
+        options: selectOptions(
+          [
+            { label: "Accept", value: "accept" },
+            { label: "Accept and remember for next tracks", value: "remember" },
+            { label: "Edit...", value: "edit" },
+          ],
+          singleTrack
+        ),
       }
     );
 
@@ -149,10 +157,12 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
       if (edited && edited.trim().length > 0) {
         artist = edited.trim();
       }
-      const shouldRemember = await prompt(
-        `Remember "${artist}" for next tracks?`,
-        { type: "confirm", initial: false }
-      );
+      const shouldRemember =
+        !singleTrack &&
+        (await prompt(`Remember "${artist}" for next tracks?`, {
+          type: "confirm",
+          initial: false,
+        }));
       if (shouldRemember) {
         remembered.artist = artist;
       }
@@ -188,13 +198,16 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
         : null;
       const choice = await promptWithTimeout(thumbnailPromptText, {
         type: "select",
-        options: [
-          { label: "Accept", value: "accept" },
-          { label: "Accept and remember for next tracks", value: "accept-remember" },
-          { label: "Skip", value: "skip" },
-          { label: "Skip and remember for next tracks", value: "skip-remember" },
-          { label: "Custom URL...", value: "custom" },
-        ],
+        options: selectOptions(
+          [
+            { label: "Accept", value: "accept" },
+            { label: "Accept and remember for next tracks", value: "accept-remember" },
+            { label: "Skip", value: "skip" },
+            { label: "Skip and remember for next tracks", value: "skip-remember" },
+            { label: "Custom URL...", value: "custom" },
+          ],
+          singleTrack
+        ),
       });
 
       if (choice === "skip" || choice === "skip-remember") {
@@ -206,15 +219,17 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
           try {
             const buffer = await downloadImageToMemory(customUrl.trim());
             artBytes = new Uint8Array(buffer);
-            const customChoice = await promptWithTimeout("Use this thumbnail?", {
-              type: "select",
-              options: [
-                { label: "Accept", value: "accept" },
-                { label: "Accept and remember for next tracks", value: "remember" },
-              ],
-            });
-            if (customChoice === "remember") {
-              remembered.thumbnailBytes = artBytes;
+            if (!singleTrack) {
+              const customChoice = await promptWithTimeout("Use this thumbnail?", {
+                type: "select",
+                options: [
+                  { label: "Accept", value: "accept" },
+                  { label: "Accept and remember for next tracks", value: "remember" },
+                ],
+              });
+              if (customChoice === "remember") {
+                remembered.thumbnailBytes = artBytes;
+              }
             }
           } catch (err) {
             logger.error(`Failed to download thumbnail: ${err.message}`);

@@ -131,4 +131,56 @@ describe("promptForTrackMetadata", () => {
     // #then
     assert.ok(logger.prompt.mock.callCount() > 0);
   });
+
+  describe("remember options", () => {
+    const metadata = { artist: "Artist", title: "Song", tagSource: "youtube" };
+    const artBytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0]);
+
+    function rememberLabels() {
+      return logger.prompt.mock.calls
+        .flatMap((call) => call.arguments[1]?.options ?? [])
+        .map(({ label }) => label)
+        .filter((label) => /remember/i.test(label));
+    }
+
+    it("offers no remember options for a single track", async () => {
+      // #given
+      const track = ytTrack("Artist - Song", "Artist", "Song");
+
+      // #when
+      await promptForTrackMetadata(track, metadata, artBytes, { singleTrack: true });
+
+      // #then
+      assert.ok(logger.prompt.mock.callCount() > 0);
+      assert.deepStrictEqual(rememberLabels(), []);
+    });
+
+    it("skips the remember confirm after editing the artist for a single track", async () => {
+      // #given
+      const track = ytTrack("Artist - Song", "Artist", "Song");
+      logger.prompt.mock.mockImplementation(async (_message, opts) =>
+        opts?.type === "select" ? "edit" : undefined
+      );
+
+      // #when
+      await promptForTrackMetadata(track, metadata, artBytes, { singleTrack: true });
+
+      // #then
+      const confirms = logger.prompt.mock.calls.filter(
+        (call) => call.arguments[1]?.type === "confirm"
+      );
+      assert.strictEqual(confirms.length, 0);
+    });
+
+    it("still offers remember options when not a single track", async () => {
+      // #given
+      const track = ytTrack("Artist - Song", "Artist", "Song");
+
+      // #when
+      await promptForTrackMetadata(track, metadata, artBytes);
+
+      // #then
+      assert.strictEqual(rememberLabels().length, 3);
+    });
+  });
 });

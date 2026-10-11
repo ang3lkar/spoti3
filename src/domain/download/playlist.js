@@ -71,7 +71,7 @@ export async function downloadTrackList({ playlist, options = {} }) {
         track,
         playlist,
         tagOptions,
-        downloadOptions: options,
+        downloadOptions: { ...options, singleTrack: total === 1 },
       });
     } catch (err) {
       // Check if error is due to SIGINT (Ctrl+C) - exit entirely
