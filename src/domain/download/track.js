@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { logger, callSilently, isPromptCancelled } from "../../utils/logger.js";
-import { app, download } from "../../config/index.js";
+import { app } from "../../config/index.js";
 import { QuotaExceededError } from "../errors.js";
 import { searchYouTube } from "../../api/youtube/index.js";
 import {
@@ -74,8 +74,6 @@ function getTrackMetadata(track) {
   };
 }
 
-const PROMPT_TIMEOUT_MS = download.DOWNLOAD.PROMPT_TIMEOUT_MS;
-
 async function prompt(message, options) {
   try {
     const result = await logger.prompt(message, options);
@@ -85,31 +83,6 @@ async function prompt(message, options) {
     return result;
   } catch {
     process.exit(130);
-  }
-}
-
-// Consola 3.2.3 ignores AbortSignal entirely, so a timeout can't cancel the
-// prompt directly. Emitting a synthetic Enter keypress instead submits the
-// prompt's current (default) value, which clack's prompt listens for on stdin.
-async function promptWithTimeout(message, options, { cancelOnKeypress = false } = {}) {
-  if (PROMPT_TIMEOUT_MS <= 0) {
-    return prompt(message, options);
-  }
-
-  const timer = setTimeout(() => {
-    process.stdin.emit("keypress", "\r", { name: "return" });
-  }, PROMPT_TIMEOUT_MS);
-  const cancelTimer = () => clearTimeout(timer);
-
-  if (cancelOnKeypress) {
-    process.stdin.once("keypress", cancelTimer);
-  }
-
-  try {
-    return await prompt(message, options);
-  } finally {
-    clearTimeout(timer);
-    process.stdin.off("keypress", cancelTimer);
   }
 }
 
@@ -135,7 +108,7 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
   if (remembered.artist !== null) {
     artist = remembered.artist;
   } else {
-    const choice = await promptWithTimeout(
+    const choice = await prompt(
       `Artist (source: ${tagSource}): "${artist}"`,
       {
         type: "select",
@@ -170,11 +143,10 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
   }
 
   // Title
-  const confirmedTitle = await promptWithTimeout(
-    `Title (source: ${tagSource})`,
-    { placeholder: "Not sure", initial: title },
-    { cancelOnKeypress: true }
-  );
+  const confirmedTitle = await prompt(`Title (source: ${tagSource})`, {
+    placeholder: "Not sure",
+    initial: title,
+  });
   if (confirmedTitle && confirmedTitle.trim().length > 0) {
     title = confirmedTitle.trim();
   }
@@ -196,7 +168,7 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
       const thumbnailPromptText = track.thumbnails
         ? `Thumbnail (source: ${tagSource})`
         : null;
-      const choice = await promptWithTimeout(thumbnailPromptText, {
+      const choice = await prompt(thumbnailPromptText, {
         type: "select",
         options: selectOptions(
           [
@@ -220,7 +192,7 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
             const buffer = await downloadImageToMemory(customUrl.trim());
             artBytes = new Uint8Array(buffer);
             if (!singleTrack) {
-              const customChoice = await promptWithTimeout("Use this thumbnail?", {
+              const customChoice = await prompt("Use this thumbnail?", {
                 type: "select",
                 options: [
                   { label: "Accept", value: "accept" },
