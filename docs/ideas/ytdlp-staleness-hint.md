@@ -7,15 +7,12 @@ matters (downloads breaking), without network calls, background work, or noise?
 ## Recommended Direction
 Derive yt-dlp's age from its own date-based version string
 (`yt-dlp --version` → 2026.08.19). No network, no cache file.
-Two touchpoints, one shared helper:
+Failure hint only, no startup nudge: when `mp3()` throws and yt-dlp is older
+than the threshold, print one line: "yt-dlp is N days old and may be failing
+because of it. Try: brew upgrade yt-dlp". Never claim certainty. Healthy runs
+stay silent.
 
-1. Failure hint: when `mp3()` throws and yt-dlp is older than the threshold,
-   print one line: "yt-dlp is N days old and may be failing because of it.
-   Try: brew upgrade yt-dlp". Never claim certainty.
-2. Startup nudge: at the start of `mp3`, if yt-dlp is older than the
-   threshold, print the same single line once.
-
-Both print at most once per run. Any failure to read or parse the version
+The hint prints at most once per run. Any failure to read or parse the version
 is swallowed silently.
 
 ## Key Assumptions to Validate
@@ -27,7 +24,7 @@ is swallowed silently.
 
 ## MVP Scope
 In: `getYtDlpAge()` helper (spawn once, memoize, parse, return days or null),
-threshold constant, startup nudge in the mp3 flow, failure hint in the
+threshold constant, failure hint in the
 download error path, tests for the parser and threshold logic.
 Out: everything in the list below.
 
@@ -42,5 +39,4 @@ Out: everything in the list below.
 
 ## Open Questions
 - Should the failure hint also show for non-stale versions ("couldn't download; yt-dlp is current")? Leaning no.
-- Where does the startup nudge live: `run()` in src/domain/index.js or downloadTrackList?
 - `mp3()` uses stdio: "inherit", so yt-dlp's error text goes straight to the terminal; the hint will print after it, which is fine.

@@ -18,7 +18,7 @@ export function mp3(filename, videoId, options = {}) {
     execSync(command, { stdio: "inherit", cwd: options.cwd });
   } catch (error) {
     logger.error("Error downloading track:", error.message);
-    hintIfStale("failure");
+    hintIfStale();
     throw error;
   }
 }

@@ -47,28 +47,26 @@ describe("hintIfStale", () => {
 
   it("stays silent at or below the threshold and for unknown age", () => {
     const log = makeLog();
-    assert.equal(hintIfStale("failure", { ageDays: STALE_AFTER_DAYS, log }), false);
-    assert.equal(hintIfStale("failure", { ageDays: null, log }), false);
+    assert.equal(hintIfStale({ ageDays: STALE_AFTER_DAYS, log }), false);
+    assert.equal(hintIfStale({ ageDays: null, log }), false);
     assert.equal(log.lines.length, 0);
   });
 
   it("warns above the threshold with hedged wording", () => {
     const log = makeLog();
-    assert.equal(hintIfStale("failure", { ageDays: STALE_AFTER_DAYS + 1, log }), true);
+    assert.equal(hintIfStale({ ageDays: STALE_AFTER_DAYS + 1, log }), true);
     assert.match(log.lines[0], /46 days old and may be failing because of it\. Try: brew upgrade yt-dlp/);
   });
 
-  it("prints each kind at most once", () => {
+  it("prints at most once per process", () => {
     const log = makeLog();
-    hintIfStale("failure", { ageDays: 100, log });
-    hintIfStale("failure", { ageDays: 100, log });
-    hintIfStale("startup", { ageDays: 100, log });
-    hintIfStale("startup", { ageDays: 100, log });
-    assert.equal(log.lines.length, 2);
+    hintIfStale({ ageDays: 100, log });
+    hintIfStale({ ageDays: 100, log });
+    assert.equal(log.lines.length, 1);
   });
 
   it("never throws", () => {
     const log = { warn: () => { throw new Error("boom"); } };
-    assert.equal(hintIfStale("failure", { ageDays: 100, log }), false);
+    assert.equal(hintIfStale({ ageDays: 100, log }), false);
   });
 });

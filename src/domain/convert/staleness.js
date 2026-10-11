@@ -6,7 +6,7 @@ export const STALE_AFTER_DAYS = 45;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const VERSION_PATTERN = /^(\d{4})\.(\d{2})\.(\d{2})(?:\.\d+)?$/;
 
-const hintsShown = new Set();
+let hintShown = false;
 let cachedAgeDays;
 
 export function parseYtDlpVersionDate(versionString) {
@@ -41,20 +41,13 @@ export function getYtDlpAgeDays() {
   return cachedAgeDays;
 }
 
-const MESSAGES = {
-  failure: (days) =>
-    `yt-dlp is ${days} days old and may be failing because of it. Try: brew upgrade yt-dlp`,
-  startup: (days) =>
-    `yt-dlp is ${days} days old and may fail to download some tracks. Consider: brew upgrade yt-dlp`,
-};
-
-export function hintIfStale(kind, { ageDays, log = logger } = {}) {
+export function hintIfStale({ ageDays, log = logger } = {}) {
   try {
-    if (hintsShown.has(kind) || !MESSAGES[kind]) return false;
+    if (hintShown) return false;
     const days = ageDays === undefined ? getYtDlpAgeDays() : ageDays;
     if (days === null || days <= STALE_AFTER_DAYS) return false;
-    hintsShown.add(kind);
-    log.warn(MESSAGES[kind](days));
+    hintShown = true;
+    log.warn(`yt-dlp is ${days} days old and may be failing because of it. Try: brew upgrade yt-dlp`);
     return true;
   } catch {
     return false;
@@ -62,6 +55,6 @@ export function hintIfStale(kind, { ageDays, log = logger } = {}) {
 }
 
 export function resetStalenessState() {
-  hintsShown.clear();
+  hintShown = false;
   cachedAgeDays = undefined;
 }
