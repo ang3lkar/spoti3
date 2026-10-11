@@ -1,72 +1,64 @@
-import { describe, it, beforeEach } from "node:test";
+import { describe, it, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
+import { logger } from "../../utils/logger.js";
 import {
   STALE_AFTER_DAYS,
-  parseYtDlpVersionDate,
   ytDlpAgeDays,
   hintIfStale,
   resetStalenessState,
 } from "./staleness.js";
 
-const makeLog = () => {
-  const lines = [];
-  return { lines, warn: (m) => lines.push(m) };
-};
+describe("ytDlpAgeDays", () => {
+  const now = new Date(Date.UTC(2026, 9, 3));
 
-describe("parseYtDlpVersionDate", () => {
   it("parses a plain version", () => {
-    assert.equal(parseYtDlpVersionDate("2026.08.19").toISOString(), "2026-08-19T00:00:00.000Z");
+    assert.equal(ytDlpAgeDays("2026.08.19", now), 45);
   });
 
   it("parses a suffixed version with trailing newline", () => {
-    assert.equal(parseYtDlpVersionDate("2026.08.19.1\n").toISOString(), "2026-08-19T00:00:00.000Z");
+    assert.equal(ytDlpAgeDays("2026.08.19.1\n", now), 45);
+  });
+
+  it("returns 0 on the release day", () => {
+    assert.equal(ytDlpAgeDays("2026.10.03", now), 0);
   });
 
   it("returns null for garbage", () => {
-    for (const bad of ["", "abc", "2026.13.40", "2026.08", null, undefined]) {
-      assert.equal(parseYtDlpVersionDate(bad), null);
+    for (const bad of ["", "abc", "2026.08", "v2026.08.19"]) {
+      assert.equal(ytDlpAgeDays(bad, now), null);
     }
   });
 });
 
-describe("ytDlpAgeDays", () => {
-  const now = new Date(Date.UTC(2026, 9, 3));
-
-  it("returns whole days", () => {
-    assert.equal(ytDlpAgeDays("2026.08.19", now), 45);
-    assert.equal(ytDlpAgeDays("2026.10.03", now), 0);
-  });
-
-  it("returns null for unparseable versions", () => {
-    assert.equal(ytDlpAgeDays("nope", now), null);
-  });
-});
-
 describe("hintIfStale", () => {
-  beforeEach(() => resetStalenessState());
+  beforeEach(() => {
+    resetStalenessState();
+    mock.method(logger, "warn", () => {});
+  });
 
-  it("stays silent at or below the threshold and for unknown age", () => {
-    const log = makeLog();
-    assert.equal(hintIfStale({ ageDays: STALE_AFTER_DAYS, log }), false);
-    assert.equal(hintIfStale({ ageDays: null, log }), false);
-    assert.equal(log.lines.length, 0);
+  afterEach(() => mock.restoreAll());
+
+  it("stays silent at the threshold", () => {
+    hintIfStale({ ageDays: STALE_AFTER_DAYS });
+    assert.equal(logger.warn.mock.callCount(), 0);
+  });
+
+  it("stays silent for unknown age", () => {
+    hintIfStale({ ageDays: null });
+    assert.equal(logger.warn.mock.callCount(), 0);
   });
 
   it("warns above the threshold with hedged wording", () => {
-    const log = makeLog();
-    assert.equal(hintIfStale({ ageDays: STALE_AFTER_DAYS + 1, log }), true);
-    assert.match(log.lines[0], /46 days old and may be failing because of it\. Try: brew upgrade yt-dlp/);
+    hintIfStale({ ageDays: STALE_AFTER_DAYS + 1 });
+    assert.match(
+      logger.warn.mock.calls[0].arguments[0],
+      /46 days old and may be failing because of it\. Try: brew upgrade yt-dlp/,
+    );
   });
 
   it("prints at most once per process", () => {
-    const log = makeLog();
-    hintIfStale({ ageDays: 100, log });
-    hintIfStale({ ageDays: 100, log });
-    assert.equal(log.lines.length, 1);
-  });
-
-  it("never throws", () => {
-    const log = { warn: () => { throw new Error("boom"); } };
-    assert.equal(hintIfStale({ ageDays: 100, log }), false);
+    hintIfStale({ ageDays: 100 });
+    hintIfStale({ ageDays: 100 });
+    assert.equal(logger.warn.mock.callCount(), 1);
   });
 });

@@ -87,7 +87,9 @@ async function prompt(message, options) {
 }
 
 function selectOptions(all, singleTrack) {
-  return singleTrack ? all.filter(({ value }) => !value.includes("remember")) : all;
+  return all
+    .filter(({ remember }) => !(singleTrack && remember))
+    .map(({ label, value }) => ({ label, value }));
 }
 
 export async function promptForTrackMetadata(track, metadata, artBytes, options = {}) {
@@ -115,7 +117,7 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
         options: selectOptions(
           [
             { label: "Accept", value: "accept" },
-            { label: "Accept and remember for next tracks", value: "remember" },
+            { label: "Accept and remember for next tracks", value: "remember", remember: true },
             { label: "Edit...", value: "edit" },
           ],
           singleTrack
@@ -130,13 +132,13 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
       if (edited && edited.trim().length > 0) {
         artist = edited.trim();
       }
-      const shouldRemember =
+      if (
         !singleTrack &&
         (await prompt(`Remember "${artist}" for next tracks?`, {
           type: "confirm",
           initial: false,
-        }));
-      if (shouldRemember) {
+        }))
+      ) {
         remembered.artist = artist;
       }
     }
@@ -173,9 +175,9 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
         options: selectOptions(
           [
             { label: "Accept", value: "accept" },
-            { label: "Accept and remember for next tracks", value: "accept-remember" },
+            { label: "Accept and remember for next tracks", value: "accept-remember", remember: true },
             { label: "Skip", value: "skip" },
-            { label: "Skip and remember for next tracks", value: "skip-remember" },
+            { label: "Skip and remember for next tracks", value: "skip-remember", remember: true },
             { label: "Custom URL...", value: "custom" },
           ],
           singleTrack
