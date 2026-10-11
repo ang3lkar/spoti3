@@ -1,5 +1,6 @@
 import { execSync } from "child_process";
 import { logger } from "../../utils/logger.js";
+import { hintIfStale } from "./staleness.js";
 
 /**
  * Download a track from YouTube as MP3 using yt-dlp
@@ -17,6 +18,7 @@ export function mp3(filename, videoId, options = {}) {
     execSync(command, { stdio: "inherit", cwd: options.cwd });
   } catch (error) {
     logger.error("Error downloading track:", error.message);
+    hintIfStale("failure");
     throw error;
   }
 }

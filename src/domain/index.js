@@ -1,5 +1,6 @@
 import { logger, isPromptCancelled } from "../utils/logger.js";
 import { downloadTrackList } from "./download/playlist.js";
+import { hintIfStale } from "./convert/staleness.js";
 
 import { fetchPlaylist } from "../services/index.js";
 import { createDownloadFolder } from "../utils/file.js";
@@ -23,6 +24,7 @@ async function confirmFolderName(suggested) {
 export async function run({ url, options = {} }) {
   try {
     const { value, source } = validateUrl(url);
+    hintIfStale("startup");
 
     const playlist = await fetchPlaylist(value, {
       source,
