@@ -1,6 +1,6 @@
 {
   "name": "spoti3",
-  "version": "1.8.3",
+  "version": "1.9.0",
   "description": "A simple CLI tool to download songs from Spotify playlists to MP3 format using YouTube",
   "main": "index.js",
   "type": "module",

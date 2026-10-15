@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.9.0] - 2026-10-15
+
+### Added
+- `--yolo` flag for `mp3`: skips interactive prompts and accepts the calculated tags
+- Greek-to-Latin transliteration of track titles and artists, download folder names, file names and ID3 tags
+- `latinize` command: replaces Greek characters with Latin ones in file/folder names and MP3 tags of a directory (`--dry-run` to preview)
+- After a failed download, a hint to upgrade yt-dlp is shown when the installed version is more than 45 days old
+- Thumbnail preview in the interactive prompt now works in Ghostty, Kitty and herdr (Kitty graphics protocol), alongside iTerm2 and WezTerm
+
+### Changed
+- Single-track downloads no longer offer "remember for next tracks" options in the artist and thumbnail prompts
+
+### Fixed
+- Kitty is no longer treated as an iTerm2-compatible terminal for the thumbnail preview, since it does not support that image protocol
+
+### Removed
+- Interactive prompt auto-accept timeout and the `PROMPT_TIMEOUT_SECONDS` env var; prompts now wait for input
+
 ## [1.8.3] - 2026-06-26
 
 ### Added
