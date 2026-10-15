@@ -24,6 +24,31 @@ cp -rf source dest          # NOT: cp -r source dest
 - `apt-get` - use `-y` flag
 - `brew` - use `HOMEBREW_NO_AUTO_UPDATE=1` env var
 
+## Creating a Release
+
+1. **Pick the bump type** (patch/minor/major, semver) from the commits since the last release.
+2. **List changes since the last release bump**, including anything never recorded in CHANGELOG.md (check the existing CHANGELOG for what is already covered):
+   ```bash
+   git log --format='%h %ad %s' --date=short $(git log -1 --format=%h --grep='chore(release): Bump version')..HEAD
+   ```
+3. **Run quality gates first**: `npm test` and `npm run lint`. Lint may have pre-existing failures; don't block on unrelated ones, but report them.
+4. **Bump the version** (updates package.json and package-lock.json only; no commit or tag):
+   ```bash
+   npm version <patch|minor|major> --no-git-tag-version
+   ```
+5. **Update CHANGELOG.md**: add a `## [X.Y.Z] - YYYY-MM-DD` section above the previous one, using `### Added / Changed / Fixed / Removed`.
+   - One terse bullet per user-visible change; skip chore/refactor-only commits.
+   - If something was added and later removed within the range, list only the net result.
+   - Never edit older sections.
+6. **Commit and push** package.json, package-lock.json and CHANGELOG.md in one commit:
+   ```bash
+   git add package.json package-lock.json CHANGELOG.md
+   git commit -m "chore(release): Bump version to X.Y.Z"
+   git pull --rebase && git push
+   git status  # MUST show "up to date with origin"
+   ```
+7. **No tags or GitHub releases**: this repo has none; only create them if explicitly asked.
+
 ## Session Completion
 
 **When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
