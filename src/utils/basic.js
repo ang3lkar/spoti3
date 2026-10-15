@@ -1,4 +1,5 @@
 import https from "node:https";
+import sharp from "sharp";
 
 function removeEmojis(text) {
   return text.replace(/[\u{1F600}-\u{1F6FF}]/gu, "");
@@ -123,54 +124,64 @@ export function getOrdinalString(ordinal, totalLength) {
   return ordinalString;
 }
 
-/**
- * Checks if the current terminal supports inline images (iTerm2, Kitty, WezTerm)
- *
- * @returns {boolean} True if terminal supports inline images
- */
-export function supportsInlineImages() {
+export function detectImageProtocol() {
   const termProgram = process.env.TERM_PROGRAM || "";
   const term = process.env.TERM || "";
 
-  // iTerm2 sets TERM_PROGRAM to "iTerm.app"
-  if (termProgram === "iTerm.app") return true;
+  if (termProgram === "iTerm.app" || termProgram === "WezTerm") return "iterm";
+  if (
+    termProgram === "ghostty" ||
+    term === "xterm-ghostty" ||
+    term === "xterm-kitty"
+  ) {
+    return "kitty";
+  }
+  return null;
+}
 
-  // WezTerm sets TERM_PROGRAM to "WezTerm"
-  if (termProgram === "WezTerm") return true;
+export function supportsInlineImages() {
+  return detectImageProtocol() !== null;
+}
 
-  // Kitty sets TERM to "xterm-kitty"
-  if (term === "xterm-kitty") return true;
+const KITTY_CHUNK_SIZE = 4096;
 
-  return false;
+export function buildKittyChunks(base64Data, size = 20) {
+  const chunks = [];
+  for (let i = 0; i < base64Data.length; i += KITTY_CHUNK_SIZE) {
+    const more = i + KITTY_CHUNK_SIZE < base64Data.length ? 1 : 0;
+    const payload = base64Data.slice(i, i + KITTY_CHUNK_SIZE);
+    const control = i === 0 ? `a=T,f=100,c=${size},m=${more}` : `m=${more}`;
+    chunks.push(`\x1b_G${control};${payload}\x1b\\`);
+  }
+  return chunks;
 }
 
 /**
- * Displays an image in the terminal using iTerm2 inline images protocol
- * Works in iTerm2, Kitty, WezTerm, and other compatible terminals
- * Returns false if terminal doesn't support inline images
+ * Displays an image in the terminal using the iTerm2 (OSC 1337) or Kitty
+ * graphics protocol, depending on the detected terminal.
  *
  * @param {Buffer|Uint8Array} imageData - The image data as a buffer
  * @param {Object} options - Display options
- * @param {number} options.size - Size in characters for display (default: 20)
- * @returns {boolean} True if image was displayed, false otherwise
+ * @param {number} options.size - Size in cell columns for display (default: 20)
+ * @returns {Promise<boolean>} True if image was displayed, false otherwise
  */
-export function displayImageInTerminal(imageData, options = {}) {
-  if (!supportsInlineImages()) {
-    return false;
-  }
+export async function displayImageInTerminal(imageData, options = {}) {
+  const protocol = detectImageProtocol();
+  if (!protocol) return false;
 
   const { size = 20 } = options;
 
-  const base64Data = Buffer.from(imageData).toString("base64");
-
-  // Build iTerm2 inline image escape sequence
-  const params = `inline=1;width=${size}`;
-
-  // OSC 1337 ; File=[params]:[base64 data] BEL
-  const escapeSequence = `\x1b]1337;File=${params}:${base64Data}\x07`;
-
-  process.stdout.write(escapeSequence);
-  process.stdout.write("\n");
-
-  return true;
+  try {
+    if (protocol === "kitty") {
+      const png = await sharp(Buffer.from(imageData)).png().toBuffer();
+      process.stdout.write(buildKittyChunks(png.toString("base64"), size).join(""));
+    } else {
+      const base64Data = Buffer.from(imageData).toString("base64");
+      process.stdout.write(`\x1b]1337;File=inline=1;width=${size}:${base64Data}\x07`);
+    }
+    process.stdout.write("\n");
+    return true;
+  } catch {
+    return false;
+  }
 }

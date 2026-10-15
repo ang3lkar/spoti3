@@ -163,9 +163,9 @@ export async function promptForTrackMetadata(track, metadata, artBytes, options 
       }
     } else {
       logger.newLine();
-      const imageDisplayed = displayImageInTerminal(artBytes);
+      const imageDisplayed = await displayImageInTerminal(artBytes);
       if (!imageDisplayed) {
-        logger.info("Thumbnail preview not available (use iTerm2/Kitty/WezTerm)");
+        logger.info("Thumbnail preview not available (use iTerm2/Kitty/Ghostty/WezTerm)");
       }
       const thumbnailPromptText = track.thumbnails
         ? `Thumbnail (source: ${tagSource})`

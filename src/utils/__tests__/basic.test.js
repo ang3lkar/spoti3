@@ -7,6 +7,9 @@ import {
   downloadImageToMemory,
   getOrdinalString,
   greekToLatin,
+  detectImageProtocol,
+  supportsInlineImages,
+  buildKittyChunks,
 } from "../basic.js";
 
 describe("basic.js utilities", () => {
@@ -197,6 +200,60 @@ describe("basic.js utilities", () => {
       ]) {
         assert.ok(!greekRange.test(greekToLatin(sample)));
       }
+    });
+  });
+
+  describe("detectImageProtocol", () => {
+    const cases = [
+      [{ TERM_PROGRAM: "iTerm.app", TERM: "xterm-256color" }, "iterm"],
+      [{ TERM_PROGRAM: "WezTerm", TERM: "xterm-256color" }, "iterm"],
+      [{ TERM_PROGRAM: "ghostty", TERM: "xterm-256color" }, "kitty"],
+      [{ TERM_PROGRAM: "", TERM: "xterm-ghostty" }, "kitty"],
+      [{ TERM_PROGRAM: "", TERM: "xterm-kitty" }, "kitty"],
+      [{ TERM_PROGRAM: "Apple_Terminal", TERM: "xterm-256color" }, null],
+      [{ TERM_PROGRAM: "", TERM: "" }, null],
+    ];
+
+    for (const [env, expected] of cases) {
+      it(`returns ${expected} for ${JSON.stringify(env)}`, () => {
+        const saved = { ...process.env };
+        try {
+          process.env.TERM_PROGRAM = env.TERM_PROGRAM;
+          process.env.TERM = env.TERM;
+          assert.strictEqual(detectImageProtocol(), expected);
+          assert.strictEqual(supportsInlineImages(), expected !== null);
+        } finally {
+          process.env.TERM_PROGRAM = saved.TERM_PROGRAM;
+          process.env.TERM = saved.TERM;
+          if (saved.TERM_PROGRAM === undefined) delete process.env.TERM_PROGRAM;
+          if (saved.TERM === undefined) delete process.env.TERM;
+        }
+      });
+    }
+  });
+
+  describe("buildKittyChunks", () => {
+    it("returns a single chunk with m=0", () => {
+      const chunks = buildKittyChunks("abcd", 20);
+      assert.deepStrictEqual(chunks, ["\x1b_Ga=T,f=100,c=20,m=0;abcd\x1b\\"]);
+    });
+
+    it("splits into ordered chunks of at most 4096 chars", () => {
+      const data = "a".repeat(4096) + "b".repeat(4096) + "c".repeat(10);
+      const chunks = buildKittyChunks(data, 30);
+      assert.strictEqual(chunks.length, 3);
+      assert.strictEqual(
+        chunks[0],
+        `\x1b_Ga=T,f=100,c=30,m=1;${"a".repeat(4096)}\x1b\\`
+      );
+      assert.strictEqual(chunks[1], `\x1b_Gm=1;${"b".repeat(4096)}\x1b\\`);
+      assert.strictEqual(chunks[2], `\x1b_Gm=0;${"c".repeat(10)}\x1b\\`);
+    });
+
+    it("marks an exactly-4096-char payload as a single final chunk", () => {
+      const chunks = buildKittyChunks("x".repeat(4096));
+      assert.strictEqual(chunks.length, 1);
+      assert.ok(chunks[0].startsWith("\x1b_Ga=T,f=100,c=20,m=0;"));
     });
   });
 });
