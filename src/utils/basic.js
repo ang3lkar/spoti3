@@ -131,6 +131,7 @@ export function detectImageProtocol() {
   if (termProgram === "iTerm.app" || termProgram === "WezTerm") return "iterm";
   if (
     termProgram === "ghostty" ||
+    termProgram === "herdr" ||
     term === "xterm-ghostty" ||
     term === "xterm-kitty"
   ) {

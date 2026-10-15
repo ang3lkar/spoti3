@@ -208,6 +208,7 @@ describe("basic.js utilities", () => {
       [{ TERM_PROGRAM: "iTerm.app", TERM: "xterm-256color" }, "iterm"],
       [{ TERM_PROGRAM: "WezTerm", TERM: "xterm-256color" }, "iterm"],
       [{ TERM_PROGRAM: "ghostty", TERM: "xterm-256color" }, "kitty"],
+      [{ TERM_PROGRAM: "herdr", TERM: "xterm-256color" }, "kitty"],
       [{ TERM_PROGRAM: "", TERM: "xterm-ghostty" }, "kitty"],
       [{ TERM_PROGRAM: "", TERM: "xterm-kitty" }, "kitty"],
       [{ TERM_PROGRAM: "Apple_Terminal", TERM: "xterm-256color" }, null],
